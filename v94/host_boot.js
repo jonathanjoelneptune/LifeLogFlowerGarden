@@ -1,191 +1,188 @@
 /* host_boot.js
- * GitHub Pages boot + UI wiring.
- * Owns: query params, localStorage, panel controls, HUD log.
- * Calls into: window.V94Garden (from v94_garden.js)
+ * Owns: URL params, localStorage, UI wiring, logging.
+ * Depends on: window.v94Garden
  */
 (() => {
-  const LS_KEY = "LLG_V94_HOSTCFG_v1";
+  const LS_EXEC = "v94_exec";
+  const LS_BOT  = "v94_bot";
+  const LS_LIMIT = "v94_limit";
 
-  function $(id) { return document.getElementById(id); }
+  const $ = (id) => document.getElementById(id);
 
-  function nowStr() {
+  function nowTag() {
     const d = new Date();
-    const pad = (n) => String(n).padStart(2, "0");
-    return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    const hh = String(d.getHours()).padStart(2, "0");
+    const mm = String(d.getMinutes()).padStart(2, "0");
+    const ss = String(d.getSeconds()).padStart(2, "0");
+    return `${hh}:${mm}:${ss}`;
   }
 
-  function hud(msg, kind = "info") {
+  function hud(msg) {
     const el = $("hudlog");
-    if (!el) return;
-    const line = `[${nowStr()}] ${kind.toUpperCase()}: ${msg}\n`;
-    el.textContent += line;
-    el.scrollTop = el.scrollHeight;
-    // Also mirror to console so you have both.
-    if (kind === "error") console.error(msg);
-    else if (kind === "warn") console.warn(msg);
-    else console.log(msg);
+    const line = `[${nowTag()}] ${msg}`;
+    if (el) {
+      el.textContent = (el.textContent ? el.textContent + "\n" : "") + line;
+      el.scrollTop = el.scrollHeight;
+    }
+    // Also print to console so you can see it even if HUD is off screen
+    console.log(line);
   }
 
-  function setStatus(text) {
+  function setStatus(msg) {
     const el = $("status");
-    if (!el) return;
-    el.textContent = text || "";
+    if (el) el.textContent = msg || "";
   }
 
-  function loadCfg() {
-    try {
-      const raw = localStorage.getItem(LS_KEY);
-      if (!raw) return {};
-      return JSON.parse(raw) || {};
-    } catch {
-      return {};
-    }
-  }
-
-  function saveCfg(cfg) {
-    localStorage.setItem(LS_KEY, JSON.stringify(cfg || {}));
-  }
-
-  function readQuery() {
+  function parseQuery() {
     const u = new URL(window.location.href);
-    const exec = u.searchParams.get("exec") || "";
-    const bot = u.searchParams.get("bot") || "";
-    const limit = u.searchParams.get("limit") || "";
-    return { exec, bot, limit };
+    return {
+      exec: u.searchParams.get("exec") || "",
+      bot: u.searchParams.get("bot") || "",
+      limit: u.searchParams.get("limit") || "",
+      autoload: u.searchParams.get("autoload") || "1"
+    };
   }
 
-  function setQuery(exec, bot, limit) {
+  function sanitizeExec(s) {
+    const v = (s || "").trim();
+    if (!v) return "";
+    if (!/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec/.test(v)) {
+      // allow script.googleusercontent too if you use that flavor
+      if (!/^https:\/\/script\.googleusercontent\.com\/macros\/s\/.+\/exec/.test(v)) {
+        return v; // keep it, but we will warn
+      }
+    }
+    return v;
+  }
+
+  function buildShareLink(exec, bot, limit) {
     const u = new URL(window.location.href);
-    if (exec) u.searchParams.set("exec", exec); else u.searchParams.delete("exec");
-    if (bot) u.searchParams.set("bot", bot); else u.searchParams.delete("bot");
-    if (limit) u.searchParams.set("limit", String(limit || "")); else u.searchParams.delete("limit");
-    window.history.replaceState({}, "", u.toString());
+    u.searchParams.set("exec", exec || "");
+    u.searchParams.set("bot", bot || "winston");
+    u.searchParams.set("limit", String(limit || 40));
+    u.searchParams.set("autoload", "1");
+    return u.toString();
   }
 
-  function normalizeExecUrl(exec) {
-    if (!exec) return "";
-    let s = String(exec).trim();
-    // If user pasted /dev, convert to /exec.
-    s = s.replace(/\/dev(\?.*)?$/i, "/exec");
-    return s;
-  }
+  function initUI() {
+    const q = parseQuery();
 
-  async function reloadExport() {
-    const exec = normalizeExecUrl($("execInput").value);
-    const bot = $("botSelect").value;
-    const limit = Math.max(1, Math.min(500, parseInt($("limitInput").value || "40", 10)));
+    // Load defaults from LS
+    const execLS = localStorage.getItem(LS_EXEC) || "";
+    const botLS = localStorage.getItem(LS_BOT) || "winston";
+    const limitLS = localStorage.getItem(LS_LIMIT) || "40";
 
-    if (!exec || exec.includes("XXXX")) {
-      setStatus("Export: not loaded\nTip: paste your Apps Script Web App exec URL.");
-      hud("Missing exec URL. Paste Apps Script /exec URL in the input.", "warn");
-      return;
-    }
-
-    saveCfg({ exec, bot, limit });
-    setQuery(exec, bot, limit);
-
-    setStatus("Export: loading...");
-    hud(`Reload export requested bot=${bot} limit=${limit}`);
-
-    if (!window.V94Garden || typeof window.V94Garden.loadExport !== "function") {
-      hud("V94Garden not found. v94_garden.js failed to load. Check Network tab for 404.", "error");
-      setStatus("Export: not loaded\nERROR: v94_garden.js not loaded (check filenames / Network).");
-      return;
-    }
-
-    try {
-      const result = await window.V94Garden.loadExport({ execUrl: exec, bot, limit, hud });
-      const n = (result && result.count) ? result.count : 0;
-      setStatus(`Export: loaded\nRows: ${n}\nBot: ${bot}\nLimit: ${limit}`);
-      hud(`Export loaded OK. rows=${n}`);
-    } catch (e) {
-      const msg = (e && e.message) ? e.message : String(e);
-      setStatus(`Export: not loaded\nERROR: ${msg}\nTip: open the exec URL in a new tab once to authorize.`);
-      hud(`Export load FAILED: ${msg}`, "error");
-    }
-  }
-
-  function rebuildScene() {
-    if (!window.V94Garden || typeof window.V94Garden.rebuildScene !== "function") {
-      hud("V94Garden.rebuildScene missing. v94_garden.js failed to load.", "error");
-      return;
-    }
-    hud("Rebuild scene requested.");
-    window.V94Garden.rebuildScene({ hud });
-  }
-
-  async function copyShareLink() {
-    const exec = normalizeExecUrl($("execInput").value);
-    const bot = $("botSelect").value;
-    const limit = Math.max(1, Math.min(500, parseInt($("limitInput").value || "40", 10)));
-
-    setQuery(exec, bot, limit);
-    const link = window.location.href;
-
-    try {
-      await navigator.clipboard.writeText(link);
-      hud("Share link copied to clipboard.");
-      setStatus((($("status").textContent || "").trim() + "\n\nShare link copied.").trim());
-    } catch {
-      hud("Clipboard copy failed. (Browser permissions) Here is the link in console.", "warn");
-      console.log("Share link:", link);
-      setStatus((($("status").textContent || "").trim() + "\n\nCopy failed. Link printed to console.").trim());
-    }
-  }
-
-  function wireUI() {
-    $("btnReload").addEventListener("click", reloadExport);
-    $("btnRebuild").addEventListener("click", rebuildScene);
-    $("btnCopy").addEventListener("click", copyShareLink);
-
-    $("execInput").addEventListener("change", () => {
-      const v = normalizeExecUrl($("execInput").value);
-      $("execInput").value = v;
-      hud("Exec URL updated.");
-    });
-  }
-
-  function applyInitialValues() {
-    const cfg = loadCfg();
-    const q = readQuery();
-
-    const exec = normalizeExecUrl(q.exec || cfg.exec || "");
-    const bot = (q.bot || cfg.bot || "winston").toLowerCase();
-    const limit = parseInt(q.limit || cfg.limit || "40", 10);
+    // Query overrides LS if present
+    const exec = sanitizeExec(q.exec || execLS);
+    const bot = (q.bot || botLS || "winston").trim();
+    const limit = Number(q.limit || limitLS || 40) || 40;
 
     $("execInput").value = exec;
     $("botSelect").value = (bot === "alfred") ? "alfred" : "winston";
-    $("limitInput").value = String(isFinite(limit) ? limit : 40);
-
-    setQuery(exec, $("botSelect").value, $("limitInput").value);
+    $("limitInput").value = String(Math.max(1, Math.min(500, limit)));
 
     $("readyTag").textContent = "ready";
-    hud("host_boot loaded.");
-    hud(`Page: ${window.location.pathname}`);
-    hud(`Scripts expected: ./host_boot.js and ./v94_garden.js`);
-    if (!exec) setStatus("Export: not loaded\nTip: paste your Apps Script Web App exec URL.");
-    else setStatus("Export: not loaded\nTip: click Reload Export.");
 
-    // Build placeholder scene immediately so you always see something.
-    if (window.V94Garden && typeof window.V94Garden.init === "function") {
-      window.V94Garden.init({ hud });
-      hud("V94Garden.init OK.");
+    $("btnReload").addEventListener("click", async () => {
+      await reloadExport();
+    });
+
+    $("btnRebuild").addEventListener("click", () => {
+      if (!window.v94Garden) {
+        hud("ERROR: v94Garden not loaded");
+        return;
+      }
+      window.v94Garden.rebuildScene();
+    });
+
+    $("btnCopy").addEventListener("click", async () => {
+      const execNow = sanitizeExec($("execInput").value);
+      const botNow = $("botSelect").value;
+      const limitNow = Number($("limitInput").value) || 40;
+      const link = buildShareLink(execNow, botNow, limitNow);
+      try {
+        await navigator.clipboard.writeText(link);
+        setStatus("Copied share link to clipboard.");
+        hud("Share link copied.");
+      } catch (e) {
+        setStatus("Could not copy automatically. Link in console.");
+        hud(`Share link: ${link}`);
+      }
+    });
+
+    // Persist settings on change
+    $("execInput").addEventListener("change", () => {
+      const v = sanitizeExec($("execInput").value);
+      $("execInput").value = v;
+      localStorage.setItem(LS_EXEC, v);
+      hud(`exec saved (${v ? "set" : "blank"})`);
+    });
+    $("botSelect").addEventListener("change", () => {
+      localStorage.setItem(LS_BOT, $("botSelect").value);
+      hud(`bot saved ${$("botSelect").value}`);
+    });
+    $("limitInput").addEventListener("change", () => {
+      const v = String(Number($("limitInput").value) || 40);
+      localStorage.setItem(LS_LIMIT, v);
+      hud(`limit saved ${v}`);
+    });
+
+    // Init garden module
+    if (!window.v94Garden) {
+      hud("ERROR: v94Garden missing. Check script include path.");
+      setStatus("Error: v94Garden missing. Check scripts loaded.");
+      return;
+    }
+
+    window.v94Garden.init({
+      hud,
+      setStatus,
+      getExec: () => sanitizeExec($("execInput").value),
+      getBot: () => $("botSelect").value,
+      getLimit: () => Number($("limitInput").value) || 40
+    });
+
+    hud(`Host boot start. state: bot=${$("botSelect").value}, limit=${$("limitInput").value}, exec=${exec ? "set" : "missing"}`);
+
+    // Autoload if exec exists
+    const shouldAutoload = (q.autoload !== "0");
+    if (shouldAutoload && exec) {
+      reloadExport().catch(err => {
+        hud(`autoload reload failed: ${String(err)}`);
+      });
     } else {
-      hud("V94Garden.init missing. v94_garden.js may not be loaded yet.", "warn");
+      // Still build placeholder so you always see something
+      window.v94Garden.rebuildScene();
+      if (!exec) setStatus("Export not loaded.\nPaste your exec URL, then click Reload Export.");
     }
   }
 
-  window.addEventListener("error", (evt) => {
-    hud(`Window error: ${evt.message || evt}`, "error");
-  });
+  async function reloadExport() {
+    const exec = sanitizeExec($("execInput").value);
+    if (!exec) {
+      setStatus("No exec URL.\nPaste your Apps Script Web App exec URL first.");
+      hud("reload export: exec missing");
+      return;
+    }
+    localStorage.setItem(LS_EXEC, exec);
 
-  window.addEventListener("unhandledrejection", (evt) => {
-    const msg = (evt && evt.reason && evt.reason.message) ? evt.reason.message : String(evt.reason || evt);
-    hud(`Unhandled promise rejection: ${msg}`, "error");
-  });
+    const bot = $("botSelect").value;
+    const limit = Number($("limitInput").value) || 40;
 
-  document.addEventListener("DOMContentLoaded", () => {
-    wireUI();
-    applyInitialValues();
-  });
+    hud(`Reload export: bot=${bot}, limit=${limit}`);
+    setStatus("Loading export...");
+
+    try {
+      const res = await window.v94Garden.loadExport({ exec, bot, limit });
+      setStatus(`Export loaded.\nrows=${res.rows}  rawType=${res.rawType}`);
+      hud(`Export loaded: rows=${res.rows}, rawType=${res.rawType}`);
+      window.v94Garden.rebuildScene();
+    } catch (e) {
+      setStatus(`Export load failed.\n${String(e)}\n\nCommon causes:\n- Apps Script returned HTML instead of JSON\n- CORS blocked\n- Wrong deployment access`);
+      hud(`Export load failed: ${String(e)}`);
+      console.error(e);
+    }
+  }
+
+  window.addEventListener("DOMContentLoaded", initUI);
 })();
