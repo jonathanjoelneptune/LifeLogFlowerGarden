@@ -1,6 +1,4 @@
-/* v94_garden.js
- * Owns: fetching export data and building SVG scene.
- *
+/* v94_garden.js (CORS-safe JSONP)
  * Exposes:
  *   window.v94Garden.init(host)
  *   window.v94Garden.loadExport({exec, bot, limit})
@@ -17,8 +15,7 @@
     getLimit: () => 40
   };
 
-  let exportRaw = null;
-  let exportRows = []; // normalized rows
+  let exportRows = [];
 
   function el(name, attrs = {}) {
     const n = document.createElementNS(SVG_NS, name);
@@ -33,21 +30,12 @@
   }
 
   function normalizeExport(raw) {
-    // Accept several shapes:
-    // 1) { rows: [...] }
-    // 2) { days: [...] }
-    // 3) [ ... ]
-    // Each row/day: { dateKey, primary, secondary, title, mood, ... } optional
     let arr = [];
     if (Array.isArray(raw)) arr = raw;
     else if (raw && Array.isArray(raw.rows)) arr = raw.rows;
     else if (raw && Array.isArray(raw.days)) arr = raw.days;
     else if (raw && raw.data && Array.isArray(raw.data)) arr = raw.data;
-
-    // Ensure each item is an object
-    arr = arr.filter(x => x && typeof x === "object");
-
-    return arr;
+    return arr.filter(x => x && typeof x === "object");
   }
 
   function safeColor(c, fallback) {
@@ -61,16 +49,13 @@
     const svg = clearSvg();
     if (!svg) return;
 
-    // Always show something
     const hasExport = exportRows.length > 0;
 
-    // Layout: 10 columns, 1 row for now (Step A)
     const cols = 10;
     const baseY = 720;
     const spacingX = 160;
     const startX = 160;
 
-    // Title hint (in SVG, top left area)
     const title = el("text", {
       x: 24, y: 36, fill: "rgba(255,255,255,0.75)",
       "font-size": "16",
@@ -79,24 +64,21 @@
     title.textContent = hasExport ? "v94 export render" : "placeholder render (no export)";
     svg.appendChild(title);
 
-    // Build 10 flowers
     for (let i = 0; i < cols; i++) {
       const row = hasExport ? exportRows[i % exportRows.length] : null;
 
-      const primary = safeColor(row?.primary || row?.Primary || row?.primaryHex, "#f2c14e");
-      const secondary = safeColor(row?.secondary || row?.Secondary || row?.secondaryHex, "#ffecb3");
+      const primary = safeColor(row?.Primary || row?.primary || row?.primaryHex, "#f2c14e");
+      const secondary = safeColor(row?.Secondary || row?.secondary || row?.secondaryHex, "#ffecb3");
 
       const cx = startX + i * spacingX;
       const stemTopY = 520;
       const stemBottomY = baseY + 70;
 
-      // stem
       svg.appendChild(el("line", {
         x1: cx, y1: stemBottomY, x2: cx, y2: stemTopY,
         stroke: "rgba(120,220,160,0.95)", "stroke-width": "3"
       }));
 
-      // buds up the stem (your current look)
       const budCount = 12;
       for (let b = 0; b < budCount; b++) {
         const t = b / (budCount - 1);
@@ -109,7 +91,6 @@
         }));
       }
 
-      // flower head (simple for now)
       const headY = stemTopY - 24;
       const petalR = 18;
       for (let p = 0; p < 8; p++) {
@@ -124,7 +105,6 @@
       }
       svg.appendChild(el("circle", { cx, cy: headY, r: 12, fill: secondary, opacity: "0.95" }));
 
-      // label if export present
       if (hasExport) {
         const label = el("text", {
           x: cx, y: headY - 40,
@@ -132,7 +112,7 @@
           "font-size": "10",
           "text-anchor": "middle"
         });
-        label.textContent = row.dateKey || row.Date || row.date || "";
+        label.textContent = row.DateKey || row.dateKey || row.Date || row.date || "";
         svg.appendChild(label);
       }
     }
@@ -140,50 +120,66 @@
     host.hud(`Scene rebuild: ${hasExport ? "export" : "placeholder"}; rows=${exportRows.length}`);
   }
 
+  function jsonp(url, timeoutMs = 15000) {
+    return new Promise((resolve, reject) => {
+      const cbName = "__v94jsonp_" + Math.random().toString(36).slice(2);
+      const script = document.createElement("script");
+      let done = false;
+
+      const cleanup = () => {
+        if (script && script.parentNode) script.parentNode.removeChild(script);
+        try { delete window[cbName]; } catch (_) { window[cbName] = undefined; }
+      };
+
+      const timer = setTimeout(() => {
+        if (done) return;
+        done = true;
+        cleanup();
+        reject(new Error("JSONP timeout"));
+      }, timeoutMs);
+
+      window[cbName] = (data) => {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        cleanup();
+        resolve(data);
+      };
+
+      script.onerror = () => {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        cleanup();
+        reject(new Error("JSONP script load error"));
+      };
+
+      const u = new URL(url);
+      u.searchParams.set("callback", cbName);
+
+      script.src = u.toString();
+      document.head.appendChild(script);
+    });
+  }
+
   async function loadExport({ exec, bot, limit }) {
-    // Build URL
+    // IMPORTANT: Your Apps Script routes on "r"
+    // Use JSONP route to avoid CORS
     const u = new URL(exec);
-    u.searchParams.set("op", "gardenExport");
+    u.searchParams.set("r", "api_garden_export_jsonp");
     u.searchParams.set("bot", bot || "winston");
     u.searchParams.set("limit", String(limit || 40));
-    u.searchParams.set("format", "json");
-    u.searchParams.set("v", "94");
+    u.searchParams.set("v", String(Date.now()));
 
-    host.hud(`Fetching: ${u.toString()}`);
+    host.hud(`Fetching export (JSONP): ${u.toString()}`);
 
-    // Fetch with CORS
-    const r = await fetch(u.toString(), {
-      method: "GET",
-      mode: "cors",
-      cache: "no-store",
-      credentials: "omit",
-      headers: { "Accept": "application/json,text/plain,*/*" }
-    });
-
-    const ct = (r.headers.get("content-type") || "").toLowerCase();
-
-    // If Apps Script returns HTML, this is where you will see it
-    const text = await r.text();
-
-    // Try JSON parse, but detect HTML quickly
-    const looksLikeHtml = /^\s*</.test(text) && /<html|<!doctype/i.test(text);
-    if (looksLikeHtml) {
-      throw new Error("Apps Script returned HTML, not JSON. Update doGet to return ContentService JSON for op=gardenExport.");
+    const raw = await jsonp(u.toString());
+    if (!raw || raw.ok !== true) {
+      const err = raw?.error ? String(raw.error) : "Unknown export error";
+      throw new Error(err);
     }
 
-    let raw;
-    try {
-      raw = JSON.parse(text);
-    } catch (e) {
-      throw new Error(`Could not parse JSON. content-type=${ct || "unknown"} firstChars=${text.slice(0, 60)}`);
-    }
-
-    exportRaw = raw;
     exportRows = normalizeExport(raw);
-
-    if (!exportRows.length) {
-      host.hud("Export parsed but produced 0 rows after normalization.");
-    }
 
     return {
       rows: exportRows.length,
@@ -196,9 +192,5 @@
     host.hud("v94Garden init");
   }
 
-  window.v94Garden = {
-    init,
-    loadExport,
-    rebuildScene
-  };
+  window.v94Garden = { init, loadExport, rebuildScene };
 })();
