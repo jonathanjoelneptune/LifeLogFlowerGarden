@@ -1,194 +1,132 @@
-/* v94_garden.js
- * Uses JSONP to load GardenExport from Apps Script without CORS.
- *
- * Requires Apps Script route:
- *   ?r=api_garden_export_jsonp&bot=winston&limit=40&callback=...
+/* v94_garden.js (v94)
+ * Scene builder. Exposes window.v94Garden for host_boot.
  */
 
 (() => {
-  const SVG_NS = "http://www.w3.org/2000/svg";
+  const api = {
+    _svg: null,
+    _log: null,
+    _export: null,
 
-  let host = {
-    hud: () => {},
-    setStatus: () => {}
+    init({ svgRoot, log }) {
+      this._svg = svgRoot;
+      this._log = typeof log === "function" ? log : (() => {});
+      this._log("v94_garden initialized.");
+      this._renderPlaceholder();
+    },
+
+    setExport(payload) {
+      this._export = payload;
+      const rows = Array.isArray(payload?.rows) ? payload.rows.length : 0;
+      this._log(`Export set. rows=${rows}`);
+    },
+
+    rebuild() {
+      if (!this._svg) return;
+      const rows = Array.isArray(this._export?.rows) ? this._export.rows : null;
+      if (!rows || rows.length === 0) {
+        this._log("Scene rebuild: no export. (placeholder render)");
+        this._renderPlaceholder();
+        return;
+      }
+      this._renderFromRows(rows);
+    },
+
+    _clear() {
+      while (this._svg.firstChild) this._svg.removeChild(this._svg.firstChild);
+    },
+
+    _renderPlaceholder() {
+      this._clear();
+      // keep the placeholder stems minimal (what you see now)
+      const svg = this._svg;
+      const W = 1600, H = 900;
+      const baseY = 760;
+
+      for (let i = 0; i < 10; i++) {
+        const x = 140 + i * 150;
+        svg.appendChild(line(x, baseY, x, 520, "rgba(90,220,140,0.85)", 3));
+        for (let k = 0; k < 12; k++) {
+          svg.appendChild(circle(x, 740 - k * 18, 7 + (k % 3), "rgba(255,210,90,0.85)"));
+        }
+      }
+      this._log("Placeholder scene rendered.");
+    },
+
+    _renderFromRows(rows) {
+      this._clear();
+      const svg = this._svg;
+      const W = 1600, H = 900;
+
+      const baseY = 760;
+      const stemTopY = 520;
+
+      // Render last N rows across the front row slots
+      const N = Math.min(10, rows.length);
+      const slice = rows.slice(rows.length - N);
+
+      slice.forEach((r, i) => {
+        const x = 160 + i * 140;
+
+        // Label from DateKey if present
+        const dateKey = r.DateKey || r.dateKey || r.date || "";
+        if (dateKey) {
+          const t = text(x, 470, dateKey, "rgba(255,255,255,0.65)", 14);
+          t.setAttribute("text-anchor", "middle");
+          svg.appendChild(t);
+        }
+
+        // Stem
+        svg.appendChild(line(x, baseY, x, stemTopY, "rgba(90,220,140,0.9)", 4));
+
+        // Simple flower head
+        svg.appendChild(circle(x, stemTopY - 20, 28, "rgba(255,210,90,0.92)"));
+        svg.appendChild(circle(x, stemTopY - 20, 12, "rgba(255,245,220,0.95)"));
+
+        // Little “beads” down the stem (keeps your current look)
+        for (let k = 0; k < 12; k++) {
+          svg.appendChild(circle(x, baseY - 30 - k * 18, 7 + (k % 3), "rgba(255,210,90,0.82)"));
+        }
+      });
+
+      this._log("Scene rendered from export.");
+    },
   };
 
-  let exportRows = [];
+  // Helpers
+  function ns(tag) { return document.createElementNS("http://www.w3.org/2000/svg", tag); }
 
-  function el(name, attrs = {}) {
-    const n = document.createElementNS(SVG_NS, name);
-    for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, String(v));
-    return n;
+  function line(x1, y1, x2, y2, stroke, w) {
+    const el = ns("line");
+    el.setAttribute("x1", x1); el.setAttribute("y1", y1);
+    el.setAttribute("x2", x2); el.setAttribute("y2", y2);
+    el.setAttribute("stroke", stroke);
+    el.setAttribute("stroke-width", w);
+    el.setAttribute("stroke-linecap", "round");
+    return el;
   }
 
-  function clearSvg() {
-    const svg = document.getElementById("svgRoot");
-    if (!svg) return null;
-    while (svg.firstChild) svg.removeChild(svg.firstChild);
-    return svg;
+  function circle(cx, cy, r, fill) {
+    const el = ns("circle");
+    el.setAttribute("cx", cx);
+    el.setAttribute("cy", cy);
+    el.setAttribute("r", r);
+    el.setAttribute("fill", fill);
+    return el;
   }
 
-  function safeHex(c, fallback) {
-    const s = String(c || "").trim();
-    if (/^#[0-9a-fA-F]{3}$/.test(s) || /^#[0-9a-fA-F]{6}$/.test(s)) return s;
-    return fallback;
+  function text(x, y, str, fill, size) {
+    const el = ns("text");
+    el.setAttribute("x", x);
+    el.setAttribute("y", y);
+    el.setAttribute("fill", fill);
+    el.setAttribute("font-size", size);
+    el.setAttribute("font-family", "system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif");
+    el.textContent = str;
+    return el;
   }
 
-  function normalizeExport(raw) {
-    let arr = [];
-    if (Array.isArray(raw)) arr = raw;
-    else if (raw && Array.isArray(raw.rows)) arr = raw.rows;
-    else if (raw && Array.isArray(raw.days)) arr = raw.days;
-    else if (raw && raw.data && Array.isArray(raw.data)) arr = raw.data;
-    return arr.filter(x => x && typeof x === "object");
-  }
-
-  function jsonp(url, timeoutMs = 15000) {
-    return new Promise((resolve, reject) => {
-      const cbName = "__v94jsonp_" + Math.random().toString(36).slice(2);
-      const script = document.createElement("script");
-      let done = false;
-
-      const cleanup = () => {
-        if (script && script.parentNode) script.parentNode.removeChild(script);
-        try { delete window[cbName]; } catch (_) { window[cbName] = undefined; }
-      };
-
-      const timer = setTimeout(() => {
-        if (done) return;
-        done = true;
-        cleanup();
-        reject(new Error("JSONP timeout"));
-      }, timeoutMs);
-
-      window[cbName] = (data) => {
-        if (done) return;
-        done = true;
-        clearTimeout(timer);
-        cleanup();
-        resolve(data);
-      };
-
-      script.onerror = () => {
-        if (done) return;
-        done = true;
-        clearTimeout(timer);
-        cleanup();
-        reject(new Error("JSONP script load error"));
-      };
-
-      const u = new URL(url);
-      u.searchParams.set("callback", cbName);
-      script.src = u.toString();
-
-      document.head.appendChild(script);
-    });
-  }
-
-  async function loadExport({ exec, bot, limit }) {
-    if (!exec) throw new Error("Missing exec URL");
-
-    // IMPORTANT: your Apps Script uses r=api_garden_export / r=api_garden_export_jsonp
-    const u = new URL(exec);
-    u.searchParams.set("r", "api_garden_export_jsonp");
-    u.searchParams.set("bot", bot || "winston");
-    u.searchParams.set("limit", String(limit || 40));
-    u.searchParams.set("v", String(Date.now()));
-
-    host.hud("Fetching export (JSONP): " + u.toString());
-
-    const raw = await jsonp(u.toString());
-    if (!raw || raw.ok !== true) {
-      const msg = raw?.error ? String(raw.error) : "Export returned ok=false or invalid payload";
-      throw new Error(msg);
-    }
-
-    exportRows = normalizeExport(raw);
-    return { rows: exportRows.length };
-  }
-
-  function rebuildScene() {
-    const svg = clearSvg();
-    if (!svg) return;
-
-    const hasExport = exportRows.length > 0;
-
-    const title = el("text", {
-      x: 24, y: 34,
-      fill: "rgba(255,255,255,0.75)",
-      "font-size": "16",
-      "font-family": "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace"
-    });
-    title.textContent = hasExport ? `export render rows=${exportRows.length}` : "placeholder render (no export)";
-    svg.appendChild(title);
-
-    const cols = 10;
-    const startX = 160;
-    const spacingX = 160;
-    const stemTopY = 520;
-    const stemBottomY = 790;
-
-    for (let i = 0; i < cols; i++) {
-      const row = hasExport ? exportRows[i % exportRows.length] : null;
-
-      const primary =
-        safeHex(row?.Primary || row?.primary || row?.PrimaryHex || row?.primaryHex, "#f2c14e");
-      const secondary =
-        safeHex(row?.Secondary || row?.secondary || row?.SecondaryHex || row?.secondaryHex, "#ffecb3");
-
-      const cx = startX + i * spacingX;
-
-      svg.appendChild(el("line", {
-        x1: cx, y1: stemBottomY, x2: cx, y2: stemTopY,
-        stroke: "rgba(120,220,160,0.95)",
-        "stroke-width": "3"
-      }));
-
-      // buds down the stem
-      const budCount = 12;
-      for (let b = 0; b < budCount; b++) {
-        const t = b / (budCount - 1);
-        const y = stemBottomY - t * (stemBottomY - stemTopY);
-        const r = 4 + (1 - t) * 6;
-        svg.appendChild(el("circle", { cx, cy: y, r, fill: "rgba(242,193,78,0.88)" }));
-      }
-
-      // flower head
-      const headY = stemTopY - 26;
-      for (let p = 0; p < 8; p++) {
-        const ang = (Math.PI * 2 * p) / 8;
-        const px = cx + Math.cos(ang) * 20;
-        const py = headY + Math.sin(ang) * 16;
-        svg.appendChild(el("ellipse", {
-          cx: px, cy: py, rx: 18, ry: 12,
-          fill: primary, opacity: "0.92"
-        }));
-      }
-      svg.appendChild(el("circle", { cx, cy: headY, r: 12, fill: secondary, opacity: "0.96" }));
-
-      if (hasExport) {
-        const dk = row?.DateKey || row?.dateKey || row?.Date || row?.date || "";
-        const label = el("text", {
-          x: cx, y: headY - 40,
-          fill: "rgba(255,255,255,0.7)",
-          "font-size": "10",
-          "text-anchor": "middle"
-        });
-        label.textContent = String(dk);
-        svg.appendChild(label);
-      }
-    }
-
-    host.hud(`Scene rebuild: ${hasExport ? "export" : "placeholder"}`);
-  }
-
-  function init(h) {
-    host = { ...host, ...(h || {}) };
-    host.hud("v94Garden init");
-  }
-
-  window.v94Garden = { init, loadExport, rebuildScene };
+  // Expose
+  window.v94Garden = api;
+  window.V94Garden = api;
 })();
-
-window.v94Garden = window.v94Garden || {};
-window.V94Garden = window.v94Garden;
