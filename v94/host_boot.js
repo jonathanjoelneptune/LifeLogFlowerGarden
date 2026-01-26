@@ -1,247 +1,194 @@
 /* host_boot.js
- * GitHub Pages hosted boot strapper for v94+
- * - Fetch GardenExport from Apps Script
- * - Supports bot selection via ?bot=winston
- * - Calls window.LifeLogGarden.init({ data, config })
+ * This file builds the garden scene into #svgMount.
+ * It depends on v94_garden.js only for optional data labels.
  */
 
-(() => {
-  const STATUS_EL = document.getElementById("hostStatus");
-  const ERR_WRAP = document.getElementById("hostError");
-  const ERR_TEXT = document.getElementById("hostErrorText");
+(function () {
+  'use strict';
 
-  const nowIso = () => new Date().toISOString();
+  const HUD_STATUS = () => document.getElementById('hudStatus');
+  const HUD_EXPORT = () => document.getElementById('hudExport');
+  const MOUNT = () => document.getElementById('svgMount');
 
-  const setStatus = (lines) => {
-    try {
-      STATUS_EL.textContent = lines.filter(Boolean).join("\n");
-    } catch (_) {}
-  };
+  function setHudStatus_(s) {
+    const el = HUD_STATUS();
+    if (el) el.textContent = s;
+  }
 
-  const showError = (title, detail) => {
-    try {
-      ERR_WRAP.style.display = "flex";
-      ERR_TEXT.textContent = `${title}\n\n${detail || ""}`.trim();
-    } catch (_) {}
-  };
+  function setHudExport_(s) {
+    const el = HUD_EXPORT();
+    if (el) el.textContent = s;
+  }
 
-  const qp = new URLSearchParams(location.search);
-  const BOT = (qp.get("bot") || "winston").trim();
-  const ROUTE_MODE = (qp.get("route") || "r").trim(); // "r" or "direct"
-  const CACHE_MODE = (qp.get("cache") || "1").trim(); // "1" use cache fallback, "0" disable
-  const DEBUG = (qp.get("debug") || "0").trim() === "1";
+  function clearMount_() {
+    const m = MOUNT();
+    if (!m) return;
+    m.innerHTML = '';
+  }
 
-  // IMPORTANT: Set this to your Apps Script web app /exec URL (no query string needed)
-  // Based on your screenshot, it looks like:
-  // https://script.google.com/macros/s/AKfycbxPOVYXzpDdh2Fo4CRecf7R9BhPfk4sHLCskUnm0Qv9BlhbirAXI_ZVbG3U82FZ2Nt/exec
-  const API_EXEC_BASE =
-    (window.__GARDEN_API_EXEC_BASE && String(window.__GARDEN_API_EXEC_BASE).trim()) ||
-    "https://script.google.com/macros/s/AKfycbxPOVYXzpDdh2Fo4CRecf7R9BhPfk4sHLCskUnm0Qv9BlhbirAXI_ZVbG3U82FZ2Nt/exec";
-
-  const cacheKey = `LifeLogGardenExport:${API_EXEC_BASE}:${BOT}:${ROUTE_MODE}`;
-
-  const buildApiUrl = () => {
-    const u = new URL(API_EXEC_BASE);
-
-    if (ROUTE_MODE === "direct") {
-      // Example: /exec?bot=winston (if your handler uses bot only)
-      u.searchParams.set("bot", BOT);
-    } else {
-      // Default: /exec?r=api_garden_export&bot=winston
-      u.searchParams.set("r", "api_garden_export");
-      u.searchParams.set("bot", BOT);
+  function svgEl_(name, attrs) {
+    const el = document.createElementNS('http://www.w3.org/2000/svg', name);
+    if (attrs) {
+      Object.keys(attrs).forEach(k => el.setAttribute(k, String(attrs[k])));
     }
+    return el;
+  }
 
-    // Cache-bust to avoid GitHub Pages / browser caching issues
-    u.searchParams.set("_ts", String(Date.now()));
-    return u.toString();
-  };
+  function buildScene_(exportStore) {
+    clearMount_();
 
-  const safeJsonParse = (s) => {
-    try { return JSON.parse(s); } catch (_) { return null; }
-  };
+    const mount = MOUNT();
+    const w = mount.clientWidth || window.innerWidth;
+    const h = mount.clientHeight || window.innerHeight;
 
-  const readCache = () => {
-    if (CACHE_MODE !== "1") return null;
-    try {
-      const raw = localStorage.getItem(cacheKey);
-      if (!raw) return null;
-      const obj = safeJsonParse(raw);
-      if (!obj || typeof obj !== "object") return null;
-      return obj;
-    } catch (_) {
-      return null;
-    }
-  };
-
-  const writeCache = (data) => {
-    if (CACHE_MODE !== "1") return;
-    try {
-      localStorage.setItem(cacheKey, JSON.stringify({
-        savedAt: nowIso(),
-        data
-      }));
-    } catch (_) {}
-  };
-
-  const fetchGardenExport = async () => {
-    const url = buildApiUrl();
-
-    setStatus([
-      `LifeLog Garden Walk (Hosted)`,
-      `bot=${BOT}  route=${ROUTE_MODE}  cache=${CACHE_MODE}  debug=${DEBUG ? "1" : "0"}`,
-      `API: ${API_EXEC_BASE}`,
-      `Fetch: ${url}`,
-      `Status: fetching...`
-    ]);
-
-    const res = await fetch(url, {
-      method: "GET",
-      credentials: "omit",
-      cache: "no-store"
+    const svg = svgEl_('svg', {
+      width: w,
+      height: h,
+      viewBox: `0 0 ${w} ${h}`,
+      style: 'display:block; width:100%; height:100%;'
     });
 
-    const text = await res.text();
-    let json = safeJsonParse(text);
+    // Subtle vignette overlay
+    const defs = svgEl_('defs');
+    const rg = svgEl_('radialGradient', { id: 'vignette', cx: '50%', cy: '35%', r: '80%' });
+    rg.appendChild(svgEl_('stop', { offset: '0%', 'stop-color': 'rgba(255,255,255,0.06)' }));
+    rg.appendChild(svgEl_('stop', { offset: '100%', 'stop-color': 'rgba(0,0,0,0.25)' }));
+    defs.appendChild(rg);
+    svg.appendChild(defs);
 
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status} ${res.statusText}\n\nBody:\n${text.slice(0, 4000)}`);
+    // Rows config (front-ish)
+    const rows = 11;          // your earlier context: 11 rows
+    const flowersPerRow = 10; // simple baseline
+    const topY = h * 0.50;
+    const rowGap = (h * 0.34) / (rows - 1);
+
+    for (let r = 0; r < rows; r++) {
+      const y = topY + r * rowGap;
+
+      // Row line (debug style)
+      const rowLine = svgEl_('line', {
+        x1: 0,
+        y1: y,
+        x2: w,
+        y2: y,
+        stroke: 'rgba(255,255,255,0.06)',
+        'stroke-width': 1
+      });
+      svg.appendChild(rowLine);
+
+      for (let i = 0; i < flowersPerRow; i++) {
+        const x = (w * 0.12) + (i * ((w * 0.76) / (flowersPerRow - 1)));
+        const scale = 0.85 + (r / (rows - 1)) * 0.55;
+
+        // Stem
+        const stemH = 42 * scale;
+        svg.appendChild(svgEl_('line', {
+          x1: x, y1: y,
+          x2: x, y2: y - stemH,
+          stroke: 'rgba(30, 180, 90, 0.75)',
+          'stroke-width': 2 * scale,
+          'stroke-linecap': 'round'
+        }));
+
+        // Simple flower head (circle)
+        const head = svgEl_('circle', {
+          cx: x,
+          cy: y - stemH,
+          r: 7.5 * scale,
+          fill: `rgba(255, 200, 80, ${0.65 + 0.25 * (1 - r / (rows - 1))})`,
+          stroke: 'rgba(0,0,0,0.2)',
+          'stroke-width': 1
+        });
+        svg.appendChild(head);
+      }
     }
 
-    if (!json) {
-      // Some backends return text with JSON prefix or whitespace. Try a second pass.
-      const trimmed = text.trim();
-      json = safeJsonParse(trimmed);
+    // Example: show export summary if present
+    if (exportStore && exportStore.loaded) {
+      const days = Object.keys(exportStore.byDate || {}).length;
+      const weeks = Object.keys(exportStore.byWeek || {}).length;
+
+      const label = svgEl_('text', {
+        x: 16,
+        y: h - 18,
+        fill: 'rgba(255,255,255,0.75)',
+        'font-size': 12
+      });
+      label.textContent = `Export loaded: ${days} days, ${weeks} weeks (bot=${exportStore.bot})`;
+      svg.appendChild(label);
     }
 
-    if (!json) {
-      throw new Error(`Response was not valid JSON.\n\nFirst 4000 chars:\n${text.slice(0, 4000)}`);
-    }
+    // Vignette
+    const overlay = svgEl_('rect', {
+      x: 0, y: 0, width: w, height: h,
+      fill: 'url(#vignette)'
+    });
+    svg.appendChild(overlay);
 
-    return { url, json };
-  };
+    mount.appendChild(svg);
+  }
 
-  const bootGarden = async () => {
+  async function boot_() {
+    setHudStatus_('loading export…');
+
+    let store = null;
     try {
-      const { url, json } = await fetchGardenExport();
-      writeCache(json);
-
-      setStatus([
-        `LifeLog Garden Walk (Hosted)`,
-        `bot=${BOT}  route=${ROUTE_MODE}  cache=${CACHE_MODE}  debug=${DEBUG ? "1" : "0"}`,
-        `API: ${API_EXEC_BASE}`,
-        `Fetch: OK`,
-        `Payload keys: ${Object.keys(json).slice(0, 12).join(", ")}${Object.keys(json).length > 12 ? " ..." : ""}`,
-        `Status: waiting for v94 init...`
-      ]);
-
-      // Wait for your v94 code to load and register the global
-      const waitStart = performance.now();
-      const timeoutMs = 12000;
-
-      while (!(window.LifeLogGarden && typeof window.LifeLogGarden.init === "function")) {
-        await new Promise(r => setTimeout(r, 50));
-        if (performance.now() - waitStart > timeoutMs) {
-          throw new Error(
-            "Timed out waiting for window.LifeLogGarden.init.\n\n" +
-            "Fix: load your v94 garden JS after host_boot.js and expose:\n" +
-            "window.LifeLogGarden = { init: ({ data, config }) => { ... } };\n"
-          );
-        }
+      if (window.LLGardenExport && typeof window.LLGardenExport.ensureLoaded === 'function') {
+        store = await window.LLGardenExport.ensureLoaded();
       }
-
-      const config = {
-        bot: BOT,
-        routeMode: ROUTE_MODE,
-        apiExecBase: API_EXEC_BASE,
-        fetchedFrom: url,
-        fetchedAt: nowIso(),
-        debug: DEBUG
-      };
-
-      setStatus([
-        `LifeLog Garden Walk (Hosted)`,
-        `bot=${BOT}  route=${ROUTE_MODE}  cache=${CACHE_MODE}  debug=${DEBUG ? "1" : "0"}`,
-        `API: ${API_EXEC_BASE}`,
-        `Fetch: OK`,
-        `Init: calling window.LifeLogGarden.init(...)`,
-      ]);
-
-      // Call your v94 init
-      window.LifeLogGarden.init({ data: json, config });
-
-      setStatus([
-        `LifeLog Garden Walk (Hosted)`,
-        `bot=${BOT}  route=${ROUTE_MODE}  cache=${CACHE_MODE}  debug=${DEBUG ? "1" : "0"}`,
-        `API: ${API_EXEC_BASE}`,
-        `Fetch: OK`,
-        `Init: OK`,
-      ]);
-    } catch (err) {
-      const cached = readCache();
-      if (cached && cached.data) {
-        setStatus([
-          `LifeLog Garden Walk (Hosted)`,
-          `bot=${BOT}  route=${ROUTE_MODE}  cache=${CACHE_MODE}  debug=${DEBUG ? "1" : "0"}`,
-          `API: ${API_EXEC_BASE}`,
-          `Fetch: FAILED, using cache`,
-          `Cache savedAt: ${cached.savedAt || "(unknown)"}`,
-          `Init: waiting for v94 init...`
-        ]);
-
-        try {
-          const waitStart = performance.now();
-          const timeoutMs = 12000;
-          while (!(window.LifeLogGarden && typeof window.LifeLogGarden.init === "function")) {
-            await new Promise(r => setTimeout(r, 50));
-            if (performance.now() - waitStart > timeoutMs) {
-              throw new Error(
-                "Timed out waiting for window.LifeLogGarden.init (cache mode).\n\n" +
-                "Fix: load your v94 garden JS after host_boot.js and expose:\n" +
-                "window.LifeLogGarden = { init: ({ data, config }) => { ... } };\n"
-              );
-            }
-          }
-
-          window.LifeLogGarden.init({
-            data: cached.data,
-            config: {
-              bot: BOT,
-              routeMode: ROUTE_MODE,
-              apiExecBase: API_EXEC_BASE,
-              fetchedFrom: "(cache)",
-              fetchedAt: nowIso(),
-              debug: DEBUG,
-              cacheUsed: true
-            }
-          });
-
-          setStatus([
-            `LifeLog Garden Walk (Hosted)`,
-            `bot=${BOT}  route=${ROUTE_MODE}  cache=${CACHE_MODE}  debug=${DEBUG ? "1" : "0"}`,
-            `API: ${API_EXEC_BASE}`,
-            `Fetch: FAILED, cache used`,
-            `Init: OK (cache)`,
-          ]);
-          return;
-        } catch (cacheErr) {
-          showError("Fetch failed and cache init failed", String(cacheErr && cacheErr.stack ? cacheErr.stack : cacheErr));
-          return;
-        }
-      }
-
-      const msg = String(err && err.stack ? err.stack : err);
-      setStatus([
-        `LifeLog Garden Walk (Hosted)`,
-        `bot=${BOT}  route=${ROUTE_MODE}  cache=${CACHE_MODE}  debug=${DEBUG ? "1" : "0"}`,
-        `API: ${API_EXEC_BASE}`,
-        `Fetch: FAILED`,
-        `Status: error (see overlay)`
-      ]);
-      showError("Fetch or init error", msg);
+    } catch (e) {
+      // Do not block rendering if export fails
+      store = null;
     }
-  };
 
-  // Start ASAP
-  bootGarden();
+    if (store && store.loaded) {
+      setHudExport_('loaded (bot=' + store.bot + ')');
+    } else {
+      setHudExport_('not loaded');
+    }
+
+    setHudStatus_('building scene…');
+    buildScene_(store);
+    setHudStatus_('ready');
+  }
+
+  function wireHudButtons_() {
+    const btnReload = document.getElementById('btnReload');
+    const btnRebuild = document.getElementById('btnRebuild');
+
+    if (btnReload) {
+      btnReload.addEventListener('click', async function () {
+        setHudStatus_('reloading export…');
+        try {
+          if (typeof window.ll_loadGardenExport_ === 'function') {
+            const st = await window.ll_loadGardenExport_();
+            setHudExport_('loaded (bot=' + st.bot + ')');
+          } else {
+            setHudExport_('no loader');
+          }
+        } catch (e) {
+          setHudExport_('load failed');
+        }
+        setHudStatus_('ready');
+      });
+    }
+
+    if (btnRebuild) {
+      btnRebuild.addEventListener('click', function () {
+        const st = window.__LL_GARDEN_EXPORT__;
+        buildScene_(st && st.loaded ? st : null);
+        setHudStatus_('ready');
+      });
+    }
+
+    window.addEventListener('resize', function () {
+      const st = window.__LL_GARDEN_EXPORT__;
+      buildScene_(st && st.loaded ? st : null);
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    wireHudButtons_();
+    boot_();
+  });
 })();
