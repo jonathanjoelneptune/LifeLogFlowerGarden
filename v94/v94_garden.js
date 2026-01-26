@@ -189,3 +189,6 @@
 
   window.v94Garden = { init, loadExport, rebuildScene };
 })();
+
+window.v94Garden = window.v94Garden || {};
+window.V94Garden = window.v94Garden;
