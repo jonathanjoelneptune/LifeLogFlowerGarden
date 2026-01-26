@@ -8,15 +8,22 @@
     html, body { margin:0; padding:0; height:100%; background:#0b1020; overflow:hidden; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
     #app { position:relative; width:100vw; height:100vh; }
 
-    #scene { position:absolute; inset:0;
+    /* Scene */
+    #scene {
+      position:absolute; inset:0;
       background: radial-gradient(1200px 700px at 50% 20%, rgba(85,130,220,0.65), rgba(10,16,32,0.92)),
                   linear-gradient(180deg, rgba(30,50,95,0.25), rgba(0,0,0,0));
     }
-    #ground { position:absolute; left:0; right:0; bottom:0; height:40vh;
+    #ground {
+      position:absolute; left:0; right:0; bottom:0;
+      height:40vh;
       background: linear-gradient(180deg, rgba(15,60,35,0.35), rgba(10,35,25,0.85));
       filter: saturate(1.05);
     }
-    #grid { position:absolute; inset:0; pointer-events:none; opacity:0.14;
+    #grid {
+      position:absolute; inset:0;
+      pointer-events:none;
+      opacity:0.14;
       background-image:
         linear-gradient(to right, rgba(255,255,255,0.08) 1px, transparent 1px),
         linear-gradient(to bottom, rgba(255,255,255,0.08) 1px, transparent 1px);
@@ -26,9 +33,10 @@
 
     svg { position:absolute; inset:0; width:100%; height:100%; }
 
+    /* Control panel */
     #panel {
       position:absolute; top:12px; left:12px;
-      width: 340px;
+      width: 330px;
       background: rgba(20, 24, 35, 0.78);
       border: 1px solid rgba(255,255,255,0.12);
       border-radius: 12px;
@@ -36,7 +44,6 @@
       color: rgba(255,255,255,0.9);
       box-shadow: 0 10px 30px rgba(0,0,0,0.35);
       backdrop-filter: blur(6px);
-      z-index: 5;
     }
     #panel h1 { font-size: 14px; margin:0 0 8px 0; font-weight: 650; letter-spacing: 0.2px; }
     #panel .row { margin: 8px 0; }
@@ -122,7 +129,6 @@
     </div>
   </div>
 
-  <!-- IMPORTANT: filenames must exactly match your repo -->
   <script src="./host_boot.js"></script>
   <script src="./v94_garden.js"></script>
 </body>
