@@ -4,131 +4,132 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>LifeLog Garden v94</title>
-
   <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      background: #0b1020;
-      overflow: hidden;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-    }
+    html, body { margin:0; padding:0; height:100%; background:#0b1020; overflow:hidden; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
+    #app { position:relative; width:100vw; height:100vh; }
 
-    #app {
-      position: relative;
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
+    /* Scene */
+    #scene {
+      position:absolute; inset:0;
+      background: radial-gradient(1200px 700px at 50% 20%, rgba(85,130,220,0.65), rgba(10,16,32,0.92)),
+                  linear-gradient(180deg, rgba(30,50,95,0.25), rgba(0,0,0,0));
     }
-
-    /* Background layers */
-    #bg {
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at 50% 25%, #1c3b7a 0%, #0b1020 60%, #070a12 100%);
-    }
-
-    /* Ground band */
     #ground {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      height: 38vh;
-      background: linear-gradient(#0f3b20 0%, #0b2a18 60%, #071a10 100%);
+      position:absolute; left:0; right:0; bottom:0;
+      height:40vh;
+      background: linear-gradient(180deg, rgba(15,60,35,0.35), rgba(10,35,25,0.85));
+      filter: saturate(1.05);
+    }
+    #grid {
+      position:absolute; inset:0;
+      pointer-events:none;
+      opacity:0.14;
+      background-image:
+        linear-gradient(to right, rgba(255,255,255,0.08) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255,255,255,0.08) 1px, transparent 1px);
+      background-size: 160px 60px;
+      transform: translateZ(0);
     }
 
-    /* Main SVG mount */
-    #svgMount {
-      position: absolute;
-      inset: 0;
-      pointer-events: auto;
-    }
+    svg { position:absolute; inset:0; width:100%; height:100%; }
 
-    /* Tiny HUD */
-    #hud {
-      position: absolute;
-      left: 12px;
-      top: 12px;
-      padding: 10px 12px;
-      border-radius: 10px;
-      background: rgba(0,0,0,0.35);
+    /* Control panel */
+    #panel {
+      position:absolute; top:12px; left:12px;
+      width: 330px;
+      background: rgba(20, 24, 35, 0.78);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      padding: 12px;
       color: rgba(255,255,255,0.9);
-      font-size: 12px;
-      line-height: 1.35;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
       backdrop-filter: blur(6px);
-      z-index: 10;
-      max-width: 520px;
     }
-
-    #hud .row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: center;
+    #panel h1 { font-size: 14px; margin:0 0 8px 0; font-weight: 650; letter-spacing: 0.2px; }
+    #panel .row { margin: 8px 0; }
+    #panel label { display:block; font-size: 12px; opacity: 0.85; margin-bottom: 4px; }
+    #panel input, #panel select {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(0,0,0,0.22);
+      color: rgba(255,255,255,0.92);
+      outline: none;
     }
-
-    #hud code {
-      color: #cfe3ff;
-    }
-
-    #hud button {
-      border: 0;
-      border-radius: 8px;
-      padding: 6px 10px;
+    #panel button {
+      width: 100%;
+      margin-top: 8px;
+      padding: 10px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.92);
       cursor: pointer;
-      background: rgba(255,255,255,0.12);
-      color: rgba(255,255,255,0.9);
+      font-weight: 600;
     }
-
-    #hud button:hover {
-      background: rgba(255,255,255,0.18);
+    #panel button:hover { background: rgba(255,255,255,0.12); }
+    #status {
+      font-size: 12px;
+      margin-top: 8px;
+      line-height: 1.35;
+      white-space: pre-wrap;
+      opacity: 0.9;
     }
+    #hudlog {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(0,0,0,0.22);
+      max-height: 180px;
+      overflow: auto;
+      font-size: 11px;
+      line-height: 1.35;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+    .muted { opacity: 0.75; }
   </style>
-
-  <script>
-    // Optional defaults for GitHub Pages.
-    // You can override these by adding ?exec=...&bot=winston to the URL.
-
-    // Example:
-    // window.LL_EXEC_URL = "https://script.google.com/macros/s/AKfycbx.../exec";
-    // window.LL_BOT = "winston";
-
-    // If you want to prevent auto-load of export and manage it yourself, set:
-    // window.LL_NO_AUTOLOAD = true;
-  </script>
 </head>
-
 <body>
   <div id="app">
-    <div id="bg"></div>
-    <div id="ground"></div>
-
-    <div id="hud">
-      <div class="row">
-        <strong>LifeLog Garden v94</strong>
-        <span id="hudStatus">booting…</span>
-      </div>
-      <div style="margin-top:6px;">
-        Export: <code id="hudExport">not loaded</code>
-      </div>
-      <div class="row" style="margin-top:8px;">
-        <button id="btnReload">Reload Export</button>
-        <button id="btnRebuild">Rebuild Scene</button>
-      </div>
-      <div style="margin-top:8px; opacity:0.9;">
-        Tip: Add <code>?exec=YOUR_WEBAPP_EXEC_URL&bot=winston</code>
-      </div>
+    <div id="scene">
+      <div id="grid"></div>
+      <div id="ground"></div>
+      <svg id="svgRoot" viewBox="0 0 1600 900" preserveAspectRatio="none"></svg>
     </div>
 
-    <div id="svgMount"></div>
+    <div id="panel">
+      <h1>LifeLog Garden v94 <span class="muted" id="readyTag"></span></h1>
+
+      <div class="row">
+        <label>GardenExport exec URL (Apps Script Web App)</label>
+        <input id="execInput" placeholder="https://script.google.com/macros/s/XXXX/exec" />
+      </div>
+
+      <div class="row">
+        <label>Bot</label>
+        <select id="botSelect">
+          <option value="winston">winston</option>
+          <option value="alfred">alfred</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <label>Limit</label>
+        <input id="limitInput" type="number" min="1" max="500" value="40" />
+      </div>
+
+      <button id="btnReload">Reload Export</button>
+      <button id="btnRebuild">Rebuild Scene</button>
+      <button id="btnCopy">Copy Share Link</button>
+
+      <div id="status"></div>
+      <div id="hudlog"></div>
+    </div>
   </div>
 
-  <!-- 1) GardenExport wiring -->
-  <script src="./v94_garden.js"></script>
-
-  <!-- 2) Scene builder -->
   <script src="./host_boot.js"></script>
+  <script src="./v94_garden.js"></script>
 </body>
 </html>
