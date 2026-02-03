@@ -8,7 +8,7 @@
     html, body { margin:0; padding:0; height:100%; background:#0b1020; overflow:hidden; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
     #app { position:relative; width:100vw; height:100vh; }
 
-    /* Scene */
+    /* Scene background */
     #scene {
       position:absolute; inset:0;
       background: radial-gradient(1200px 700px at 50% 20%, rgba(85,130,220,0.65), rgba(10,16,32,0.92)),
@@ -117,7 +117,7 @@
 
       <div class="row">
         <label>Limit</label>
-        <input id="limitInput" type="number" min="1" max="500" value="40" />
+        <input id="limitInput" type="number" min="1" max="8000" value="40" />
       </div>
 
       <button id="btnReload">Reload Export</button>
