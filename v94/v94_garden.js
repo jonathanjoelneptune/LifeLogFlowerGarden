@@ -1,8 +1,8 @@
 /* v94_garden.js
  * LifeLog Garden v94
- * Real-ish scene renderer (SVG) wired to GardenExport API payload.
+ * Real renderer wired to GardenExport API payload.
  *
- * Expected payload:
+ * Expected payload shape:
  *   { ok:true, meta:{...}, rows:[ {DateKey:"YYYY-MM-DD", PrimaryColor:"#...", SecondaryColor:"#...", ...}, ... ] }
  *
  * Exposes:
@@ -21,6 +21,7 @@
     const n = Number(v);
     return Number.isFinite(n) ? n : def;
   }
+
   function isHexColor(s) {
     if (!s) return false;
     const t = String(s).trim();
@@ -29,9 +30,11 @@
   function colorOr(s, fallback) {
     return isHexColor(s) ? String(s).trim() : fallback;
   }
+
   function clearNode(node) {
     while (node && node.firstChild) node.removeChild(node.firstChild);
   }
+
   function svgEl(tag, attrs) {
     const el = document.createElementNS(NS, tag);
     if (attrs) {
@@ -39,22 +42,69 @@
     }
     return el;
   }
+
   function addTitle(el, text) {
     const t = svgEl("title");
     t.textContent = text;
     el.appendChild(t);
   }
 
+  // Deterministic PRNG from string (DateKey, WeekKey, etc.)
+  function xmur3(str) {
+    let h = 1779033703 ^ str.length;
+    for (let i = 0; i < str.length; i++) {
+      h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    return function () {
+      h = Math.imul(h ^ (h >>> 16), 2246822507);
+      h = Math.imul(h ^ (h >>> 13), 3266489909);
+      h ^= h >>> 16;
+      return h >>> 0;
+    };
+  }
+  function mulberry32(seed) {
+    return function () {
+      let t = seed += 0x6D2B79F5;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function rngFromKey(key) {
+    const s = xmur3(key || "seed")();
+    return mulberry32(s);
+  }
+
+  function hexToRgb(hex) {
+    const h = String(hex).trim().replace("#", "");
+    const full = (h.length === 3)
+      ? (h[0] + h[0] + h[1] + h[1] + h[2] + h[2])
+      : h;
+    const n = parseInt(full, 16);
+    return {
+      r: (n >> 16) & 255,
+      g: (n >> 8) & 255,
+      b: n & 255
+    };
+  }
+  function rgbToHex(r, g, b) {
+    const to2 = (x) => String(clamp(Math.round(x), 0, 255).toString(16)).padStart(2, "0");
+    return "#" + to2(r) + to2(g) + to2(b);
+  }
+  function mixHex(a, b, t) {
+    const A = hexToRgb(a);
+    const B = hexToRgb(b);
+    return rgbToHex(
+      A.r + (B.r - A.r) * t,
+      A.g + (B.g - A.g) * t,
+      A.b + (B.b - A.b) * t
+    );
+  }
+
   const DEFAULTS = {
     primary: "#F4EDE7",
     secondary: "#D8E5DC",
-    skyTop: "#0b1633",
-    skyMid: "#15305d",
-    skyGlow: "rgba(120,170,255,0.55)",
-    hillFar: "#123026",
-    hillNear: "#0f2a22",
-    groundTop: "rgba(20,70,40,0.35)",
-    groundBot: "rgba(10,35,25,0.92)",
     stem: "#3aa56a",
     stemDark: "#2d7f52",
     bead: "rgba(255,210,110,0.92)"
@@ -63,18 +113,19 @@
   const state = {
     initialized: false,
     svg: null,
+    defs: null,
     exportPayload: null,
     viewW: 1600,
     viewH: 900
   };
 
-  function hud(msg) {
+  function logToHud(msg) {
     const el = $("hudlog");
     if (!el) return;
-    const d = new Date();
-    const hh = String(d.getHours()).padStart(2, "0");
-    const mm = String(d.getMinutes()).padStart(2, "0");
-    const ss = String(d.getSeconds()).padStart(2, "0");
+    const time = new Date();
+    const hh = String(time.getHours()).padStart(2, "0");
+    const mm = String(time.getMinutes()).padStart(2, "0");
+    const ss = String(time.getSeconds()).padStart(2, "0");
     el.textContent += `\n[${hh}:${mm}:${ss}] ${msg}`;
     el.scrollTop = el.scrollHeight;
   }
@@ -92,205 +143,182 @@
         state.viewH = parts[3];
       }
     }
+
+    // defs for gradients, filters, etc.
+    state.defs = svgEl("defs");
+    state.svg.appendChild(state.defs);
+
+    // Soft glow filter for flower heads (subtle)
+    const flt = svgEl("filter", { id: "v94Glow", x: "-30%", y: "-30%", width: "160%", height: "160%" });
+    flt.appendChild(svgEl("feGaussianBlur", { in: "SourceGraphic", stdDeviation: "1.4", result: "blur" }));
+    flt.appendChild(svgEl("feColorMatrix", {
+      in: "blur",
+      type: "matrix",
+      values: "1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.55 0",
+      result: "blurAlpha"
+    }));
+    const merge = svgEl("feMerge");
+    merge.appendChild(svgEl("feMergeNode", { in: "blurAlpha" }));
+    merge.appendChild(svgEl("feMergeNode", { in: "SourceGraphic" }));
+    flt.appendChild(merge);
+    state.defs.appendChild(flt);
   }
 
-  // --- Scene building blocks (SVG) ---
+  function renderPlaceholder() {
+    if (!state.svg) return;
+    clearNode(state.svg);
+    state.svg.appendChild(state.defs);
 
-  function ensureDefs(root) {
-    const defs = svgEl("defs");
+    const g = svgEl("g");
+    state.svg.appendChild(g);
 
-    // Sky gradient
-    const gSky = svgEl("linearGradient", { id: "v94Sky", x1: "0", y1: "0", x2: "0", y2: "1" });
-    gSky.appendChild(svgEl("stop", { offset: "0%", "stop-color": DEFAULTS.skyTop }));
-    gSky.appendChild(svgEl("stop", { offset: "55%", "stop-color": DEFAULTS.skyMid }));
-    gSky.appendChild(svgEl("stop", { offset: "100%", "stop-color": "#071022" }));
-    defs.appendChild(gSky);
+    const cols = 10;
+    const marginX = 120;
+    const usableW = state.viewW - marginX * 2;
+    const dx = usableW / (cols - 1);
 
-    // Sun glow radial
-    const gSun = svgEl("radialGradient", { id: "v94Sun", cx: "35%", cy: "18%", r: "55%" });
-    gSun.appendChild(svgEl("stop", { offset: "0%", "stop-color": "rgba(255,230,160,0.95)" }));
-    gSun.appendChild(svgEl("stop", { offset: "25%", "stop-color": "rgba(255,210,120,0.45)" }));
-    gSun.appendChild(svgEl("stop", { offset: "60%", "stop-color": DEFAULTS.skyGlow }));
-    gSun.appendChild(svgEl("stop", { offset: "100%", "stop-color": "rgba(0,0,0,0)" }));
-    defs.appendChild(gSun);
+    const groundY = Math.round(state.viewH * 0.69);
+    const stemTopY = Math.round(state.viewH * 0.49);
 
-    // Ground gradient
-    const gGround = svgEl("linearGradient", { id: "v94Ground", x1: "0", y1: "0", x2: "0", y2: "1" });
-    gGround.appendChild(svgEl("stop", { offset: "0%", "stop-color": DEFAULTS.groundTop }));
-    gGround.appendChild(svgEl("stop", { offset: "100%", "stop-color": DEFAULTS.groundBot }));
-    defs.appendChild(gGround);
+    for (let i = 0; i < cols; i++) {
+      const x = Math.round(marginX + i * dx);
 
-    // Soft fog band
-    const gFog = svgEl("linearGradient", { id: "v94Fog", x1: "0", y1: "0", x2: "0", y2: "1" });
-    gFog.appendChild(svgEl("stop", { offset: "0%", "stop-color": "rgba(255,255,255,0.10)" }));
-    gFog.appendChild(svgEl("stop", { offset: "100%", "stop-color": "rgba(255,255,255,0)" }));
-    defs.appendChild(gFog);
+      g.appendChild(svgEl("line", {
+        x1: x, y1: groundY, x2: x, y2: stemTopY,
+        stroke: DEFAULTS.stem,
+        "stroke-width": 3,
+        "stroke-linecap": "round",
+        opacity: 0.95
+      }));
 
-    root.appendChild(defs);
-  }
+      const beadCount = 12;
+      for (let b = 0; b < beadCount; b++) {
+        const t = b / (beadCount - 1);
+        const y = Math.round(groundY + (stemTopY - groundY) * t);
+        const r = Math.round(4 + (1 - t) * 6);
+        g.appendChild(svgEl("circle", {
+          cx: x, cy: y, r,
+          fill: DEFAULTS.bead,
+          opacity: 0.85
+        }));
+      }
 
-  function hillsPath(yBase, amp, seed) {
-    // Deterministic-ish hills using a few sine bumps
-    const W = state.viewW;
-    const step = 160;
-    let d = `M 0 ${yBase}`;
-    for (let x = 0; x <= W + step; x += step) {
-      const t = (x / W) * Math.PI * 2;
-      const y = yBase - (Math.sin(t * 1.3 + seed) * 0.55 + Math.sin(t * 0.7 + seed * 1.7) * 0.45) * amp;
-      d += ` L ${x} ${Math.round(y)}`;
-    }
-    d += ` L ${W} ${state.viewH} L 0 ${state.viewH} Z`;
-    return d;
-  }
-
-  function drawBackground(root) {
-    const W = state.viewW, H = state.viewH;
-    const sky = svgEl("rect", { x: 0, y: 0, width: W, height: H, fill: "url(#v94Sky)" });
-    root.appendChild(sky);
-
-    const sun = svgEl("rect", { x: 0, y: 0, width: W, height: H, fill: "url(#v94Sun)", opacity: 0.95 });
-    root.appendChild(sun);
-
-    // subtle stars
-    const stars = svgEl("g", { opacity: 0.18 });
-    for (let i = 0; i < 80; i++) {
-      const x = (i * 97) % W;
-      const y = (i * 53) % Math.round(H * 0.45);
-      const r = 1 + ((i * 17) % 10) / 10;
-      stars.appendChild(svgEl("circle", { cx: x, cy: y, r: r, fill: "rgba(255,255,255,0.9)" }));
-    }
-    root.appendChild(stars);
-
-    // far hills
-    root.appendChild(svgEl("path", {
-      d: hillsPath(Math.round(H * 0.62), 38, 0.9),
-      fill: DEFAULTS.hillFar,
-      opacity: 0.55
-    }));
-
-    // near hills
-    root.appendChild(svgEl("path", {
-      d: hillsPath(Math.round(H * 0.70), 64, 1.7),
-      fill: DEFAULTS.hillNear,
-      opacity: 0.78
-    }));
-
-    // ground slab
-    root.appendChild(svgEl("rect", {
-      x: 0, y: Math.round(H * 0.62),
-      width: W, height: Math.round(H * 0.38),
-      fill: "url(#v94Ground)"
-    }));
-
-    // fog band
-    root.appendChild(svgEl("rect", {
-      x: 0,
-      y: Math.round(H * 0.56),
-      width: W,
-      height: Math.round(H * 0.18),
-      fill: "url(#v94Fog)"
-    }));
-  }
-
-  function drawGrass(root) {
-    const g = svgEl("g", { opacity: 0.55 });
-    const W = state.viewW, H = state.viewH;
-    const baseY = Math.round(H * 0.76);
-
-    // quick "blade" strokes
-    for (let i = 0; i < 420; i++) {
-      const x = (i * 37) % W;
-      const h = 14 + ((i * 19) % 38);
-      const sway = ((i * 13) % 9) - 4;
-      const y2 = baseY - h;
-      g.appendChild(svgEl("path", {
-        d: `M ${x} ${baseY} Q ${x + sway} ${baseY - h * 0.6} ${x + sway * 0.6} ${y2}`,
-        stroke: "rgba(90,190,120,0.35)",
-        "stroke-width": 1,
-        fill: "none",
-        "stroke-linecap": "round"
+      // Simple head
+      g.appendChild(svgEl("circle", {
+        cx: x, cy: stemTopY - 22, r: 20,
+        fill: DEFAULTS.primary,
+        opacity: 0.95,
+        filter: "url(#v94Glow)"
+      }));
+      g.appendChild(svgEl("circle", {
+        cx: x, cy: stemTopY - 22, r: 9,
+        fill: DEFAULTS.secondary,
+        opacity: 0.95
       }));
     }
-    root.appendChild(g);
   }
 
-  function makePetal(g, cx, cy, angleDeg, petalLen, petalWid, fill, opacity) {
+  function makePetalPath(cx, cy, angleDeg, petalLen, petalWid, curl) {
     const a = angleDeg * Math.PI / 180;
     const ux = Math.cos(a), uy = Math.sin(a);
+    const px = -uy, py = ux;
+
     const tipX = cx + ux * petalLen;
     const tipY = cy + uy * petalLen;
-    const px = -uy, py = ux;
-    const w = petalWid;
 
+    const w = petalWid;
     const p1x = cx + px * w;
     const p1y = cy + py * w;
 
     const p2x = cx - px * w;
     const p2y = cy - py * w;
 
-    g.appendChild(svgEl("path", {
-      d: `M ${p1x} ${p1y} Q ${tipX} ${tipY} ${p2x} ${p2y} Q ${cx} ${cy} ${p1x} ${p1y} Z`,
-      fill,
+    // Curl offsets
+    const c1x = cx + ux * (petalLen * 0.55) + px * (curl * 0.9);
+    const c1y = cy + uy * (petalLen * 0.55) + py * (curl * 0.9);
+    const c2x = cx + ux * (petalLen * 0.55) - px * (curl * 0.9);
+    const c2y = cy + uy * (petalLen * 0.55) - py * (curl * 0.9);
+
+    return `M ${p1x} ${p1y} C ${c1x} ${c1y} ${tipX} ${tipY} ${tipX} ${tipY}
+            C ${tipX} ${tipY} ${c2x} ${c2y} ${p2x} ${p2y}
+            Q ${cx} ${cy} ${p1x} ${p1y} Z`;
+  }
+
+  function addLeaf(g, x, y, side, len, wid, color, opacity, rotDeg) {
+    const dir = side; // -1 left, +1 right
+    const cx = x + dir * (wid * 0.35);
+    const cy = y;
+
+    const tipX = x + dir * len;
+    const tipY = y - len * 0.2;
+
+    const c1x = cx + dir * (len * 0.55);
+    const c1y = cy - len * 0.55;
+
+    const c2x = cx + dir * (len * 0.55);
+    const c2y = cy + len * 0.15;
+
+    const backX = x;
+    const backY = y;
+
+    const path = svgEl("path", {
+      d: `M ${backX} ${backY} C ${c1x} ${c1y} ${tipX} ${tipY} ${tipX} ${tipY}
+          C ${tipX} ${tipY} ${c2x} ${c2y} ${backX} ${backY} Z`,
+      fill: color,
       opacity: opacity
-    }));
-  }
-
-  function drawLeaf(g, x, y, dir, color) {
-    // small bezier leaf
-    const dx = dir * 34;
-    const d = `M ${x} ${y}
-               C ${x + dx * 0.35} ${y - 22}, ${x + dx * 0.85} ${y - 8}, ${x + dx} ${y - 26}
-               C ${x + dx * 0.70} ${y - 16}, ${x + dx * 0.30} ${y - 8}, ${x} ${y} Z`;
-    g.appendChild(svgEl("path", { d, fill: color, opacity: 0.55 }));
-  }
-
-  function normalizePayload(payload) {
-    // Accept: full payload, or raw rows array
-    if (Array.isArray(payload)) return { ok: true, rows: payload, meta: {} };
-    if (payload && Array.isArray(payload.rows)) return payload;
-    return { ok: false, rows: [], meta: {}, error: "Bad payload shape" };
+    });
+    if (rotDeg) {
+      path.setAttribute("transform", `rotate(${rotDeg} ${x} ${y})`);
+    }
+    g.appendChild(path);
   }
 
   function renderFromRows(rows) {
     if (!state.svg) return;
 
     clearNode(state.svg);
+    state.svg.appendChild(state.defs);
 
-    const root = svgEl("g", { id: "v94SceneRoot" });
+    const root = svgEl("g", { id: "gardenRoot" });
     state.svg.appendChild(root);
-    ensureDefs(root);
-
-    // background + grass
-    drawBackground(root);
-    drawGrass(root);
-
-    // flower field group
-    const field = svgEl("g", { id: "v94Field" });
-    root.appendChild(field);
 
     const n = rows.length;
-    if (!n) {
+    if (n === 0) {
       renderPlaceholder();
       return;
     }
 
-    // Layout: 10 columns, wrap to multiple bands
+    // Layout: use 10 columns (like your screenshot), wrap if >10
     const cols = 10;
     const marginX = 120;
     const usableW = state.viewW - marginX * 2;
     const dx = usableW / (cols - 1);
 
-    const bandBottom = Math.round(state.viewH * 0.78);
-    const bandTop = Math.round(state.viewH * 0.60);
-    const bandH = Math.max(140, bandBottom - bandTop);
+    const bandBottom = Math.round(state.viewH * 0.74);
+    const bandTop = Math.round(state.viewH * 0.47);
+    const bandH = Math.max(160, bandBottom - bandTop);
 
     const rowCount = Math.ceil(n / cols);
     const rowStep = rowCount <= 1 ? 0 : Math.floor(bandH / (rowCount - 1));
+
+    const labelBaseY = Math.round(state.viewH * 0.46);
+
+    // subtle baseline
+    root.appendChild(svgEl("line", {
+      x1: marginX,
+      y1: bandBottom,
+      x2: state.viewW - marginX,
+      y2: bandBottom,
+      stroke: "rgba(255,255,255,0.06)",
+      "stroke-width": 1
+    }));
 
     for (let i = 0; i < n; i++) {
       const r = rows[i] || {};
 
       const dateKey = safeStr(r.DateKey);
+      const weekKey = safeStr(r.WeekKey);
+
       const primary = colorOr(r.PrimaryColor, DEFAULTS.primary);
       const secondary = colorOr(r.SecondaryColor, DEFAULTS.secondary);
 
@@ -298,154 +326,198 @@
       const dailyScore = safeNum(r.DailyScore, 0);
       const totalEntries = safeNum(r.TotalEntries, 0);
 
+      const rng = rngFromKey(dateKey || String(i));
+
+      // Position
       const col = i % cols;
       const rowIdx = Math.floor(i / cols);
 
       const x = Math.round(marginX + col * dx);
       const yBase = bandBottom - rowIdx * rowStep;
 
+      // Scale using score/entries (keeps stable when blanks)
       const scoreBoost = clamp(dailyScore / 100, 0, 1);
-      const entriesBoost = clamp(totalEntries / 18, 0, 1);
+      const entriesBoost = clamp(totalEntries / 25, 0, 1);
       const levelBoost = clamp(dayLevel / 5, 0, 1);
 
-      const stemTopY = Math.round(yBase - (160 + 26 * scoreBoost + 14 * levelBoost));
-      const headY = stemTopY - 26;
+      const stemLen = 270 + 90 * scoreBoost + 30 * levelBoost;
+      const stemTopY = Math.round(yBase - stemLen);
+      const headY = stemTopY - (38 + 10 * scoreBoost);
 
-      const headR = Math.round(18 + 7 * scoreBoost + 4 * entriesBoost);
-      const diskR = Math.round(headR * 0.48);
-      const stemW = 3.4;
+      const headR = Math.round(28 + 10 * scoreBoost + 4 * entriesBoost);
+      const diskR = Math.round(headR * 0.38);
 
+      // Greens vary slightly by weekKey
+      const stemBase = DEFAULTS.stem;
+      const stemHi = DEFAULTS.stemDark;
+      const stemMix = weekKey ? (rng() * 0.25) : 0.1;
+      const stemCol = mixHex(stemBase, "#5bd49a", stemMix);
+      const stemCol2 = mixHex(stemHi, "#1e6f46", stemMix * 0.7);
+
+      // Group
       const g = svgEl("g", { class: "flower" });
-      field.appendChild(g);
+      root.appendChild(g);
 
       // Tooltip
       const tipLines = [
         dateKey ? `Date: ${dateKey}` : "Date: (missing)",
+        weekKey ? `Week: ${weekKey}` : "",
         safeStr(r.DayLevelLabel) ? `Day: ${safeStr(r.DayLevelLabel)}` : (dayLevel ? `DayLevel: ${dayLevel}` : ""),
-        safeStr(r.WeekLevelLabel) ? `Week: ${safeStr(r.WeekLevelLabel)}` : "",
+        safeStr(r.WeekLevelLabel) ? `WeekLevel: ${safeStr(r.WeekLevelLabel)}` : "",
         dailyScore ? `DailyScore: ${dailyScore}` : "",
         totalEntries ? `Entries: ${totalEntries}` : "",
-        safeStr(r.Haiku) ? `Haiku: ${safeStr(r.Haiku)}` : "",
-        safeStr(r.DailyReflection) ? `Reflection: ${safeStr(r.DailyReflection)}` : ""
       ].filter(Boolean).join("\n");
       addTitle(g, tipLines);
 
-      // Stem (slight sway)
-      const sway = ((i % 5) - 2) * 6;
+      // Stem
       g.appendChild(svgEl("path", {
-        d: `M ${x} ${yBase} Q ${x + sway} ${Math.round((yBase + stemTopY) / 2)} ${x} ${stemTopY}`,
-        stroke: DEFAULTS.stem,
-        "stroke-width": stemW,
-        "stroke-linecap": "round",
+        d: `M ${x} ${yBase} C ${x + (rng() * 10 - 5)} ${yBase - stemLen * 0.35},
+                          ${x + (rng() * 14 - 7)} ${yBase - stemLen * 0.72},
+                          ${x} ${stemTopY}`,
         fill: "none",
+        stroke: stemCol,
+        "stroke-width": 6.0,
+        "stroke-linecap": "round",
         opacity: 0.95
       }));
-
+      // stem highlight
       g.appendChild(svgEl("path", {
-        d: `M ${x + 1} ${yBase} Q ${x + sway + 1} ${Math.round((yBase + stemTopY) / 2)} ${x + 1} ${stemTopY}`,
-        stroke: DEFAULTS.stemDark,
-        "stroke-width": 1.2,
-        "stroke-linecap": "round",
+        d: `M ${x + 1} ${yBase} C ${x + 1 + (rng() * 8 - 4)} ${yBase - stemLen * 0.35},
+                          ${x + 1 + (rng() * 10 - 5)} ${yBase - stemLen * 0.72},
+                          ${x + 1} ${stemTopY}`,
         fill: "none",
+        stroke: stemCol2,
+        "stroke-width": 2.0,
+        "stroke-linecap": "round",
         opacity: 0.35
       }));
 
-      // Leaves
-      drawLeaf(g, x, Math.round(yBase - 60), -1, "rgba(80,175,110,1)");
-      drawLeaf(g, x, Math.round(yBase - 84), +1, "rgba(70,160,105,1)");
+      // Leaves (2-4)
+      const leafCount = 2 + (rng() < 0.6 ? 1 : 2);
+      for (let k = 0; k < leafCount; k++) {
+        const t = 0.18 + (k / Math.max(1, leafCount - 1)) * 0.62;
+        const ly = Math.round(yBase - stemLen * t);
+        const side = (k % 2 === 0) ? -1 : 1;
+        const len = 42 + 26 * rng() + 20 * scoreBoost;
+        const wid = 18 + 10 * rng();
+        const leafCol = mixHex(stemCol, "#cbe7d8", 0.18 + 0.18 * rng());
+        const rot = (side * (18 + 14 * rng())) + (rng() * 8 - 4);
+        addLeaf(g, x, ly, side, len, wid, leafCol, 0.45, rot);
+      }
 
-      // Beads
-      const beadCount = 10;
+      // Beads along stem (gold)
+      const beadCount = 12 + Math.round(6 * entriesBoost);
       for (let b = 0; b < beadCount; b++) {
         const t = b / (beadCount - 1);
         const y = Math.round(yBase + (stemTopY - yBase) * t);
-        const rr = Math.round(4 + (1 - t) * 5);
+        const rr = Math.round(4 + (1 - t) * 8);
         g.appendChild(svgEl("circle", {
           cx: x,
           cy: y,
           r: rr,
-          fill: DEFAULTS.bead,
-          opacity: 0.80
+          fill: "rgba(255,210,110,0.88)",
+          opacity: 0.82
         }));
       }
 
-      // Petals
-      const petalCount = 12 + Math.round(8 * scoreBoost);
-      const petalLen = headR + 12;
-      const petalWid = Math.max(7, Math.round(headR * 0.40));
-      for (let p = 0; p < petalCount; p++) {
-        const ang = (360 / petalCount) * p + (rowIdx * 6);
-        makePetal(g, x, headY, ang, petalLen, petalWid, primary, 0.90);
+      // Flower head: layered petals with primary/secondary
+      const outerPetals = 14 + Math.round(8 * scoreBoost) + Math.round(4 * entriesBoost);
+      const innerPetals = Math.max(10, outerPetals - 4);
+
+      const outerLen = headR + 24;
+      const outerWid = Math.max(10, Math.round(headR * 0.42));
+      const innerLen = headR + 12;
+      const innerWid = Math.max(8, Math.round(headR * 0.32));
+
+      // Outer petals: primary, slightly varied
+      for (let p = 0; p < outerPetals; p++) {
+        const ang = (360 / outerPetals) * p + (rng() * 10 - 5);
+        const curl = (rng() * 8 - 4);
+        const fill = mixHex(primary, "#ffffff", 0.10 + 0.12 * rng());
+        const path = svgEl("path", {
+          d: makePetalPath(x, headY, ang, outerLen, outerWid, curl),
+          fill,
+          opacity: 0.92
+        });
+        path.setAttribute("filter", "url(#v94Glow)");
+        g.appendChild(path);
       }
 
-      // Head rings
-      g.appendChild(svgEl("circle", { cx: x, cy: headY, r: headR, fill: primary, opacity: 0.33 }));
-      g.appendChild(svgEl("circle", { cx: x, cy: headY, r: diskR, fill: secondary, opacity: 0.96 }));
+      // Inner petals: blend primary->secondary for depth
+      for (let p = 0; p < innerPetals; p++) {
+        const ang = (360 / innerPetals) * p + (rng() * 10 - 5);
+        const curl = (rng() * 7 - 3.5);
+        const blend = 0.35 + 0.25 * rng();
+        const fill = mixHex(primary, secondary, blend);
+        const path = svgEl("path", {
+          d: makePetalPath(x, headY, ang, innerLen, innerWid, curl),
+          fill,
+          opacity: 0.88
+        });
+        g.appendChild(path);
+      }
 
-      // Date label
+      // Head disks
+      const rim = mixHex(primary, "#000000", 0.12);
+      g.appendChild(svgEl("circle", {
+        cx: x, cy: headY, r: headR + 1,
+        fill: rim,
+        opacity: 0.18
+      }));
+      g.appendChild(svgEl("circle", {
+        cx: x, cy: headY, r: headR,
+        fill: primary,
+        opacity: 0.34
+      }));
+      g.appendChild(svgEl("circle", {
+        cx: x, cy: headY, r: diskR + 6,
+        fill: mixHex(primary, secondary, 0.55),
+        opacity: 0.70
+      }));
+      g.appendChild(svgEl("circle", {
+        cx: x, cy: headY, r: diskR,
+        fill: secondary,
+        opacity: 0.96
+      }));
+
+      // Center spark
+      g.appendChild(svgEl("circle", {
+        cx: x - 2, cy: headY - 2,
+        r: Math.max(3, Math.round(diskR * 0.22)),
+        fill: "rgba(255,255,255,0.72)",
+        opacity: 0.65
+      }));
+
+      // Date label above head
       const label = svgEl("text", {
         x: x,
-        y: Math.round(headY - headR - 18),
+        y: labelBaseY - rowIdx * 16,
         "text-anchor": "middle",
         "font-size": 12,
-        fill: "rgba(255,255,255,0.72)"
+        fill: "rgba(255,255,255,0.65)"
       });
       label.textContent = dateKey || "";
       g.appendChild(label);
     }
   }
 
-  function renderPlaceholder() {
-    if (!state.svg) return;
-    clearNode(state.svg);
+  function normalizePayload(payload) {
+    // Accept a few shapes, but produce {ok, rows, meta}
+    if (!payload) return { ok: false, rows: [], meta: {} };
 
-    const root = svgEl("g");
-    state.svg.appendChild(root);
-    ensureDefs(root);
+    // Apps Script returns { ok:true, meta:{...}, rows:[...] }
+    if (Array.isArray(payload.rows)) return payload;
 
-    drawBackground(root);
-    drawGrass(root);
+    // Some older versions might return {data:[...]}
+    if (Array.isArray(payload.data)) return { ok: true, meta: payload.meta || {}, rows: payload.data };
 
-    // baseline stems row so you can see “something” without export
-    const g = svgEl("g");
-    root.appendChild(g);
-
-    const cols = 10;
-    const marginX = 120;
-    const usableW = state.viewW - marginX * 2;
-    const dx = usableW / (cols - 1);
-
-    const groundY = Math.round(state.viewH * 0.78);
-    const stemTopY = Math.round(state.viewH * 0.60);
-
-    for (let i = 0; i < cols; i++) {
-      const x = Math.round(marginX + i * dx);
-
-      g.appendChild(svgEl("line", {
-        x1: x, y1: groundY, x2: x, y2: stemTopY,
-        stroke: DEFAULTS.stem, "stroke-width": 3, "stroke-linecap": "round", opacity: 0.95
-      }));
-
-      for (let b = 0; b < 9; b++) {
-        const t = b / 8;
-        const y = Math.round(groundY + (stemTopY - groundY) * t);
-        const r = Math.round(4 + (1 - t) * 5);
-        g.appendChild(svgEl("circle", { cx: x, cy: y, r, fill: DEFAULTS.bead, opacity: 0.82 }));
-      }
-
-      g.appendChild(svgEl("circle", { cx: x, cy: stemTopY - 24, r: 18, fill: DEFAULTS.primary, opacity: 0.9 }));
-      g.appendChild(svgEl("circle", { cx: x, cy: stemTopY - 24, r: 9, fill: DEFAULTS.secondary, opacity: 0.95 }));
-    }
+    return { ok: !!payload.ok, meta: payload.meta || {}, rows: [] };
   }
 
   function setExport(payload) {
-    const norm = normalizePayload(payload);
-    state.exportPayload = norm;
-
-    const rows = norm && Array.isArray(norm.rows) ? norm.rows : [];
+    state.exportPayload = normalizePayload(payload);
+    const rows = Array.isArray(state.exportPayload.rows) ? state.exportPayload.rows : [];
     renderFromRows(rows);
-
-    hud(`Export applied. rows=${rows.length}`);
   }
 
   function rebuild() {
@@ -453,7 +525,6 @@
       ? state.exportPayload.rows
       : [];
     renderFromRows(rows);
-    hud("Scene rebuilt.");
   }
 
   function init() {
@@ -463,13 +534,19 @@
     renderPlaceholder();
   }
 
-  window.v94Garden = { init, setExport, rebuild, renderPlaceholder };
+  window.v94Garden = {
+    init,
+    setExport,
+    rebuild,
+    renderPlaceholder
+  };
 
   try {
     init();
-    console.log("v94_garden initialized.");
   } catch (e) {
     console.error("v94Garden init failed:", e);
-    hud("ERROR: v94Garden init failed: " + (e && e.message ? e.message : String(e)));
+    logToHud("ERROR: v94Garden init failed: " + (e && e.message ? e.message : String(e)));
   }
+
+  console.log("v94_garden initialized.");
 })();
