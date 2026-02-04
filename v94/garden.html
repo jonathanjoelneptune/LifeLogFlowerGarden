@@ -3,40 +3,10 @@
 <!--
   CH
   // Forced timezone (Pacific Time)
-  const APP_TIMEZONE = "America/Los_Angeles";
-  function todayDateKeyInTz_() {
-    try {
-      const fmt = new Intl.DateTimeFormat("en-CA", { timeZone: APP_TIMEZONE, year: "numeric", month: "2-digit", day: "2-digit" });
-      return fmt.format(new Date()); // YYYY-MM-DD in en-CA
-    } catch (e) {
-      // Fallback: local
-      return getLocalDateKey_();
-    }
-  }
+  /* (moved: APP_TIMEZONE/TZ_PACIFIC + timezone key helpers to active script block below) */
 
-function dateKeyFromMsInTz_(ms, tz = APP_TIMEZONE) {
-  // Returns yyyy-mm-dd in the requested IANA tz.
-  // Uses Intl (no external libs) and is safe for DST.
-  try {
-    const d = new Date(ms);
-    const parts = new Intl.DateTimeFormat("en-CA", {
-      timeZone: tz,
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).formatToParts(d);
-    const y = parts.find(p => p.type === "year")?.value || "";
-    const m = parts.find(p => p.type === "month")?.value || "";
-    const da = parts.find(p => p.type === "day")?.value || "";
-    if (y && m && da) return `${y}-${m}-${da}`;
-  } catch (e) {}
-  // Fallback: local dateKey (best-effort)
-  const dd = new Date(ms);
-  const y = dd.getFullYear();
-  const m = String(dd.getMonth() + 1).padStart(2, "0");
-  const da = String(dd.getDate()).padStart(2, "0");
-  return `${y}-${m}-${da}`;
-}
+
+
 
 ANGELOG
   v92.1.0_PhaseB_Step1_WeekKey_SelectionDebug
@@ -66,7 +36,7 @@ ANGELOG
 <html lang="en">
 <head>
 <script>
-// === v99.0.7 patch: safety logging helpers ===
+// === v99.0.10 patch: safety logging helpers ===
 (function(){
   if (typeof window.dbg_ !== 'function') {
     window.dbg_ = function(){ try { console.log.apply(console, arguments); } catch(e) {} };
@@ -121,19 +91,55 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 // Provide named globals expected by legacy code (safe under strict mode)
 
 
-/* FIX38: Forced timezone helpers (Pacific) */
+
+
+<script>
 const APP_TIMEZONE = "America/Los_Angeles";
-function dateKeyInTz_(ms, tz) {
-  try {
-    return new Date(ms).toLocaleDateString('en-CA', { timeZone: tz });
-  } catch (e) {
-    return "";
-  }
-}
+  
+  // Alias used by some helpers (forced Pacific Time)
+  const TZ_PACIFIC = APP_TIMEZONE;
 function todayDateKeyInTz_() {
-  return dateKeyInTz_(Date.now(), APP_TIMEZONE);
+    try {
+      const fmt = new Intl.DateTimeFormat("en-CA", { timeZone: APP_TIMEZONE, year: "numeric", month: "2-digit", day: "2-digit" });
+      return fmt.format(new Date()); // YYYY-MM-DD in en-CA
+    } catch (e) {
+      // Fallback: local
+      return getLocalDateKey_();
+    }
+  }
+
+function dateKeyFromMsInTz_(ms, tz = APP_TIMEZONE) {
+  // Returns yyyy-mm-dd in the requested IANA tz.
+  // Uses Intl (no external libs) and is safe for DST.
+  try {
+    const d = new Date(ms);
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone: tz,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).formatToParts(d);
+    const y = parts.find(p => p.type === "year")?.value || "";
+    const m = parts.find(p => p.type === "month")?.value || "";
+    const da = parts.find(p => p.type === "day")?.value || "";
+    if (y && m && da) return `${y}-${m}-${da}`;
+  } catch (e) {}
+  // Fallback: local dateKey (best-effort)
+  const dd = new Date(ms);
+  const y = dd.getFullYear();
+  const m = String(dd.getMonth() + 1).padStart(2, "0");
+  const da = String(dd.getDate()).padStart(2, "0");
+  return `${y}-${m}-${da}`;
+}
+
+function weekKeyFromMsInTz_(ms, tz) {
+  // Returns "YYYY-Www" ISO week key for the given epoch-ms interpreted in tz.
+  // Implemented via the existing dateKeyFromMsInTz_ + isoWeekKeyFromDateKey_ helpers.
+  const dk = dateKeyFromMsInTz_(ms, tz);
+  return isoWeekKeyFromDateKey_(dk);
 }
 </script>
+
 
 <!-- BRX PATCH v89.7.95: globals + safe render alias -->
 <script>
@@ -164,6 +170,9 @@ function todayDateKeyInTz_() {
   };
 })();
 </script>
+
+
+
 
   <!-- v89.6.67: grid rows uniform vertically + hill-footprint span (21 slots) -->
   <script>
@@ -248,7 +257,7 @@ console.log("[v89.6.42] loaded", new Date().toISOString());
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>LifeLog Garden Walk v99.0.7</title>
+<title>LifeLog Garden Walk v99.0.10</title>
 <style>
 /* ============================================
    v87.3.63.0: CLEANED + OPTIMIZED CSS
@@ -1597,14 +1606,12 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 <!-- VERSION BANNER INJECT -->
 <style>
 #__versionBanner{position:fixed;left:12px;top:12px;z-index:99999;padding:8px 10px;border-radius:10px;background:rgba(255,0,255,0.22);border:2px solid magenta;color:#111;font:600 12px/1.2 system-ui,Segoe UI,Arial;}
-#__versionBannerRight{position:fixed;right:12px;top:12px;z-index:99999;padding:8px 10px;border-radius:10px;background:rgba(255,235,59,0.92);border:2px solid #fbc02d;color:#111;font:700 12px/1.2 system-ui,Segoe UI,Arial;}
+#__versionBannerRight{position:fixed;right:12px;top:12px;z-index:99999;padding:8px 10px;border-radius:10px;background:rgba(255,235,59,0.92);border:2px solid rgba(179,148,0,0.95);color:#111;font:700 12px/1.2 system-ui,Segoe UI,Arial;}
 </style>
-<div id="__versionBanner">LifeLog Garden Walk<br>
-File: v99.0.7_ForcedTimezones_RenderRules_DropIn.html<br>
-Version: v99.0.7<br>
-P26-02-04 14:19:54 PT<br>
-<span style="opacity:.9">If you can see this, you opened the correct file.</span></div>
-<div id="__versionBannerRight">v99.0.7</div>
+<div id="__versionBanner">v99.0.13_ForcedTimezones_RenderRules_GlobalsTop.html<br>
+v99.0.13<br>
+Created: 2026-02-04 15:11:12 PT</div>
+<div id="__versionBannerRight">v99.0.10</div>
 <script>
 (function(){
   try{
@@ -1619,7 +1626,7 @@ P26-02-04 14:19:54 PT<br>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.0.7 loaded", new Date().toISOString());
+  console.log("[VERSION] v99.0.13 loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -3556,135 +3563,75 @@ function todayDayIndexInWeek_(){
   return dow;
 }
 
-function weekModelForIndex_(weekIndex){
-  const mondayMs = mondayMsForWeekIndex_(weekIndex);
-  const todayKey = todayDateKeyInTz_();
+function weekModelForIndex_(weekIndex) {
+  // Build a normalized week model for a given scroll index.
+  // This function MUST NOT reference undeclared locals.
+  const exportObj = (window.__LL_EXPORT || null);
+  const exportActive = !!(exportObj && exportObj.ok && exportObj.byDate);
 
-  const weekKey = isoWeekKeyFromMs_(mondayMs); // "YYYY-Www"
-  const parts = weekKey.split('-W');
-  const weekYear = parseInt(parts[0], 10);
-  const weekNum  = parseInt(parts[1], 10);
-
-  // Default (offline) values
-  const weekLevelDefault = Math.max(1, Math.min(5, 1 + (weekIndex % 5)));
-
-  // Hosted export lookup (optional)
-  const ex = (window.__LL_EXPORT && window.__LL_EXPORT.byWeek && window.__LL_EXPORT.byDate)
-    ? window.__LL_EXPORT
-    : null;
-
-  let weekLevel = weekLevelDefault;
-  let weekLevelLabel = "";
-  if (ex && ex.byWeek.has(weekKey)) {
-    const w = ex.byWeek.get(weekKey) || {};
-    const wl = Number(w.WeekLevel);
-    if (Number.isFinite(wl) && wl > 0) weekLevel = wl;
-    weekLevelLabel = (w.WeekLevelLabel != null) ? String(w.WeekLevelLabel) : "";
-  }
-
-  // Weekday labels for UI + metadata. Monday-first to match the garden layout.
-  const WEEKDAY_NAMES = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+  const weekStartMs = mondayMsForWeekIndex_(weekIndex); // Monday 00:00 in tz
+  const weekKey = weekKeyFromMsInTz_(weekStartMs, TZ_PACIFIC);
 
   const days = [];
-  for (let d=0; d<7; d++){
-    const dateObj = new Date(mondayMs + d*86400000);
-    const dateKey = dateKeyFromDate_(dateObj);
-    const monthIndex = dateObj.getMonth();
+  const todayKey = todayDateKeyInTz_(TZ_PACIFIC);
 
-    const uid = dayUid_(weekIndex, d);
-    const weekdayName = WEEKDAY_NAMES[d] || `Day${d}`;
+  // Prefer export week summary if present
+  const weekRec = (exportActive && exportObj.byWeek && exportObj.byWeek[weekKey]) ? exportObj.byWeek[weekKey] : null;
+  const weekLevel = weekRec && isFinite(Number(weekRec.WeekLevel)) ? Number(weekRec.WeekLevel) : "";
 
-    // Offline defaults
-    const colors = pickTwoColors(uid);
-    let primary = colors.primary;
-    let secondary = colors.secondary;
+  for (let d = 0; d < 7; d++) {
+    const dayMs = weekStartMs + (d * DAY_MS);
+    const dateKey = dateKeyFromMsInTz_(dayMs, TZ_PACIFIC);
 
-    // DayLevel: use GardenExport if available; otherwise offline placeholder by weekday.
-    const ex = window.__LL_EXPORT;
-    const exportActive = !!(ex && ex.ok && ex.byDate);
-    const exportRow = exportActive ? (ex.byDate.get(dateKey) || null) : null;
+    // No future dates (strictly greater than today)
+    const isFuture = (dateKey > todayKey);
 
-    // Render rules:
-    //  - never render future dates (dateKey > todayKey)
-    //  - when GardenExport is active, only render if a row exists AND DayLevel is present (>0)
-    let render = true;
-    if (dateKey > todayKey) render = false;
+    // Export day record
+    const dayRec = (exportActive && exportObj.byDate && exportObj.byDate[dateKey]) ? exportObj.byDate[dateKey] : null;
 
-    let dayLevel = dayLevelForWeekday_(d); // offline placeholder
-    let dayLevelLabel = dayLevelLabelForLevel_(dayLevel);
+    // Day level rules:
+    //  - If using GardenExport, render ONLY if DayLevel is present and numeric (>=1).
+    //  - Skip today if it has no DayLevel (covers "including today").
+    const dayLevelNum = dayRec && (dayRec.DayLevel !== "" && dayRec.DayLevel !== null && dayRec.DayLevel !== undefined)
+      ? Number(dayRec.DayLevel)
+      : NaN;
+    const hasDayLevel = isFinite(dayLevelNum) && dayLevelNum >= 1;
 
-    let primaryColor = "";
-    let secondaryColor = "";
+    const render = (!isFuture) && (!exportActive || hasDayLevel);
 
-    if (exportActive) {
-      if (!exportRow) {
-        render = false;
-      } else {
-        const dl = Number(exportRow.DayLevel);
-        if (!isFinite(dl) || dl <= 0) {
-          render = false;
-        } else {
-          dayLevel = dl;
-          dayLevelLabel = String(exportRow.DayLevelLabel || dayLevelLabelForLevel_(dayLevel));
-        }
+    // Colors: if missing/blank, default to white
+    const primaryColor = (dayRec && typeof dayRec.PrimaryColor === "string" && dayRec.PrimaryColor.trim()) ? dayRec.PrimaryColor.trim() : "#FFFFFF";
+    const secondaryColor = (dayRec && typeof dayRec.SecondaryColor === "string" && dayRec.SecondaryColor.trim()) ? dayRec.SecondaryColor.trim() : "#FFFFFF";
 
-        primaryColor = String(exportRow.PrimaryColor || "");
-        secondaryColor = String(exportRow.SecondaryColor || "");
+    const dailyScore = (dayRec && isFinite(Number(dayRec.DailyScore))) ? Number(dayRec.DailyScore) : "";
+    const dayLevelLabel = (dayRec && typeof dayRec.DayLevelLabel === "string" && dayRec.DayLevelLabel.trim())
+      ? dayRec.DayLevelLabel.trim()
+      : (hasDayLevel ? dayLevelLabelForLevel_(dayLevelNum) : "");
 
-        // week level is week-scoped, but safe to read from any row in the week
-        const wl = Number(exportRow.WeekLevel);
-        if (isFinite(wl) && wl > 0) {
-          weekLevel = wl;
-          weekLevelLabel = String(exportRow.WeekLevelLabel || weekLevelLabelForWeekLevel_(weekLevel));
-        }
-      }
-    }
+    const monthIndex = new Date(dayMs).getMonth();
+    const stemColors = stemColorsForMonthIndex_(monthIndex);
 
-    // Default colors to white if missing/blank
-    if (!primaryColor) primaryColor = "#FFFFFF";
-    if (!secondaryColor) secondaryColor = "#FFFFFF";
     days.push({
-      dateObj,
       dateKey,
+      dowIndex: d,
+      isFuture,
       render,
-      weekKey,
-      weekIndex,
-      weekdayIndex: d,
-      weekday: weekdayName,
-      month: monthIndex,
-      level: dayLevel,
-      uid,
-      primary,
-      secondary,
-      dayLevel,
-      dayLevelLabel,
-      weekLevel,
-      weekLevelLabel,
-      dailyScore,
-      totalEntries,
-      haiku,
-      reflection,
-      themeCloudUrl,
-      stemCore: stemColors.stem,
-      stemDark: stemColors.stemDark,
-      // Compatibility with flowerSvg() renderer which expects `stemHi`.
-      stemHi: stemColors.stemDark,
-      leafCore: stemColors.leaf
+      PrimaryColor: primaryColor,
+      SecondaryColor: secondaryColor,
+      DayLevel: hasDayLevel ? dayLevelNum : "",
+      DayLevelLabel: dayLevelLabel,
+      DailyScore: dailyScore,
+      WeekLevel: weekLevel,
+      WeekLevelLabel: weekLevel ? weekLevelLabelForLevel_(weekLevel) : "",
+      StemColor: stemColors.stem,
+      LeafColor: stemColors.leaf,
+      Haiku: dayRec ? (dayRec.Haiku || "") : "",
+      DailyReflection: dayRec ? (dayRec.DailyReflection || "") : "",
+      ThemeCloudPngUrl: dayRec ? (dayRec.ThemeCloudPngUrl || "") : "",
     });
   }
 
-  return {
-    iso: weekKey,
-    isoYear: weekYear,
-    isoWeek: weekNum,
-    weekKey,
-    weekIndex,
-    weekLevel,
-    weekLevelLabel,
-    mondayMs,
-    weekMon: new Date(mondayMs),
-    days
-  };
+  return { weekIndex, weekKey, weekStartMs, weekLevel, days };
 }
 
 // Expose small hooks for post-script features
