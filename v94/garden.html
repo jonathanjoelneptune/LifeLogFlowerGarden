@@ -29,7 +29,7 @@
 <html lang="en">
 <head>
 <script>
-// === v99.0.2 patch: safety logging helpers ===
+// === v99.0.3 patch: safety logging helpers ===
 (function(){
   if (typeof window.dbg_ !== 'function') {
     window.dbg_ = function(){ try { console.log.apply(console, arguments); } catch(e) {} };
@@ -197,7 +197,7 @@ console.log("[v89.6.42] loaded", new Date().toISOString());
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>LifeLog Garden Walk v99.0.2</title>
+<title>LifeLog Garden Walk v99.0.3</title>
 <style>
 /* ============================================
    v87.3.63.0: CLEANED + OPTIMIZED CSS
@@ -1548,9 +1548,9 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 #__versionBanner{position:fixed;left:12px;top:12px;z-index:99999;padding:8px 10px;border-radius:10px;background:rgba(255,0,255,0.22);border:2px solid magenta;color:#111;font:600 12px/1.2 system-ui,Segoe UI,Arial;}
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: v99.0.2_GardenExportProxyFix_Banners.html<br>
-Version: v99.0.2<br>
-Built: 2026-02-04 11:03:08 PT<br>
+File: v99.0.3_GardenExportProxyFix_Banners.html<br>
+Version: v99.0.3<br>
+Built: 2026-02-04 11:21:19 PT<br>
 <span style="opacity:.9">If you can see this, you opened the correct file.</span></div>
 <script>
 (function(){
@@ -1566,7 +1566,7 @@ Built: 2026-02-04 11:03:08 PT<br>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.0.2 loaded", new Date().toISOString());
+  console.log("[VERSION] v99.0.3 loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -8559,7 +8559,7 @@ const LS_KEY = "LL_V94_HOST_CFG";
     url.searchParams.set("r", "api_garden_export");
     url.searchParams.set("bot", bot);
     url.searchParams.set("limit", String(limit));
-    url.searchParams.set("format", "json");
+    url.searchParams.set("format", "jsonp");
     url.searchParams.set("v", String(Date.now()));
     url.searchParams.set("callback", cb);
     return { cb, src: url.toString() };
@@ -8640,24 +8640,11 @@ const LS_KEY = "LL_V94_HOST_CFG";
       script = document.createElement('script');
       script.async = true;
       script.src = src;
-      script.onerror = (e)=>{ cleanup(); __hostLog('[export] jsonp script load failed, trying proxy fetch...'); const url = src.replace(/([&?])callback=[^&]+/, '$1').replace(/[?&]$/,''); proxyFetchExport_(url, resolve, fail); };
+      script.onerror = (e)=>{ cleanup(); __hostLog('[export] jsonp script load failed'); fail(new Error('jsonp script load failed')); };
       document.head.appendChild(script);
 
-      to = setTimeout(()=>{
-        // JSONP timed out: attempt fallback proxy fetch.
-        cleanup();
-        const url = src.replace(/([&?])callback=[^&]+/, '$1').replace(/[?&]$/,'');
-        const prox = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
-        __hostLog('[GARDENEXPORT] JSONP timeout, trying allorigins proxy');
-        fetch(prox, { cache:'no-store' }).then(r=>r.text()).then(t=>{
-          let payload;
-          try{ payload = JSON.parse(t); }catch(e){ throw new Error('proxy parse failed'); }
-          ok(payload);
-        }).catch(err=>{
-          fail(err);
-        });
-      }, timeoutMs);
-    });
+      to = setTimeout(()=>{ cleanup(); __hostLog('[export] jsonp timeout'); fail(new Error('jsonp timeout')); }, timeoutMs);
+});
   }
 
   function copyShareLink(execUrl, bot, limit){
