@@ -2593,13 +2593,7 @@ const makeExportableSvgString = (svgEl, levelNum)=>{
 (function(){
 'use strict';
 
-const SHOW_BACKPNG_LOGS = false;
-const dbg_ = (msg) => {
-  try{
-    if(!SHOW_BACKPNG_LOGS && typeof msg === 'string' && msg.includes('[BACKPNG-HTML]')) return;
-  }catch(e){}
-  if(window.__LLDBG__) window.__LLDBG__.log(msg);
-};
+const dbg_ = (msg) => { if(window.__LLDBG__) window.__LLDBG__.log(msg); };
 const dbgOnce_ = (key, msg) => {
   try{
     // Allow dbgOnce_(msg) single-arg form.
@@ -2836,27 +2830,9 @@ function mulberry32(seed){
 
 function mixHex(a,b,t){
   t = clamp01(t);
-
-  const norm = (h, fallback)=>{
-    if (typeof h !== "string") return fallback;
-    let s = h.trim();
-    if (!s) return fallback;
-    if (s[0] !== "#") s = "#" + s;
-    // expand #rgb -> #rrggbb
-    if (/^#([0-9a-fA-F]{3})$/.test(s)) {
-      const m = s.slice(1);
-      s = "#" + m[0]+m[0] + m[1]+m[1] + m[2]+m[2];
-    }
-    if (!/^#([0-9a-fA-F]{6})$/.test(s)) return fallback;
-    return s.toUpperCase();
-  };
-
-  const Ahex = norm(a, "#888888").replace("#","");
-  const Bhex = norm(b, "#888888").replace("#","");
-
-  const ar = parseInt(Ahex.slice(0,2),16), ag = parseInt(Ahex.slice(2,4),16), ab = parseInt(Ahex.slice(4,6),16);
-  const br = parseInt(Bhex.slice(0,2),16), bg = parseInt(Bhex.slice(2,4),16), bb = parseInt(Bhex.slice(4,6),16);
-
+  const A = a.replace("#",""), B = b.replace("#","");
+  const ar = parseInt(A.slice(0,2),16), ag = parseInt(A.slice(2,4),16), ab = parseInt(A.slice(4,6),16);
+  const br = parseInt(B.slice(0,2),16), bg = parseInt(B.slice(2,4),16), bb = parseInt(B.slice(4,6),16);
   const rr = Math.round(ar + (br-ar)*t), rg = Math.round(ag + (bg-ag)*t), rb = Math.round(ab + (bb-ab)*t);
   const to = (v)=> v.toString(16).padStart(2,"0");
   return ("#" + to(rr) + to(rg) + to(rb)).toUpperCase();
@@ -3243,7 +3219,6 @@ function weekIndexFromDate_(dateObj){
 function todayWeekIndex_(){
   return Math.max(0, weekIndexFromDate_(new Date()));
 }
-
 function todayDayIndexInWeek_(){
   // Monday=0 ... Sunday=6
   const d = new Date();
@@ -3251,209 +3226,120 @@ function todayDayIndexInWeek_(){
   return dow;
 }
 
-
-/* === V94 Hosted Adapter Helpers (injected) ===
- * These helpers were referenced by the export->garden bridge.
- * Keep them lightweight and deterministic.
- */
-function logDebug_(tag, obj){
-  try{
-    if (typeof dbglog === "function") {
-      dbglog(tag + " " + (obj!==undefined ? JSON.stringify(obj) : ""));
-      return;
-    }
-    const el = document.getElementById("debugLog") || document.getElementById("hudlog");
-    if (el){
-      const ts = new Date();
-      const line = ts.toISOString().replace("T"," ").replace("Z","") + " " + tag + (obj!==undefined ? (" " + JSON.stringify(obj)) : "");
-      el.textContent += (el.textContent ? "\n" : "") + line;
-      el.scrollTop = el.scrollHeight;
-    } else {
-      console.log(tag, obj);
-    }
-  }catch(e){
-    console.log(tag, obj);
-  }
-}
-
-function getStageW_(){
-  const svg = document.getElementById("svgRoot") || document.querySelector("svg");
-  if (svg){
-    const vb = svg.getAttribute("viewBox");
-    if (vb){
-      const p = vb.trim().split(/\s+/).map(Number);
-      if (p.length===4 && p.every(Number.isFinite)) return p[2];
-    }
-    const r = svg.getBoundingClientRect();
-    if (r && r.width) return Math.round(r.width);
-  }
-  return window.innerWidth || 1600;
-}
-function getStageH_(){
-  const svg = document.getElementById("svgRoot") || document.querySelector("svg");
-  if (svg){
-    const vb = svg.getAttribute("viewBox");
-    if (vb){
-      const p = vb.trim().split(/\s+/).map(Number);
-      if (p.length===4 && p.every(Number.isFinite)) return p[3];
-    }
-    const r = svg.getBoundingClientRect();
-    if (r && r.height) return Math.round(r.height);
-  }
-  return window.innerHeight || 900;
-}
-
-function dateKeyFromDate_(d){
-  const dd = (d instanceof Date) ? d : new Date(d);
-  const local = new Date(dd.getTime() - dd.getTimezoneOffset()*60000);
-  return local.toISOString().slice(0,10);
-}
-
-function dayUid_(dateKey){
-  const s = String(dateKey||"").trim();
-  return "d_" + s.replace(/[^0-9A-Za-z_-]/g,"_");
-}
-
-function hash32_(s){
-  s = String(s||"");
-  let h = 2166136261 >>> 0;
-  for(let i=0;i<s.length;i++){
-    h ^= s.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  return h >>> 0;
-}
-function rng01_(seed){
-  let x = (seed >>> 0) || 1;
-  return function(){
-    x = (Math.imul(1664525, x) + 1013904223) >>> 0;
-    return (x >>> 0) / 4294967296;
-  };
-}
-const FALLBACK_PALETTE_HEX_ = ["#F4EDE7","#D8E5DC","#FBE7E7","#DFF1EB","#E7DFD9","#D8E9E7","#F0F4F9","#D8E6D7","#DDF4EC","#FBEDE3","#EDF3F9","#FAEDE9","#D6E2EF","#FDEDE2","#D6E4FA","#FAE0DD"];
-function pickTwoColorsFromUid_(uid){
-  const r = rng01_(hash32_(uid));
-  const a = FALLBACK_PALETTE_HEX_[Math.floor(r()*FALLBACK_PALETTE_HEX_.length)];
-  let b = FALLBACK_PALETTE_HEX_[Math.floor(r()*FALLBACK_PALETTE_HEX_.length)];
-  if(b === a) b = FALLBACK_PALETTE_HEX_[(FALLBACK_PALETTE_HEX_.indexOf(a)+1) % FALLBACK_PALETTE_HEX_.length];
-  return [a,b];
-}
-
-
-
-const DAY_MS = 24 * 60 * 60 * 1000;
-function mondayMsForWeekIndex_(weekIndex){
-  return __EPOCH_MON__.getTime() + (Number(weekIndex)||0) * 7 * DAY_MS;
-}
-
-function dayLevelLabelFromLevel_(lvl){
-  const n = Number(lvl);
-  if (n===1) return "Barely Awake";
-  if (n===2) return "Lightly Logged";
-  if (n===3) return "Solid Day";
-  if (n===4) return "Deep Capture Day";
-  if (n===5) return "On Fire";
-  return "";
-}
-
-function dayLevelForWeekday_(weekdayIdx){
-  return 0;
-}
-
-function stemColorsForMonthIndex_(monthIndex){
-  const mi = Math.max(0, Math.min(11, Number(monthIndex)||0));
-  const baseStem = [58,165,106];
-  const baseDark = [45,127,82];
-  const baseLeaf = [79,191,122];
-  const winter = (mi===11||mi===0||mi===1);
-  const summer = (mi>=5 && mi<=8);
-  const bias = winter ? [-8,-2,8] : (summer ? [8,6,-6] : [0,0,0]);
-  function rgb(arr){
-    const r=Math.max(0,Math.min(255,arr[0]+bias[0]));
-    const g=Math.max(0,Math.min(255,arr[1]+bias[1]));
-    const b=Math.max(0,Math.min(255,arr[2]+bias[2]));
-    return "#" + [r,g,b].map(x=>x.toString(16).padStart(2,"0")).join("");
-  }
-  return { stem: rgb(baseStem), stemDark: rgb(baseDark), leaf: rgb(baseLeaf) };
-}
-/* === end injected helpers === */
-
-
 function weekModelForIndex_(weekIndex){
-  const monMs = mondayMsForWeekIndex_(weekIndex);
-  const weekMon = new Date(monMs);
-  const weekKey = isoWeekKeyFromDate_(weekMon);
+  const mondayMs = mondayMsForWeekIndex_(weekIndex);
 
-  const exp = (window.__LL_EXPORT && window.__LL_EXPORT.byDate) ? window.__LL_EXPORT : null;
-  if(!exp && !window.__LL_EXPORT_WARNED__){ window.__LL_EXPORT_WARNED__=true; dbg_('[FRONT] export missing -> using defaults'); }
+  const iso = isoWeekKeyFromMs_(mondayMs);
+  const weekYear = iso.year;
+  const weekNum  = iso.week;
+  const weekKey  = `${weekYear}-W${String(weekNum).padStart(2,'0')}`;
 
-  const byDate = exp ? exp.byDate : null;
-  const byWeek = exp ? exp.byWeek : null;
+  // Default (offline) values
+  const weekLevelDefault = Math.max(1, Math.min(5, 1 + (weekIndex % 5)));
 
-  const weekMeta = (byWeek && byWeek.has(weekKey)) ? byWeek.get(weekKey) : null;
-  const weekLevel = (weekMeta && weekMeta.WeekLevel != null && weekMeta.WeekLevel !== "") ? Number(weekMeta.WeekLevel) : 0;
-  const weekLevelLabel = (weekMeta && weekMeta.WeekLevelLabel != null) ? String(weekMeta.WeekLevelLabel) : "";
+  // Hosted export lookup (optional)
+  const ex = (window.__LL_EXPORT && window.__LL_EXPORT.byWeek && window.__LL_EXPORT.byDate)
+    ? window.__LL_EXPORT
+    : null;
+
+  let weekLevel = weekLevelDefault;
+  let weekLevelLabel = "";
+  if (ex && ex.byWeek.has(weekKey)) {
+    const w = ex.byWeek.get(weekKey) || {};
+    const wl = Number(w.WeekLevel);
+    if (Number.isFinite(wl) && wl > 0) weekLevel = wl;
+    weekLevelLabel = (w.WeekLevelLabel != null) ? String(w.WeekLevelLabel) : "";
+  }
 
   const days = [];
-  const todayKey = dateKeyFromDate_(new Date());
+  for (let d=0; d<7; d++){
+    const dateObj = new Date(mondayMs + d*86400000);
+    const dateKey = dateKeyFromDate_(dateObj);
+    const monthIndex = dateObj.getMonth();
 
-  for(let di=0; di<7; di++){
-    const d = new Date(monMs + di*DAY_MS);
-    const dateKey = dateKeyFromDate_(d);
-    const inFuture = (dateKey > todayKey);
+    const uid = dayUid_(weekIndex, d);
 
-    const row = (byDate && byDate.has(dateKey)) ? byDate.get(dateKey) : null;
+    // Offline defaults
+    const colors = pickTwoColors(uid);
+    let primary = colors.primary;
+    let secondary = colors.secondary;
 
-    let primary = row && row.PrimaryColor ? String(row.PrimaryColor) : "";
-    let secondary = row && row.SecondaryColor ? String(row.SecondaryColor) : "";
-    if(!primary || !secondary){
-      const c = pickTwoColorsFromUid_(dayUid_(dateKey));
-      if(!primary) primary = c[0];
-      if(!secondary) secondary = c[1];
+    // DayLevel: keep the established offline "level by weekday"
+    let dayLevel = dayLevelForWeekday_(d);
+    let dayLevelLabel = dayLevelLabelFromLevel_(dayLevel);
+
+    // Optional export overrides (per-day)
+    let dailyScore = 0;
+    let totalEntries = 0;
+    let haiku = "";
+    let reflection = "";
+    let themeCloudUrl = "";
+
+    if (ex && ex.byDate.has(dateKey)) {
+      const row = ex.byDate.get(dateKey) || {};
+
+      // Colors
+      const _isHex = (v)=>{ if(!v) return false; const s=String(v).trim(); return /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(s); };
+      if (_isHex(row.PrimaryColor)) primary = String(row.PrimaryColor).trim();
+            if (_isHex(row.SecondaryColor)) secondary = String(row.SecondaryColor).trim();
+
+      // Levels (if present)
+      const dl = Number(row.DayLevel);
+      if (Number.isFinite(dl) && dl > 0) {
+        dayLevel = dl;
+        dayLevelLabel = (row.DayLevelLabel != null) ? String(row.DayLevelLabel) : dayLevelLabelFromLevel_(dl);
+      } else if (row.DayLevelLabel != null && String(row.DayLevelLabel).trim()) {
+        dayLevelLabel = String(row.DayLevelLabel);
+      }
+
+      // Stats / text
+      dailyScore = Number(row.DailyScore) || 0;
+      totalEntries = Number(row.TotalEntries) || 0;
+      haiku = (row.Haiku != null) ? String(row.Haiku) : "";
+      reflection = (row.DailyReflection != null) ? String(row.DailyReflection) : "";
+      themeCloudUrl = (row.ThemeCloudPngUrl != null) ? String(row.ThemeCloudPngUrl) : "";
+
+      // Week label override (if present and not already set)
+      if (!weekLevelLabel && row.WeekLevelLabel != null) weekLevelLabel = String(row.WeekLevelLabel);
+      const wl2 = Number(row.WeekLevel);
+      if (Number.isFinite(wl2) && wl2 > 0) weekLevel = wl2;
     }
 
-    let dayLevel = (row && row.DayLevel != null && row.DayLevel !== "") ? Number(row.DayLevel) : 1;
-    if(!(dayLevel>=1 && dayLevel<=5)) dayLevel = 1;
-    const dayLevelLabel = (row && row.DayLevelLabel != null) ? String(row.DayLevelLabel) : "";
-
-    const monthIndex = d.getMonth();
-    const stem = stemColorsForMonthIndex_(monthIndex);
-
-    const haiku = (row && row.Haiku != null) ? String(row.Haiku) : "";
-    const dailyReflection = (row && row.DailyReflection != null) ? String(row.DailyReflection) : "";
-    const themeCloudPngUrl = (row && row.ThemeCloudPngUrl != null) ? String(row.ThemeCloudPngUrl) : "";
-
-    const isPlaceholder = (!row && inFuture);
+    // Use the same established stem/leaf tint logic
+    const stemColors = stemColorsForMonthIndex_(monthIndex);
 
     days.push({
-      weekIndex,
-      dayIndex: di,
+      dateObj,
       dateKey,
-      dateObj: d,
-      uid: dayUid_(dateKey),
-
+      weekKey,
+      weekIndex,
+      weekdayIndex: d,
       primary,
       secondary,
-      level: dayLevel,
-      levelLabel: dayLevelLabel,
-
-      weekKey: row && row.WeekKey ? String(row.WeekKey) : weekKey,
+      dayLevel,
+      dayLevelLabel,
       weekLevel,
       weekLevelLabel,
-
+      dailyScore,
+      totalEntries,
       haiku,
-      dailyReflection,
-      themeCloudPngUrl,
-
-      stemCore: stem.core,
-      stemHi: stem.hi,
-      stemEdge: stem.edge,
-
-      isPlaceholder
+      reflection,
+      themeCloudUrl,
+      stem: stemColors.stem,
+      stemDark: stemColors.stemDark,
+      leaf: stemColors.leaf
     });
   }
 
-  return { weekIndex, weekMon, weekKey, weekLevel, weekLevelLabel, days };
+  return {
+    iso: { year: weekYear, week: weekNum, key: weekKey },
+    weekKey,
+    weekIndex,
+    weekLevel,
+    weekLevelLabel,
+    mondayMs,
+    days
+  };
 }
 
 // Expose small hooks for post-script features
@@ -3621,6 +3507,7 @@ function reflowBandArrays_(){
 }
 
 function syncRenderedWeeks_(focusWeekIndex, fullRebuild=false){
+  dbg_("[FRONT] syncRenderedWeeks start focus="+(focusWeekIndex|0)+" fullRebuild="+!!fullRebuild);
   const minIdx = Math.max(0, (focusWeekIndex|0) - PAST_WEEKS_RENDERED);
   const maxIdx = (focusWeekIndex|0) + FUTURE_WEEKS_RENDERED;
 
@@ -5553,45 +5440,6 @@ __llBoxes = titles.map((t,i)=>{
     }catch(e){}
     return '';
   }
-
-// --- FIX: missing helpers used by weekModelForIndex_ (hosted build) ---
-function mondayMsForWeekIndex_(weekIndex){
-  const w = Number(weekIndex);
-  const wi = Number.isFinite(w) ? Math.round(w) : 0;
-  // __EPOCH_MON__ is the Monday 00:00 local time for the configured epoch week.
-  return __EPOCH_MON__.getTime() + wi * 7 * 24 * 60 * 60 * 1000;
-}
-
-// Format a Date object to "YYYY-MM-DD" in local time (stable for our week math).
-function dateKeyFromDate_(d){
-  if(!d) return "";
-  const dt = (d instanceof Date) ? d : new Date(d);
-  if(isNaN(dt.getTime())) return "";
-  const y = dt.getFullYear();
-  const m = String(dt.getMonth()+1).padStart(2,"0");
-  const day = String(dt.getDate()).padStart(2,"0");
-  return `${y}-${m}-${day}`;
-}
-
-
-// Convert a millisecond timestamp to an ISO week key "YYYY-Www" (week starts Monday).
-// Uses local time to stay aligned with existing dateKey logic.
-
-/** Wrapper: Date -> ISO week key (YYYY-Www). */
-function isoWeekKeyFromDate_(d){
-  if(!d) return "";
-  try { return isoWeekKeyFromMs_(d.getTime()); } catch(e){ return ""; }
-}
-
-function isoWeekKeyFromMs_(ms){
-  const d = new Date(ms);
-  const y = d.getFullYear();
-  const m = String(d.getMonth()+1).padStart(2,'0');
-  const da = String(d.getDate()).padStart(2,'0');
-  const dk = `${y}-${m}-${da}`;
-  return isoWeekKeyFromDateKey_(dk);
-}
-
 
 function fmtDateKeySafe_(dk){
   try{ return fmtDateKey_(dk); }catch(e){}
@@ -8367,214 +8215,217 @@ if (window.__PHASEA_DISABLE_BRX__) {
 
 <script>
 (function(){
-  'use strict';
+  "use strict";
 
-  // -------- GardenExport loader (local file friendly) --------
+  const LS_KEY = "LL_V94_HOST_CFG";
+
+  function $(id){ return document.getElementById(id); }
   function nowTag(){
-    try{ return new Date().toISOString().replace('T',' ').replace('Z',''); }catch(e){ return ''; }
+    const d=new Date();
+    const hh=String(d.getHours()).padStart(2,"0");
+    const mm=String(d.getMinutes()).padStart(2,"0");
+    const ss=String(d.getSeconds()).padStart(2,"0");
+    return `[${hh}:${mm}:${ss}]`;
   }
   function log(msg){
-    try{ console.log('[GARDENEXPORT]', msg); }catch(e){}
-    try{
-      var el = document.getElementById('dbgLog');
-      if(el){ el.textContent += (el.textContent ? '\n' : '') + nowTag() + ' ' + msg; }
-    }catch(e){}
+    // Filter noisy background overlay logs (enable later if needed).
+    if (String(msg).includes("[BACKPNG-HTML]")) return;
+    const el=$("llHostStatus");
+    if(!el) return;
+    el.textContent += `${nowTag()} ${msg}\n`;
+    el.scrollTop = el.scrollHeight;
   }
-
   function parseQuery(){
-    var out = {};
-    try{
-      var qs = (window.location && window.location.search) ? window.location.search : '';
-      if(qs && qs.charAt(0)==='?') qs = qs.slice(1);
-
-      // Support the user's "file:///...html?https://.../exec?..." style by treating the entire query as a URL.
-      if(qs && /^https?:\/\//i.test(qs)){
-        out.exec = qs;
-        return out;
-      }
-
-      qs.split('&').forEach(function(kv){
-        if(!kv) return;
-        var p = kv.split('=');
-        var k = decodeURIComponent(p[0]||'').trim();
-        var v = decodeURIComponent((p[1]||'')).trim();
-        if(k) out[k] = v;
-      });
-    }catch(e){}
+    const out={};
+    const qs = new URLSearchParams(window.location.search || "");
+    for(const [k,v] of qs.entries()) out[k]=v;
     return out;
   }
-
-  function normalizeExecUrl(u){
-    u = (u||'').trim();
-    if(!u) return '';
-    // allow users to paste the full /exec url or the base "macros/s/..../exec"
-    return u;
+  function saveCfg(cfg){
+    try{ localStorage.setItem(LS_KEY, JSON.stringify(cfg)); }catch(e){}
   }
-
-  function parseMaybeJsonp(text){
-    // Accept JSON or JSONP: callback({...});
-    text = (text||'').trim();
-    if(!text) return null;
-
-    // JSON
-    if(text[0]==='{' || text[0]==='['){
-      try{ return JSON.parse(text); }catch(e){}
-    }
-
-    // JSONP
-    var firstParen = text.indexOf('(');
-    var lastParen = text.lastIndexOf(')');
-    if(firstParen > 0 && lastParen > firstParen){
-      var inner = text.slice(firstParen+1, lastParen);
-      try{ return JSON.parse(inner); }catch(e){}
-    }
-    return null;
-  }
-
-
-  // Apply a GardenExport payload to the data model used by the renderer.
-  // Expected: payload.rows[] with at least DateKey (YYYY-MM-DD). Other fields are passed through.
-  function applyGardenExportPayload(payload){
+  function loadCfg(){
     try{
-      if(!payload || !Array.isArray(payload.rows)) return false;
-      const byDate = new Map();
-      const byWeek = new Map();
+      const s = localStorage.getItem(LS_KEY);
+      return s ? JSON.parse(s) : null;
+    }catch(e){ return null; }
+  }
+  function normalizeExec(u){
+    if(!u) return "";
+    const s=String(u).trim();
+    return s.replace(/\/dev\b/, "/exec").replace(/\/exec\/?$/, "/exec");
+  }
+  function buildSrc(execUrl, bot, limit){
+    // Preferred: request JSONP if the webapp supports callback=.
+    const cb = "__ll_export_cb_" + Math.random().toString(36).slice(2);
+    const url = new URL(execUrl);
+    url.searchParams.set("r", "api_garden_export");
+    url.searchParams.set("bot", bot);
+    url.searchParams.set("limit", String(limit));
+    url.searchParams.set("format", "json");
+    url.searchParams.set("v", String(Date.now()));
+    url.searchParams.set("callback", cb);
+    return { cb, src: url.toString() };
+  }
 
-      for(const row of payload.rows){
-        if(!row || typeof row !== 'object') continue;
-        const dk = String(row.DateKey || row.dateKey || row.date || row.Date || '').trim();
-        if(!dk) continue;
-        byDate.set(dk, row);
-
-        // Group by ISO week key if we can.
-        let wk = '';
-        try{
-          const dObj = new Date(dk + 'T00:00:00');
-          if(typeof isoWeekKeyFromDate_ === 'function') wk = isoWeekKeyFromDate_(dObj);
-          else if(typeof window.isoWeekKeyFromDate_ === 'function') wk = window.isoWeekKeyFromDate_(dObj);
-        }catch(e){}
-        if(wk){
-          if(!byWeek.has(wk)) byWeek.set(wk, []);
-          byWeek.get(wk).push(row);
-        }
+  function applyExport(payload){
+    if(!payload || payload.ok !== true || !Array.isArray(payload.rows)){
+      throw new Error("Bad export payload");
+    }
+    const byDate = new Map();
+    const byWeek = new Map();
+    for(const r of payload.rows){
+      const dk = (r && r.DateKey != null) ? String(r.DateKey) : "";
+      if(dk) byDate.set(dk, r);
+      const wk = (r && r.WeekKey != null) ? String(r.WeekKey) : "";
+      if(wk && !byWeek.has(wk)){
+        byWeek.set(wk, {
+          WeekLevel: r.WeekLevel,
+          WeekLevelLabel: r.WeekLevelLabel
+        });
       }
-
-      window.__LL_EXPORT = { payload, byDate, byWeek, loadedAt: Date.now() };
-      return true;
-    }catch(e){
-      log('applyGardenExportPayload failed: ' + (e && e.message ? e.message : String(e)));
-      return false;
     }
+    window.__LL_EXPORT = { payload, byDate, byWeek };
   }
 
-  async function fetchGardenExport(execUrl, bot, limit){
-    execUrl = normalizeExecUrl(execUrl);
-    if(!execUrl) throw new Error('Missing execUrl');
-
-    bot = (bot||'winston').trim() || 'winston';
-    limit = String(limit||200).trim() || '200';
-
-    // Cache buster to avoid stale data.
-    var url = execUrl + (execUrl.indexOf('?')>=0 ? '&' : '?') +
-      'bot=' + encodeURIComponent(bot) +
-      '&limit=' + encodeURIComponent(limit) +
-      '&format=gardenexport' +
-      '&cb=' + encodeURIComponent(String(Date.now()));
-
-    log('fetch ' + url);
-
-    async function tryFetch(u){
-      var resp = await fetch(u, { method:'GET', cache:'no-store' });
-      var txt = await resp.text();
-      var payload = parseMaybeJsonp(txt);
-      if(!payload) throw new Error('Could not parse response');
-      return payload;
-    }
-
-    // Attempt 1: direct fetch (works when Apps Script sends CORS headers).
+  function forceRebuild(){
     try{
-      return await tryFetch(url);
-    }catch(e1){
-      log('direct fetch failed: ' + (e1 && e1.message ? e1.message : String(e1)));
-    }
-
-    // Attempt 2: CORS-friendly text proxy (works even for file:// origin).
-    // NOTE: This is a best-effort fallback for local/offline viewing without redeploying Apps Script.
-    // If you later add proper CORS headers on the Apps Script response, Attempt 1 will succeed and this won't be used.
-    try{
-      var proxyUrl = 'https://r.jina.ai/http://'+url;
-      log('proxy fetch ' + proxyUrl);
-      return await tryFetch(proxyUrl);
-    }catch(e2){
-      log('proxy fetch failed: ' + (e2 && e2.message ? e2.message : String(e2)));
-    }
-
-    throw new Error('Failed to load GardenExport (CORS blocked).');
-}
-
-  async function loadGardenExportNow(){
-    var q = parseQuery();
-
-    // Prefer explicit exec=... query param
-    var execUrl = normalizeExecUrl(q.exec || '');
-    // Fallback: localStorage saved value
-    if(!execUrl){
-      try{ execUrl = normalizeExecUrl(localStorage.getItem('LL_EXEC_URL')||''); }catch(e){}
-    }
-    // Last resort: a baked-in value (user can edit later)
-    if(!execUrl){
-      execUrl = 'https://script.google.com/macros/s/AKfycbxPOVYXzpDdh2Fo4CREcf7R9bHpkF4sHLCskUnm0Qvr9BlhbjrAXI_ZVbG3U82FZ2Nt/exec';
-    }
-
-    var bot = q.bot || 'winston';
-    var limit = q.limit || 200;
-
-    // Persist what worked
-    try{ localStorage.setItem('LL_EXEC_URL', execUrl); }catch(e){}
-
-    try{
-      var payload = await fetchGardenExport(execUrl, bot, limit);
-      window.__LL_EXPORT = payload;
-
-      // Try a few known hooks (depending on which garden version is loaded).
-      const applied = applyGardenExportPayload(payload);
-log('loaded ok rows=' + (payload && payload.rows ? payload.rows.length : '(n/a)') + ' applied=' + applied);
-      try{
-        if(window.__LL_EXPORT && window.__LL_EXPORT.byDate){
-          log('[FRONT] export byDate=' + window.__LL_EXPORT.byDate.size + ' byWeek=' + (window.__LL_EXPORT.byWeek ? window.__LL_EXPORT.byWeek.size : 0));
-          if(window.__LL_EXPORT.byDate.size){
-            const firstKey = window.__LL_EXPORT.byDate.keys().next().value;
-            const row0 = window.__LL_EXPORT.byDate.get(firstKey);
-            log('[FRONT] sample ' + firstKey + ' lvl=' + (row0 && row0.DayLevel) + ' pc=' + (row0 && row0.PrimaryColor));
-          }
-        }else{
-          log('[FRONT] export not present after apply');
-        }
-      }catch(e){
-        log('[FRONT] export inspect failed: ' + (e && e.message ? e.message : String(e)));
-      }
-
-      // Force a rebuild if available
-      try{
-        if(typeof window.forceRebuildAll_ === 'function') window.forceRebuildAll_();
-        else if(typeof window.buildBands === 'function') window.buildBands();
-      }catch(e){
-        log('rebuild error: ' + (e && e.message ? e.message : String(e)));
+      if(typeof syncRenderedWeeks_ === "function"){
+        const fi = (typeof lastFrontIndex === "number") ? lastFrontIndex : 0;
+        syncRenderedWeeks_(fi, true);
+        log("Rebuild requested (syncRenderedWeeks_).");
+      }else{
+        log("WARN: syncRenderedWeeks_ not found. Export applied but no forced rebuild.");
       }
     }catch(e){
-      log('load failed: ' + (e && e.message ? e.message : String(e)));
+      log("ERROR: rebuild failed: " + (e && e.message ? e.message : String(e)));
     }
   }
 
-  function init(){
-    // Kick off fetch once the main app has initialized.
-    // If fetch fails due to CORS when running file://, host this HTML on a local server (or GitHub Pages).
-    loadGardenExportNow();
+  function fetchExport(execUrl, bot, limit){
+    // Prefer JSONP (no CORS required). If JSONP is not supported by the exec,
+    // fall back to a CORS proxy (allorigins) which works for GitHub Pages and file://.
+    return new Promise((resolve, reject)=>{
+      const { cb, src } = buildSrc(execUrl, bot, limit);
+      let settled = false;
+      const timeoutMs = 6500;
+
+      function ok(payload){ if(settled) return; settled = true; cleanup(); resolve(payload); }
+      function fail(err){ if(settled) return; settled = true; cleanup(); reject(err); }
+
+      let to = null;
+      let script = null;
+      function cleanup(){
+        try{ if(to) clearTimeout(to); }catch(e){}
+        try{ if(script && script.parentNode) script.parentNode.removeChild(script); }catch(e){}
+        try{ if(cb && window[cb]) delete window[cb]; }catch(e){}
+      }
+
+      window[cb] = (payload)=>{
+        // JSONP callback succeeded.
+        ok(payload);
+      };
+
+      script = document.createElement('script');
+      script.async = true;
+      script.src = src;
+      script.onerror = (e)=> fail(new Error('jsonp script load failed'));
+      document.head.appendChild(script);
+
+      to = setTimeout(()=>{
+        // JSONP timed out: attempt fallback proxy fetch.
+        cleanup();
+        const url = src.replace(/([&?])callback=[^&]+/, '$1').replace(/[?&]$/,'');
+        const prox = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+        dbg_('[GARDENEXPORT] JSONP timeout, trying allorigins proxy');
+        fetch(prox, { cache:'no-store' }).then(r=>r.text()).then(t=>{
+          let payload;
+          try{ payload = JSON.parse(t); }catch(e){ throw new Error('proxy parse failed'); }
+          ok(payload);
+        }).catch(err=>{
+          fail(err);
+        });
+      }, timeoutMs);
+    });
   }
 
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
-  else init();
+  function copyShareLink(execUrl, bot, limit){
+    const u = new URL(window.location.href);
+    u.searchParams.set("exec", execUrl);
+    u.searchParams.set("bot", bot);
+    u.searchParams.set("limit", String(limit));
+    navigator.clipboard.writeText(u.toString()).then(()=>{
+      log("Copied share link.");
+    }).catch(()=>{
+      log("WARN: clipboard copy failed.");
+    });
+  }
 
+  function initUI(){
+    const q = parseQuery();
+    const stored = loadCfg() || {};
+    const execUrl = normalizeExec(q.exec || stored.exec || "");
+    const bot = (q.bot || stored.bot || "winston");
+    const limit = Number(q.limit || stored.limit || 40) || 40;
+
+    $("llExecInput").value = execUrl;
+    $("llBotSelect").value = bot;
+    $("llLimitInput").value = String(limit);
+
+    $("llBtnReload").addEventListener("click", ()=>{
+      const ex = normalizeExec($("llExecInput").value);
+      const b = $("llBotSelect").value;
+      const lim = Number($("llLimitInput").value || 40) || 40;
+
+      if(!ex){
+        log("Set exec URL first.");
+        return;
+      }
+
+      saveCfg({ exec: ex, bot: b, limit: lim });
+      $("llHostReadyTag").textContent = "(loading)";
+
+      log(`Reload export requested bot=${b} limit=${lim}`);
+      log("Fetching export (JSONP): " + ex);
+
+      fetchExport(ex, b, lim)
+        .then(payload=>{
+          applyExport(payload);
+          $("llHostReadyTag").textContent = "(export loaded)";
+          log("Export loaded. rows=" + payload.rows.length);
+          forceRebuild();
+        })
+        .catch(err=>{
+          $("llHostReadyTag").textContent = "(export error)";
+          log("ERROR: Export load failed: " + (err && err.message ? err.message : String(err)));
+        });
+    });
+
+    $("llBtnCopy").addEventListener("click", ()=>{
+      const ex = normalizeExec($("llExecInput").value);
+      const b = $("llBotSelect").value;
+      const lim = Number($("llLimitInput").value || 40) || 40;
+      if(!ex){
+        log("Set exec URL first.");
+        return;
+      }
+      copyShareLink(ex, b, lim);
+    });
+
+    // Auto-load if exec is present
+    if(execUrl){
+      $("llBtnReload").click();
+    }else{
+      $("llHostReadyTag").textContent = "(offline)";
+      log("Offline mode. Provide exec URL to load real GardenExport data.");
+    }
+  }
+
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", initUI);
+  }else{
+    initUI();
+  }
 })();
 </script>
 </body>
