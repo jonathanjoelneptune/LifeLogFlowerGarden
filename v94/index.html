@@ -28,6 +28,52 @@
 -->
 <html lang="en">
 <head>
+<script>
+/* FIX21: global helpers required by non-IIFE scripts */
+(function(){
+  // Debug logger shim (used by initUI and others)
+  if (typeof window.logDbg_ !== "function") {
+    window.logDbg_ = function(...args){
+      try {
+        // Prefer the project's debug log pipeline if present
+        if (typeof window.appendDebugLog_ === "function") {
+          window.appendDebugLog_(args.map(a => (typeof a === "string" ? a : JSON.stringify(a))).join(" "));
+        } else if (typeof console !== "undefined" && console.log) {
+          console.log(...args);
+        }
+      } catch (e) {
+        try { console.log("[logDbg_ fail]", e); } catch(_) {}
+      }
+    };
+  }
+  // Stable uid for a day slot (used by weekModelForIndex_)
+  if (typeof window.dayUid_ !== "function") {
+    window.dayUid_ = function(weekIndex, dayIndex){
+      return "w" + String(weekIndex) + "_d" + String(dayIndex);
+    };
+// FIX21: non-recursive local aliases (do not overwrite window properties)
+const logDbg_ = (typeof window !== 'undefined' && window.logDbg_) ? window.logDbg_.bind(window) : function(){};
+const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUid_.bind(window) : function(dateKey, slot){ return String(dateKey||'') + '::' + String(slot||''); };
+
+  }
+})();
+
+;(function(){
+  // Helper: default day level by weekday (0=Mon..6=Sun) when export doesn't provide one.
+  if(typeof window.dayLevelForWeekday_ !== "function"){
+    window.dayLevelForWeekday_ = function(weekdayIndex){
+      const d = Number(weekdayIndex);
+      if(!isFinite(d)) return 1;
+      // A gentle default curve: midweek slightly higher.
+      const map = [3,4,4,3,3,2,1];
+      return map[Math.max(0, Math.min(6, d))];
+    };
+  }
+})();
+
+// Provide named globals expected by legacy code (safe under strict mode)
+</script>
+
 <!-- BRX PATCH v89.7.95: globals + safe render alias -->
 <script>
 (() => {
@@ -299,114 +345,6 @@ body {
     radial-gradient(88% 130% at 86% 104%, rgba(16,30,28,0.46) 0%, rgba(16,30,28,0.18) 60%, rgba(16,30,28,0) 76%),
     linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(10,22,18,0.18) 35%, rgba(10,22,18,0.38) 100%);
 }
-
-
-	// ------------------------------
-// GardenExport JSONP Loader
-// ------------------------------
-(function () {
-  const EXEC_URL = (window.GARDEN_EXEC_URL || "").trim() ||
-    "https://script.google.com/macros/s/AKfycbxPOVYXzpDdh2Fo4CREcf7R9bHpkF4sHLCskUnm0Qvr9BlhbjrAXI_ZVbG3U82FZ2Nt/exec";
-
-  const BOT = (window.GARDEN_BOT || "winston").trim() || "winston";
-  const LIMIT = Number(window.GARDEN_LIMIT || 200) || 200;
-
-  // Where we store parsed export for the renderer
-  window.GARDENEXPORT = window.GARDENEXPORT || {
-    ok: false,
-    meta: null,
-    rows: [],
-    byDateKey: Object.create(null),
-    applied: false,
-    error: ""
-  };
-
-  function logGE(msg, obj) {
-    try {
-      if (obj !== undefined) console.log("[GARDENEXPORT]", msg, obj);
-      else console.log("[GARDENEXPORT]", msg);
-    } catch (_) {}
-  }
-
-  function buildByDateKey(rows) {
-    const map = Object.create(null);
-    for (let i = 0; i < rows.length; i++) {
-      const r = rows[i] || {};
-      const dk = String(r.DateKey || "").trim();
-      if (!dk) continue;
-      map[dk] = r;
-    }
-    return map;
-  }
-
-  // This MUST match the callback parameter we pass in the URL
-  window.__GARDENEXPORT_CB__ = function (payload) {
-    try {
-      const ok = !!(payload && payload.ok);
-      const rows = (payload && payload.rows && Array.isArray(payload.rows)) ? payload.rows : [];
-      const meta = payload ? payload.meta : null;
-
-      window.GARDENEXPORT.ok = ok;
-      window.GARDENEXPORT.meta = meta;
-      window.GARDENEXPORT.rows = rows;
-      window.GARDENEXPORT.byDateKey = buildByDateKey(rows);
-      window.GARDENEXPORT.error = ok ? "" : String((payload && payload.error) || "unknown error");
-
-      logGE("jsonp received ok=" + ok + " rows=" + rows.length, meta);
-
-      // Apply into whatever your front renderer expects.
-      // If your code already reads window.GARDENEXPORT.byDateKey, you are done.
-      // If you have an explicit apply step, call it here:
-      if (typeof window.applyGardenExportPayload === "function") {
-        window.applyGardenExportPayload(payload);
-        window.GARDENEXPORT.applied = true;
-        logGE("applyGardenExportPayload() called");
-      } else {
-        // No explicit apply function. Mark as "available", renderer should pull from window.GARDENEXPORT.byDateKey.
-        window.GARDENEXPORT.applied = true;
-        logGE("no applyGardenExportPayload() found, leaving data on window.GARDENEXPORT");
-      }
-    } catch (e) {
-      window.GARDENEXPORT.ok = false;
-      window.GARDENEXPORT.error = String(e && e.message ? e.message : e);
-      logGE("jsonp handler error", window.GARDENEXPORT.error);
-    }
-  };
-
-  function loadJsonp() {
-    const cb = "__GARDENEXPORT_CB__";
-    const url =
-      EXEC_URL +
-      "?r=api_garden_export" +
-      "&bot=" + encodeURIComponent(BOT) +
-      "&limit=" + encodeURIComponent(String(LIMIT)) +
-      "&format=jsonp" +
-      "&callback=" + encodeURIComponent(cb) +
-      "&cb=" + Date.now();
-
-    logGE("inject <script> " + url);
-
-    // Remove any previous tag
-    const prev = document.getElementById("gardenexport_jsonp_tag");
-    if (prev && prev.parentNode) prev.parentNode.removeChild(prev);
-
-    const s = document.createElement("script");
-    s.id = "gardenexport_jsonp_tag";
-    s.src = url;
-    s.async = true;
-
-    s.onerror = function () {
-      window.GARDENEXPORT.ok = false;
-      window.GARDENEXPORT.error = "jsonp script load failed";
-      logGE("jsonp script load failed");
-    };
-
-    document.head.appendChild(s);
-  }
-
-  // Kick it off immediately (DOMContentLoaded-safe)
-  loadJsonp();
-})();
 
 
 /* ============================================
@@ -2216,6 +2154,138 @@ window.__LL_hillTopAtX_fill = function(x, yTopGuess, yBottom){
 </div>
 
 <script>
+
+/* =========================
+ * FIX23: Global compat shims
+ * Goal: stop "whack-a-mole" undefined refs by defining optional helpers
+ * if they are absent in this build.
+ * ========================= */
+(function(){
+  const g = (typeof window !== 'undefined') ? window : globalThis;
+
+  // Debug helpers ------------------------------------------------------------
+  if (typeof g.appendDebugLog_ !== 'function') {
+    g.appendDebugLog_ = function appendDebugLog_(msg){
+      try {
+        // Prefer existing debug log panel if present
+        const el = document && document.getElementById && document.getElementById('debugLog');
+        if (el) {
+          el.textContent += (String(msg) + "\n");
+        } else {
+          // fallback to console
+          console.log(msg);
+        }
+      } catch (_) {}
+    };
+  }
+
+  if (typeof g.logDebug_ !== 'function') {
+    g.logDebug_ = function logDebug_(...args){
+      try {
+        const s = args.map(a => (typeof a === 'string' ? a : JSON.stringify(a))).join(' ');
+        g.appendDebugLog_(s);
+      } catch (_) {}
+    };
+  }
+
+  // Stage helpers ------------------------------------------------------------
+  if (typeof g.getStageW_ !== 'function') {
+    g.getStageW_ = function getStageW_(){
+      try {
+        const svg = document && document.querySelector && document.querySelector('svg');
+        if (svg) {
+          const vb = svg.viewBox && svg.viewBox.baseVal;
+          if (vb && vb.width) return vb.width;
+          const r = svg.getBoundingClientRect();
+          if (r && r.width) return r.width;
+        }
+      } catch (_) {}
+      return (typeof innerWidth === 'number') ? innerWidth : 1920;
+    };
+  }
+
+  if (typeof g.getStageH_ !== 'function') {
+    g.getStageH_ = function getStageH_(){
+      try {
+        const svg = document && document.querySelector && document.querySelector('svg');
+        if (svg) {
+          const vb = svg.viewBox && svg.viewBox.baseVal;
+          if (vb && vb.height) return vb.height;
+          const r = svg.getBoundingClientRect();
+          if (r && r.height) return r.height;
+        }
+      } catch (_) {}
+      return (typeof innerHeight === 'number') ? innerHeight : 1080;
+    };
+  }
+
+  // Hills / envelopes helper -------------------------------------------------
+  if (typeof g.getHillSpanForEnvelopes_ !== 'function') {
+    // Returns an x-span in stage coordinates. Used only by background placement logic.
+    g.getHillSpanForEnvelopes_ = function getHillSpanForEnvelopes_(){
+      const w = g.getStageW_();
+      return { x0: 0, x1: w, w };
+    };
+  }
+
+  // Day level mapping --------------------------------------------------------
+  const DAY_LEVEL_LABEL = {
+    1: "Barely Awake",
+    2: "Lightly Logged",
+    3: "Solid Day",
+    4: "Deep Capture Day",
+    5: "On Fire"
+  };
+
+  if (typeof g.dayLevelForWeekday_ !== 'function') {
+    // Deterministic fallback when export is missing for a given date.
+    // Signature in this build: (weekdayIndex) -> level
+    g.dayLevelForWeekday_ = function dayLevelForWeekday_(d){
+      const seq = [2,3,3,3,2,2,1]; // Mon..Sun-ish fallback
+      const i = (typeof d === 'number' && isFinite(d)) ? (Math.max(0, Math.min(6, Math.floor(d)))) : 0;
+      return seq[i] || 2;
+    };
+  }
+
+  if (typeof g.dayLevelLabelFromLevel_ !== 'function') {
+    g.dayLevelLabelFromLevel_ = function dayLevelLabelFromLevel_(lvl){
+      const n = Number(lvl);
+      return DAY_LEVEL_LABEL[n] || "Lightly Logged";
+    };
+  }
+
+  // Stem color fallback ------------------------------------------------------
+  if (typeof g.stemColorsForMonthIndex_ !== 'function') {
+    // Returns a small palette used by older renderers. Keep conservative defaults.
+    g.stemColorsForMonthIndex_ = function stemColorsForMonthIndex_(m){
+      const idx = (typeof m === 'number' && isFinite(m)) ? ((m%12+12)%12) : 0;
+      const greens = [
+        ["#3C6E47", "#2F5F3D"],
+        ["#3A6B45", "#2E5B3B"],
+        ["#3F744A", "#2F5F3D"],
+        ["#447A4F", "#316343"],
+        ["#4A8156", "#356A47"],
+        ["#4F865B", "#38704B"],
+        ["#528A5E", "#39734D"],
+        ["#4E845A", "#376E4A"],
+        ["#487E53", "#346845"],
+        ["#43784E", "#316242"],
+        ["#3E7249", "#2F5E3E"],
+        ["#3B6D46", "#2E5A3B"],
+      ];
+      return { stem: greens[idx][0], leaf: greens[idx][1] };
+    };
+  }
+
+  // Optional export helper (only used by a dev button in some builds) --------
+  if (typeof g.__LL_exportFrontFlowerPNGs__ !== 'function') {
+    g.__LL_exportFrontFlowerPNGs__ = function __LL_exportFrontFlowerPNGs__(){
+      g.logDebug_("[FRONT] PNG export helper not available in this build.");
+    };
+  }
+})();
+
+
 // ============================================
 // v87.3.63.0: Debug Panel (standalone bootstrap)
 // ============================================
@@ -2759,6 +2829,8 @@ const WEEK_LEVEL_NAMES = { 1:"Quiet Week", 2:"Gentle Week", 3:"Strong Week", 4:"
 const GARDEN_EPOCH_DATEKEY = "2025-12-15"; // Monday
 const PAST_WEEKS_RENDERED = 15;
 const FUTURE_WEEKS_RENDERED = 5;
+const DAY_MS = 24 * 60 * 60 * 1000;
+const WEEK_MS = 7 * DAY_MS;
 
 // ============================================
 // v87.3.63.0: CACHED DOM REFERENCES
@@ -2917,6 +2989,18 @@ function fmtDateKey(d){
   return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
 }
 
+function dateKeyFromDate_(d){
+  try{
+    const dd = (d instanceof Date) ? d : new Date(d);
+    if (!dd || isNaN(dd.getTime())) return "";
+    return fmtDateKey(dd);
+  } catch(e){
+    return "";
+  }
+}
+
+
+
 function hash32FromString(str){
   let h = 2166136261 >>> 0;
   for (let i=0; i<str.length; i++){
@@ -2936,11 +3020,29 @@ function mulberry32(seed){
   };
 }
 
+function normHex6(h, fallback){
+  if(typeof h !== 'string') return fallback;
+  let s = h.trim();
+  if(!s) return fallback;
+  if(s[0] !== '#') s = '#' + s;
+  // Expand #RGB to #RRGGBB
+  const m3 = /^#([0-9a-fA-F]{3})$/.exec(s);
+  if(m3){
+    const q = m3[1];
+    s = '#' + q[0]+q[0] + q[1]+q[1] + q[2]+q[2];
+  }
+  if(/^#[0-9a-fA-F]{6}$/.test(s)) return s.toUpperCase();
+  return fallback;
+}
+
 function mixHex(a,b,t){
   t = clamp01(t);
-  const A = a.replace("#",""), B = b.replace("#","");
+  const a6 = normHex6(a, '#FFFFFF');
+  const b6 = normHex6(b, '#000000');
+  const A = a6.replace('#',''), B = b6.replace('#','');
   const ar = parseInt(A.slice(0,2),16), ag = parseInt(A.slice(2,4),16), ab = parseInt(A.slice(4,6),16);
   const br = parseInt(B.slice(0,2),16), bg = parseInt(B.slice(2,4),16), bb = parseInt(B.slice(4,6),16);
+  if(!isFinite(ar) || !isFinite(ag) || !isFinite(ab) || !isFinite(br) || !isFinite(bg) || !isFinite(bb)) return normHex6(a, '#FFFFFF');
   const rr = Math.round(ar + (br-ar)*t), rg = Math.round(ag + (bg-ag)*t), rb = Math.round(ab + (bb-ab)*t);
   const to = (v)=> v.toString(16).padStart(2,"0");
   return ("#" + to(rr) + to(rg) + to(rb)).toUpperCase();
@@ -3318,6 +3420,27 @@ function epochMonday_(){
 
 const __EPOCH_MON__ = epochMonday_();
 
+function mondayMsForWeekIndex_(weekIndex) {
+  // weekIndex 0 corresponds to the ISO week containing GARDEN_EPOCH_DATEKEY (Monday-based)
+  const base = __EPOCH_MON__.getTime();
+  return base + (Number(weekIndex) * WEEK_MS);
+}
+
+// ISO week key like "2026-W04" from a millisecond timestamp.
+// Uses UTC math to avoid local timezone DST edge cases.
+function isoWeekKeyFromMs_(ms) {
+  const d = new Date(ms);
+  // shift to UTC midnight-ish
+  const utc = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+  // ISO week date algorithm: move to Thursday in current week
+  const day = utc.getUTCDay() || 7; // Mon=1..Sun=7
+  utc.setUTCDate(utc.getUTCDate() + 4 - day);
+  const year = utc.getUTCFullYear();
+  const yearStart = new Date(Date.UTC(year, 0, 1));
+  const week = Math.ceil((((utc - yearStart) / DAY_MS) + 1) / 7);
+  return `${year}-W${String(week).padStart(2, "0")}`;
+}
+
 function weekIndexFromDate_(dateObj){
   const mon = startOfISOWeekMonday(dateObj);
   const ms = mon.getTime() - __EPOCH_MON__.getTime();
@@ -3337,10 +3460,10 @@ function todayDayIndexInWeek_(){
 function weekModelForIndex_(weekIndex){
   const mondayMs = mondayMsForWeekIndex_(weekIndex);
 
-  const iso = isoWeekKeyFromMs_(mondayMs);
-  const weekYear = iso.year;
-  const weekNum  = iso.week;
-  const weekKey  = `${weekYear}-W${String(weekNum).padStart(2,'0')}`;
+  const weekKey = isoWeekKeyFromMs_(mondayMs); // "YYYY-Www"
+  const parts = weekKey.split('-W');
+  const weekYear = parseInt(parts[0], 10);
+  const weekNum  = parseInt(parts[1], 10);
 
   // Default (offline) values
   const weekLevelDefault = Math.max(1, Math.min(5, 1 + (weekIndex % 5)));
@@ -3359,6 +3482,9 @@ function weekModelForIndex_(weekIndex){
     weekLevelLabel = (w.WeekLevelLabel != null) ? String(w.WeekLevelLabel) : "";
   }
 
+  // Weekday labels for UI + metadata. Monday-first to match the garden layout.
+  const WEEKDAY_NAMES = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+
   const days = [];
   for (let d=0; d<7; d++){
     const dateObj = new Date(mondayMs + d*86400000);
@@ -3366,6 +3492,7 @@ function weekModelForIndex_(weekIndex){
     const monthIndex = dateObj.getMonth();
 
     const uid = dayUid_(weekIndex, d);
+    const weekdayName = WEEKDAY_NAMES[d] || `Day${d}`;
 
     // Offline defaults
     const colors = pickTwoColors(uid);
@@ -3422,6 +3549,10 @@ function weekModelForIndex_(weekIndex){
       weekKey,
       weekIndex,
       weekdayIndex: d,
+      weekday: weekdayName,
+      month: monthIndex,
+      level: dayLevel,
+      uid,
       primary,
       secondary,
       dayLevel,
@@ -3433,19 +3564,24 @@ function weekModelForIndex_(weekIndex){
       haiku,
       reflection,
       themeCloudUrl,
-      stem: stemColors.stem,
+      stemCore: stemColors.stem,
       stemDark: stemColors.stemDark,
-      leaf: stemColors.leaf
+      // Compatibility with flowerSvg() renderer which expects `stemHi`.
+      stemHi: stemColors.stemDark,
+      leafCore: stemColors.leaf
     });
   }
 
   return {
-    iso: { year: weekYear, week: weekNum, key: weekKey },
+    iso: weekKey,
+    isoYear: weekYear,
+    isoWeek: weekNum,
     weekKey,
     weekIndex,
     weekLevel,
     weekLevelLabel,
     mondayMs,
+    weekMon: new Date(mondayMs),
     days
   };
 }
@@ -8470,64 +8606,65 @@ if (window.__PHASEA_DISABLE_BRX__) {
   }
 
   function initUI(){
-    const q = parseQuery();
-    const stored = loadCfg() || {};
-    const execUrl = normalizeExec(q.exec || stored.exec || "");
-    const bot = (q.bot || stored.bot || "winston");
-    const limit = Number(q.limit || stored.limit || 40) || 40;
+  const log = (msg)=>{ 
+    try{ 
+      if(typeof logDbg_ === "function") logDbg_(msg); 
+      else console.log(msg);
+    }catch(_e){ console.log(msg); }
+  };
+  const $ = (id)=>document.getElementById(id);
 
-    $("llExecInput").value = execUrl;
-    $("llBotSelect").value = bot;
-    $("llLimitInput").value = String(limit);
+  const execUrl = (window.__LIFELOG_EXEC_URL__ || "").trim();
+  const bot = (window.__LIFELOG_BOT__ || "winston").trim();
+  const defaultLimit = window.__LIFELOG_LIMIT__ || 200;
 
-    $("llBtnReload").addEventListener("click", ()=>{
-      const ex = normalizeExec($("llExecInput").value);
-      const b = $("llBotSelect").value;
-      const lim = Number($("llLimitInput").value || 40) || 40;
+  const execInput = $("llExecInput");
+  const botSel = $("llBotSelect");
+  const limInput = $("llLimitInput");
+  const hostTag = $("llHostReadyTag");
 
-      if(!ex){
-        log("Set exec URL first.");
-        return;
-      }
+  const setHost = (s)=>{ if(hostTag) hostTag.textContent = s; };
 
-      saveCfg({ exec: ex, bot: b, limit: lim });
-      $("llHostReadyTag").textContent = "(loading)";
+  if(execInput) execInput.value = execUrl; else log("UI: missing llExecInput");
+  if(botSel) botSel.value = bot; else log("UI: missing llBotSelect");
+  if(limInput) limInput.value = String(defaultLimit); else log("UI: missing llLimitInput");
 
-      log(`Reload export requested bot=${b} limit=${lim}`);
-      log("Fetching export (JSONP): " + ex);
-
-      fetchExport(ex, b, lim)
-        .then(payload=>{
-          applyExport(payload);
-          $("llHostReadyTag").textContent = "(export loaded)";
-          log("Export loaded. rows=" + payload.rows.length);
-          forceRebuild();
-        })
-        .catch(err=>{
-          $("llHostReadyTag").textContent = "(export error)";
-          log("ERROR: Export load failed: " + (err && err.message ? err.message : String(err)));
-        });
+  const btnReload = $("llBtnReload");
+  if(btnReload){
+    btnReload.addEventListener("click", ()=>{
+      const ex = normalizeExec(execInput ? execInput.value : "");
+      const b = botSel ? botSel.value : bot;
+      const lim = Number(limInput ? limInput.value : defaultLimit) || defaultLimit;
+      fetchGardenExport(ex, b, lim);
     });
+  }else{
+    log("UI: missing llBtnReload");
+  }
 
-    $("llBtnCopy").addEventListener("click", ()=>{
-      const ex = normalizeExec($("llExecInput").value);
-      const b = $("llBotSelect").value;
-      const lim = Number($("llLimitInput").value || 40) || 40;
+  const btnCopy = $("llBtnCopy");
+  if(btnCopy){
+    btnCopy.addEventListener("click", ()=>{
+      const ex = normalizeExec(execInput ? execInput.value : "");
+      const b = botSel ? botSel.value : bot;
+      const lim = Number(limInput ? limInput.value : 40) || 40;
       if(!ex){
         log("Set exec URL first.");
         return;
       }
       copyShareLink(ex, b, lim);
     });
-
-    // Auto-load if exec is present
-    if(execUrl){
-      $("llBtnReload").click();
-    }else{
-      $("llHostReadyTag").textContent = "(offline)";
-      log("Offline mode. Provide exec URL to load real GardenExport data.");
-    }
+  }else{
+    log("UI: missing llBtnCopy");
   }
+
+  // Auto-load if exec is present
+  if(execUrl && btnReload){
+    btnReload.click();
+  }else{
+    setHost("(offline)");
+    if(!execUrl) log("Offline mode. Provide exec URL to load real GardenExport data.");
+  }
+}
 
   if(document.readyState === "loading"){
     document.addEventListener("DOMContentLoaded", initUI);
