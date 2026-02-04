@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <!--
   CHANGELOG
@@ -2736,6 +2737,7 @@ const makeExportableSvgString = (svgEl, levelNum)=>{
     <div class="hint" id="timeSourceHint" style="margin-top:10px; opacity:0.92;">
       Time Source: <span id="vTimeSource">Fixed Defaults</span>
     </div>
+    <div class="hint" style="margin-top:2px; opacity:0.92;">Garden Data Source: <span id="vDataSource">Offline</span></div>
     <div class="hint">
       Hotkeys: <code>H</code> hide utilities, <code>D</code> toggle debug, <code>B</code> toggle hitboxes.
     </div>
@@ -2909,6 +2911,7 @@ function cacheDomRefs(){
     uVerboseSelDbg: document.getElementById('uVerboseSelDbg'),
     vWireframe: document.getElementById('vWireframe'),
     vTimeSource: document.getElementById('vTimeSource'),
+    vDataSource: document.getElementById('vDataSource'),
     uTodPreset: document.getElementById('uTodPreset'),
     uTodClock: document.getElementById('uTodClock'),
     vTodClock: document.getElementById('vTodClock'),
@@ -4145,6 +4148,16 @@ function getNowMinutes(){
       const place = TIME_SOURCE.placeLabel ? ` (${TIME_SOURCE.placeLabel})` : "";
       el.textContent = `${TIME_SOURCE.label}${place}`;
     }
+
+    function setGardenDataSourceLabel_(mode, detail){
+      const el = document.getElementById("vDataSource");
+      if(!el) return;
+      const m = (mode || "").trim() || "Offline";
+      const d = (detail || "").trim();
+      el.textContent = d ? `${m} (${d})` : m;
+      window.__GARDEN_DATA_SOURCE__ = { mode: m, detail: d, ts: Date.now() };
+    }
+
 
     function getApproxPlaceFromTz_(tz){
       try{
@@ -8529,6 +8542,7 @@ if (window.__PHASEA_DISABLE_BRX__) {
       }
     }
     window.__LL_EXPORT = { payload, byDate, byWeek };
+    setGardenDataSourceLabel_("GardenExport");
   }
 
   function forceRebuild(){
@@ -8605,6 +8619,7 @@ if (window.__PHASEA_DISABLE_BRX__) {
   }
 
   function initUI(){
+// Safety: if this file is used as a module in a host page, keep UI init from crashing.  if (typeof window.setGardenDataSourceLabel_ !== 'function' && typeof setGardenDataSourceLabel_ === 'function') { window.setGardenDataSourceLabel_ = setGardenDataSourceLabel_; }
   const log = (msg)=>{ 
     try{ 
       if(typeof logDbg_ === "function") logDbg_(msg); 
@@ -8613,55 +8628,78 @@ if (window.__PHASEA_DISABLE_BRX__) {
   };
   const $ = (id)=>document.getElementById(id);
 
-  const execUrl = (window.__LIFELOG_EXEC_URL__ || "").trim();
-  const bot = (window.__LIFELOG_BOT__ || "winston").trim();
-  const defaultLimit = window.__LIFELOG_LIMIT__ || 200;
-
+  // Optional UI controls (may be absent in lightweight hosted builds)
   const execInput = $("llExecInput");
-  const botSel = $("llBotSelect");
-  const limInput = $("llLimitInput");
-  const hostTag = $("llHostReadyTag");
-
-  const setHost = (s)=>{ if(hostTag) hostTag.textContent = s; };
-
-  if(execInput) execInput.value = execUrl; else log("UI: missing llExecInput");
-  if(botSel) botSel.value = bot; else log("UI: missing llBotSelect");
-  if(limInput) limInput.value = String(defaultLimit); else log("UI: missing llLimitInput");
-
+  const botSelect = $("llBotSelect");
+  const limitInput = $("llLimitInput");
   const btnReload = $("llBtnReload");
-  if(btnReload){
-    btnReload.addEventListener("click", ()=>{
-      const ex = normalizeExec(execInput ? execInput.value : "");
-      const b = botSel ? botSel.value : bot;
-      const lim = Number(limInput ? limInput.value : defaultLimit) || defaultLimit;
-      fetchGardenExport(ex, b, lim);
-    });
-  }else{
-    log("UI: missing llBtnReload");
-  }
-
   const btnCopy = $("llBtnCopy");
-  if(btnCopy){
-    btnCopy.addEventListener("click", ()=>{
-      const ex = normalizeExec(execInput ? execInput.value : "");
-      const b = botSel ? botSel.value : bot;
-      const lim = Number(limInput ? limInput.value : 40) || 40;
-      if(!ex){
-        log("Set exec URL first.");
-        return;
-      }
-      copyShareLink(ex, b, lim);
-    });
-  }else{
-    log("UI: missing llBtnCopy");
+
+  if(!execInput) log("UI: missing llExecInput");
+  if(!botSelect) log("UI: missing llBotSelect");
+  if(!limitInput) log("UI: missing llLimitInput");
+  if(!btnReload) log("UI: missing llBtnReload");
+  if(!btnCopy) log("UI: missing llBtnCopy");
+
+  const qs = (typeof URLSearchParams !== "undefined") ? new URLSearchParams(window.location.search) : null;
+  const qsExec = qs ? (qs.get("exec") || "") : "";
+const DEFAULT_EXEC_URL_GITHUB = 'https://script.google.com/macros/s/AKfycbxPOVYXzpDdh2Fo4CREcf7R9bHpkF4sHLCskUnm0Qvr9BlhbjrAXI_ZVbG3U82FZ2Nt/exec';  const autoGithubExec = (location && location.hostname && location.hostname.includes('github.io')) ? DEFAULT_EXEC_URL_GITHUB : '';
+  const qsBot = qs ? (qs.get("bot") || "") : "";
+  const qsLimit = qs ? (qs.get("limit") || "") : "";
+
+  // Exec URL resolution precedence:
+  //  1) ?exec=... (querystring)
+  //  2) host_boot.js globals
+  //  3) localStorage (persisted)
+  const hostExec =
+    (window.__LIFELOG_EXEC_URL__ || window.LLG_EXEC_URL || window.LIFELOG_EXEC_URL || "");
+  const lsExec = (function() {
+    try { return localStorage.getItem("LLG_EXEC_URL") || ""; } catch(e) { return ""; }
+  })();
+
+  const DEFAULT_EXEC_URL_GITHUB = "https://script.google.com/macros/s/AKfycbxPOVYXzpDdh2Fo4CREcf7R9bHpkF4sHLCskUnm0Qvr9BlhbjrAXI_ZVbG3U82FZ2Nt/exec";
+  const autoGithubExec = ((location && location.hostname && location.hostname.includes("github.io")) ? DEFAULT_EXEC_URL_GITHUB : "");
+
+  const execUrlRaw = (qsExec || hostExec || lsExec || autoGithubExec || "");
+  const execUrl = normalizeExec(execUrlRaw);
+  if(execInput) execInput.value = execUrl;
+
+  // If we have a URL (from qs or host), persist it for later refreshes
+  if(execUrl && (qsExec || hostExec) && execUrl !== lsExec) {
+    try { localStorage.setItem("LLG_EXEC_URL", execUrl); } catch(e) {}
   }
 
-  // Auto-load if exec is present
-  if(execUrl && btnReload){
-    btnReload.click();
-  }else{
-    setHost("(offline)");
-    if(!execUrl) log("Offline mode. Provide exec URL to load real GardenExport data.");
+  // Auto-load real GardenExport data even in "utility-lite" UI (no reload button present)
+  const bot = (qsBot || (window.__LIFELOG_BOT__ || "Winston"));
+  const limit = (function() {
+    const n = parseInt(qsLimit || (window.__LIFELOG_LIMIT__ || ""), 10);
+    return (Number.isFinite(n) && n > 0) ? n : 5000;
+  })();
+
+  if(execUrl) {
+    setGardenDataSourceLabel_("GardenExport (loading...)");
+    if(btnReload) {
+      // classic path: re-use existing UI wiring if present
+      btnReload.click();
+        } else if (typeof fetchExport === "function" && typeof applyExport === "function") {
+      // headless path: fetch + apply + rebuild
+      (async ()=>{
+        try{
+          const payload = await fetchExport(execUrl, bot, limit);
+          applyExport(payload);
+          if(typeof forceRebuild === "function") forceRebuild();
+        }catch(e){
+          log("[export] load failed: " + (e && e.message ? e.message : String(e)));
+          setGardenDataSourceLabel_("Offline (export error)");
+        }
+      })();
+    } else {
+      log("Exec URL present but export loader is not available; falling back to Offline.");
+      setGardenDataSourceLabel_("Offline (placeholder)");
+    }
+  } else {
+    log("Offline mode. Provide exec URL to load real GardenExport data.");
+    setGardenDataSourceLabel_("Offline (placeholder)");
   }
 }
 
