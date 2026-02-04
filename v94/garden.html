@@ -187,7 +187,7 @@ console.log("[v89.6.42] loaded", new Date().toISOString());
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>LifeLog Garden Walk v99.0.0</title>
+<title>LifeLog Garden Walk v99.0.1</title>
 <style>
 /* ============================================
    v87.3.63.0: CLEANED + OPTIMIZED CSS
@@ -835,8 +835,8 @@ body {
   z-index: 9999;
   min-width: 220px;
   max-width: min(320px, calc(100% - 24px));
-  background: rgba(0,0,0,.42);
-  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,105,180,.28);
+  border: 1px solid rgba(255,105,180,.55);
   border-radius: 12px;
   padding: 10px 12px;
   color: #fff;
@@ -1538,10 +1538,10 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 #__versionBanner{position:fixed;left:12px;top:12px;z-index:99999;padding:8px 10px;border-radius:10px;background:rgba(255,0,255,0.22);border:2px solid magenta;color:#111;font:600 12px/1.2 system-ui,Segoe UI,Arial;}
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName"></span><br>
-Version: v99.0.0<br>
-Built (PT): 2026-02-04 10:33:36 PT (America/Los_Angeles)<br>
-If you can see this, you opened the correct file.</div>
+File: v99.0.1_GardenDataSourceBanner_ExecFix.html<br>
+Version: v99.0.1<br>
+Built: 2026-02-04 10:50:08 PST<br>
+<span style="opacity:.9">If you can see this, you opened the correct file.</span></div>
 <script>
 (function(){
   try{
@@ -1556,7 +1556,7 @@ If you can see this, you opened the correct file.</div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.0.0 loaded", new Date().toISOString());
+  console.log("[VERSION] v99.0.1 loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -8502,7 +8502,9 @@ if (window.__PHASEA_DISABLE_BRX__) {
 (function(){
   "use strict";
 
-  const LS_KEY = "LL_V94_HOST_CFG";
+  
+  const __hostLog = (...args) => { try { (window.dbg_ ? window.dbg_ : console.log)(...args); } catch (e) { console.log(...args); } };
+const LS_KEY = "LL_V94_HOST_CFG";
 
   function $(id){ return document.getElementById(id); }
   function nowTag(){
@@ -8623,7 +8625,7 @@ if (window.__PHASEA_DISABLE_BRX__) {
         cleanup();
         const url = src.replace(/([&?])callback=[^&]+/, '$1').replace(/[?&]$/,'');
         const prox = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
-        dbg_('[GARDENEXPORT] JSONP timeout, trying allorigins proxy');
+        __hostLog('[GARDENEXPORT] JSONP timeout, trying allorigins proxy');
         fetch(prox, { cache:'no-store' }).then(r=>r.text()).then(t=>{
           let payload;
           try{ payload = JSON.parse(t); }catch(e){ throw new Error('proxy parse failed'); }
