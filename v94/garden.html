@@ -8643,8 +8643,8 @@ if (window.__PHASEA_DISABLE_BRX__) {
 
   const qs = (typeof URLSearchParams !== "undefined") ? new URLSearchParams(window.location.search) : null;
   const qsExec = qs ? (qs.get("exec") || "") : "";
-const DEFAULT_EXEC_URL_GITHUB = 'https://script.google.com/macros/s/AKfycbxPOVYXzpDdh2Fo4CREcf7R9bHpkF4sHLCskUnm0Qvr9BlhbjrAXI_ZVbG3U82FZ2Nt/exec';  const autoGithubExec = (location && location.hostname && location.hostname.includes('github.io')) ? DEFAULT_EXEC_URL_GITHUB : '';
-  const qsBot = qs ? (qs.get("bot") || "") : "";
+const DEFAULT_EXEC_URL_GITHUB = 'https://script.google.com/macros/s/AKfycbxPOVYXzpDdh2Fo4CREcf7R9bHpkF4sHLCskUnm0Qvr9BlhbjrAXI_ZVbG3U82FZ2Nt/exec';
+const qsBot = qs ? (qs.get("bot") || "") : "";
   const qsLimit = qs ? (qs.get("limit") || "") : "";
 
   // Exec URL resolution precedence:
@@ -8656,9 +8656,7 @@ const DEFAULT_EXEC_URL_GITHUB = 'https://script.google.com/macros/s/AKfycbxPOVYX
   const lsExec = (function() {
     try { return localStorage.getItem("LLG_EXEC_URL") || ""; } catch(e) { return ""; }
   })();
-
-  const DEFAULT_EXEC_URL_GITHUB = "https://script.google.com/macros/s/AKfycbxPOVYXzpDdh2Fo4CREcf7R9bHpkF4sHLCskUnm0Qvr9BlhbjrAXI_ZVbG3U82FZ2Nt/exec";
-  const autoGithubExec = ((location && location.hostname && location.hostname.includes("github.io")) ? DEFAULT_EXEC_URL_GITHUB : "");
+const autoGithubExec = ((location && location.hostname && location.hostname.includes("github.io")) ? DEFAULT_EXEC_URL_GITHUB : "");
 
   const execUrlRaw = (qsExec || hostExec || lsExec || autoGithubExec || "");
   const execUrl = normalizeExec(execUrlRaw);
