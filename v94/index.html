@@ -301,6 +301,114 @@ body {
 }
 
 
+	// ------------------------------
+// GardenExport JSONP Loader
+// ------------------------------
+(function () {
+  const EXEC_URL = (window.GARDEN_EXEC_URL || "").trim() ||
+    "https://script.google.com/macros/s/AKfycbxPOVYXzpDdh2Fo4CREcf7R9bHpkF4sHLCskUnm0Qvr9BlhbjrAXI_ZVbG3U82FZ2Nt/exec";
+
+  const BOT = (window.GARDEN_BOT || "winston").trim() || "winston";
+  const LIMIT = Number(window.GARDEN_LIMIT || 200) || 200;
+
+  // Where we store parsed export for the renderer
+  window.GARDENEXPORT = window.GARDENEXPORT || {
+    ok: false,
+    meta: null,
+    rows: [],
+    byDateKey: Object.create(null),
+    applied: false,
+    error: ""
+  };
+
+  function logGE(msg, obj) {
+    try {
+      if (obj !== undefined) console.log("[GARDENEXPORT]", msg, obj);
+      else console.log("[GARDENEXPORT]", msg);
+    } catch (_) {}
+  }
+
+  function buildByDateKey(rows) {
+    const map = Object.create(null);
+    for (let i = 0; i < rows.length; i++) {
+      const r = rows[i] || {};
+      const dk = String(r.DateKey || "").trim();
+      if (!dk) continue;
+      map[dk] = r;
+    }
+    return map;
+  }
+
+  // This MUST match the callback parameter we pass in the URL
+  window.__GARDENEXPORT_CB__ = function (payload) {
+    try {
+      const ok = !!(payload && payload.ok);
+      const rows = (payload && payload.rows && Array.isArray(payload.rows)) ? payload.rows : [];
+      const meta = payload ? payload.meta : null;
+
+      window.GARDENEXPORT.ok = ok;
+      window.GARDENEXPORT.meta = meta;
+      window.GARDENEXPORT.rows = rows;
+      window.GARDENEXPORT.byDateKey = buildByDateKey(rows);
+      window.GARDENEXPORT.error = ok ? "" : String((payload && payload.error) || "unknown error");
+
+      logGE("jsonp received ok=" + ok + " rows=" + rows.length, meta);
+
+      // Apply into whatever your front renderer expects.
+      // If your code already reads window.GARDENEXPORT.byDateKey, you are done.
+      // If you have an explicit apply step, call it here:
+      if (typeof window.applyGardenExportPayload === "function") {
+        window.applyGardenExportPayload(payload);
+        window.GARDENEXPORT.applied = true;
+        logGE("applyGardenExportPayload() called");
+      } else {
+        // No explicit apply function. Mark as "available", renderer should pull from window.GARDENEXPORT.byDateKey.
+        window.GARDENEXPORT.applied = true;
+        logGE("no applyGardenExportPayload() found, leaving data on window.GARDENEXPORT");
+      }
+    } catch (e) {
+      window.GARDENEXPORT.ok = false;
+      window.GARDENEXPORT.error = String(e && e.message ? e.message : e);
+      logGE("jsonp handler error", window.GARDENEXPORT.error);
+    }
+  };
+
+  function loadJsonp() {
+    const cb = "__GARDENEXPORT_CB__";
+    const url =
+      EXEC_URL +
+      "?r=api_garden_export" +
+      "&bot=" + encodeURIComponent(BOT) +
+      "&limit=" + encodeURIComponent(String(LIMIT)) +
+      "&format=jsonp" +
+      "&callback=" + encodeURIComponent(cb) +
+      "&cb=" + Date.now();
+
+    logGE("inject <script> " + url);
+
+    // Remove any previous tag
+    const prev = document.getElementById("gardenexport_jsonp_tag");
+    if (prev && prev.parentNode) prev.parentNode.removeChild(prev);
+
+    const s = document.createElement("script");
+    s.id = "gardenexport_jsonp_tag";
+    s.src = url;
+    s.async = true;
+
+    s.onerror = function () {
+      window.GARDENEXPORT.ok = false;
+      window.GARDENEXPORT.error = "jsonp script load failed";
+      logGE("jsonp script load failed");
+    };
+
+    document.head.appendChild(s);
+  }
+
+  // Kick it off immediately (DOMContentLoaded-safe)
+  loadJsonp();
+})();
+
+
 /* ============================================
    v89.0: Distant 3-hill silhouettes (visual-only)
    - Three distinct hill shapes behind the garden rows
