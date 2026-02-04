@@ -1540,7 +1540,7 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 <div id="__versionBanner">LifeLog Garden Walk<br>
 File: <span id="__bannerFileName"></span><br>
 Version: v99.0.0<br>
-Built: 2026-02-04 18:24:15 UTC<br>
+Built (PT): 2026-02-04 10:33:36 PT (America/Los_Angeles)<br>
 If you can see this, you opened the correct file.</div>
 <script>
 (function(){
@@ -4185,6 +4185,8 @@ function getNowMinutes(){
       window.__GARDEN_DATA_SOURCE__ = { mode: m, detail: d, ts: Date.now() };
     }
 
+
+window.setGardenDataSourceLabel_ = setGardenDataSourceLabel_;
 
     function getApproxPlaceFromTz_(tz){
       try{
@@ -8569,7 +8571,7 @@ if (window.__PHASEA_DISABLE_BRX__) {
       }
     }
     window.__LL_EXPORT = { payload, byDate, byWeek };
-    setGardenDataSourceLabel_("GardenExport");
+    window.setGardenDataSourceLabel_("GardenExport");
   }
 
   function forceRebuild(){
@@ -8702,7 +8704,7 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
   })();
 
   if(execUrl) {
-    setGardenDataSourceLabel_("GardenExport (loading...)");
+    window.setGardenDataSourceLabel_("GardenExport (loading...)");
     if(btnReload) {
       // classic path: re-use existing UI wiring if present
       btnReload.click();
@@ -8715,16 +8717,16 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
           if(typeof forceRebuild === "function") forceRebuild();
         }catch(e){
           log("[export] load failed: " + (e && e.message ? e.message : String(e)));
-          setGardenDataSourceLabel_("Offline (export error)");
+          window.setGardenDataSourceLabel_("Offline (export error)");
         }
       })();
     } else {
       log("Exec URL present but export loader is not available; falling back to Offline.");
-      setGardenDataSourceLabel_("Offline (placeholder)");
+      window.setGardenDataSourceLabel_("Offline (placeholder)");
     }
   } else {
     log("Offline mode. Provide exec URL to load real GardenExport data.");
-    setGardenDataSourceLabel_("Offline (placeholder)");
+    window.setGardenDataSourceLabel_("Offline (placeholder)");
   }
 }
 
@@ -8735,5 +8737,18 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
   }
 })();
 </script>
+
+<script>
+(function(){
+  try {
+    var el = document.getElementById('llBuildFileName');
+    if (el) {
+      var fn = (location && location.pathname) ? location.pathname.split('/').filter(Boolean).slice(-1)[0] : '';
+      el.textContent = fn || '(unknown)';
+    }
+  } catch(e){}
+})();
+</script>
+
 </body>
 </html>
