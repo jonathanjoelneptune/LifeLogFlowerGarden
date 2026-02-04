@@ -2737,6 +2737,7 @@ const makeExportableSvgString = (svgEl, levelNum)=>{
     <div class="hint" id="timeSourceHint" style="margin-top:10px; opacity:0.92;">
       Time Source: <span id="vTimeSource">Fixed Defaults</span>
     </div>
+    <div class="hint" style="margin-top:2px; opacity:0.92;">Garden Data Source: <span id="vDataSource">Offline</span></div>
     <div class="hint">
       Hotkeys: <code>H</code> hide utilities, <code>D</code> toggle debug, <code>B</code> toggle hitboxes.
     </div>
@@ -2910,6 +2911,7 @@ function cacheDomRefs(){
     uVerboseSelDbg: document.getElementById('uVerboseSelDbg'),
     vWireframe: document.getElementById('vWireframe'),
     vTimeSource: document.getElementById('vTimeSource'),
+    vDataSource: document.getElementById('vDataSource'),
     uTodPreset: document.getElementById('uTodPreset'),
     uTodClock: document.getElementById('uTodClock'),
     vTodClock: document.getElementById('vTodClock'),
@@ -4146,6 +4148,16 @@ function getNowMinutes(){
       const place = TIME_SOURCE.placeLabel ? ` (${TIME_SOURCE.placeLabel})` : "";
       el.textContent = `${TIME_SOURCE.label}${place}`;
     }
+
+    function setGardenDataSourceLabel_(mode, detail){
+      const el = document.getElementById("vDataSource");
+      if(!el) return;
+      const m = (mode || "").trim() || "Offline";
+      const d = (detail || "").trim();
+      el.textContent = d ? `${m} (${d})` : m;
+      window.__GARDEN_DATA_SOURCE__ = { mode: m, detail: d, ts: Date.now() };
+    }
+
 
     function getApproxPlaceFromTz_(tz){
       try{
@@ -8530,6 +8542,7 @@ if (window.__PHASEA_DISABLE_BRX__) {
       }
     }
     window.__LL_EXPORT = { payload, byDate, byWeek };
+    setGardenDataSourceLabel_("GardenExport");
   }
 
   function forceRebuild(){
@@ -8659,9 +8672,11 @@ if (window.__PHASEA_DISABLE_BRX__) {
 
   // Auto-load if exec is present
   if(execUrl && btnReload){
+    setGardenDataSourceLabel_("GardenExport", "loading");
     btnReload.click();
   }else{
     setHost("(offline)");
+    setGardenDataSourceLabel_("Offline");
     if(!execUrl) log("Offline mode. Provide exec URL to load real GardenExport data.");
   }
 }
