@@ -1,7 +1,44 @@
 
 <!DOCTYPE html>
 <!--
-  CHANGELOG
+  CH
+  // Forced timezone (Pacific Time)
+  const APP_TIMEZONE = "America/Los_Angeles";
+  function todayDateKeyInTz_() {
+    try {
+      const fmt = new Intl.DateTimeFormat("en-CA", { timeZone: APP_TIMEZONE, year: "numeric", month: "2-digit", day: "2-digit" });
+      return fmt.format(new Date()); // YYYY-MM-DD in en-CA
+    } catch (e) {
+      // Fallback: local
+      return getLocalDateKey_();
+    }
+  }
+
+function dateKeyFromMsInTz_(ms, tz = APP_TIMEZONE) {
+  // Returns yyyy-mm-dd in the requested IANA tz.
+  // Uses Intl (no external libs) and is safe for DST.
+  try {
+    const d = new Date(ms);
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone: tz,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).formatToParts(d);
+    const y = parts.find(p => p.type === "year")?.value || "";
+    const m = parts.find(p => p.type === "month")?.value || "";
+    const da = parts.find(p => p.type === "day")?.value || "";
+    if (y && m && da) return `${y}-${m}-${da}`;
+  } catch (e) {}
+  // Fallback: local dateKey (best-effort)
+  const dd = new Date(ms);
+  const y = dd.getFullYear();
+  const m = String(dd.getMonth() + 1).padStart(2, "0");
+  const da = String(dd.getDate()).padStart(2, "0");
+  return `${y}-${m}-${da}`;
+}
+
+ANGELOG
   v92.1.0_PhaseB_Step1_WeekKey_SelectionDebug
     + Add canonical data-week-key on each flowerWrap (alias of weekId)
     + Add ISO weekKey helper (fallback) and richer selection/deselection debug payload (dateKey + weekKey + indices)
@@ -29,7 +66,7 @@
 <html lang="en">
 <head>
 <script>
-// === v99.0.3 patch: safety logging helpers ===
+// === v99.0.7 patch: safety logging helpers ===
 (function(){
   if (typeof window.dbg_ !== 'function') {
     window.dbg_ = function(){ try { console.log.apply(console, arguments); } catch(e) {} };
@@ -82,6 +119,20 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 })();
 
 // Provide named globals expected by legacy code (safe under strict mode)
+
+
+/* FIX38: Forced timezone helpers (Pacific) */
+const APP_TIMEZONE = "America/Los_Angeles";
+function dateKeyInTz_(ms, tz) {
+  try {
+    return new Date(ms).toLocaleDateString('en-CA', { timeZone: tz });
+  } catch (e) {
+    return "";
+  }
+}
+function todayDateKeyInTz_() {
+  return dateKeyInTz_(Date.now(), APP_TIMEZONE);
+}
 </script>
 
 <!-- BRX PATCH v89.7.95: globals + safe render alias -->
@@ -197,7 +248,7 @@ console.log("[v89.6.42] loaded", new Date().toISOString());
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>LifeLog Garden Walk v99.0.3</title>
+<title>LifeLog Garden Walk v99.0.7</title>
 <style>
 /* ============================================
    v87.3.63.0: CLEANED + OPTIMIZED CSS
@@ -1546,12 +1597,14 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 <!-- VERSION BANNER INJECT -->
 <style>
 #__versionBanner{position:fixed;left:12px;top:12px;z-index:99999;padding:8px 10px;border-radius:10px;background:rgba(255,0,255,0.22);border:2px solid magenta;color:#111;font:600 12px/1.2 system-ui,Segoe UI,Arial;}
+#__versionBannerRight{position:fixed;right:12px;top:12px;z-index:99999;padding:8px 10px;border-radius:10px;background:rgba(255,235,59,0.92);border:2px solid #fbc02d;color:#111;font:700 12px/1.2 system-ui,Segoe UI,Arial;}
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: v99.0.3_GardenExportProxyFix_Banners.html<br>
-Version: v99.0.3<br>
-Built: 2026-02-04 11:21:19 PT<br>
+File: v99.0.7_ForcedTimezones_RenderRules_DropIn.html<br>
+Version: v99.0.7<br>
+P26-02-04 14:19:54 PT<br>
 <span style="opacity:.9">If you can see this, you opened the correct file.</span></div>
+<div id="__versionBannerRight">v99.0.7</div>
 <script>
 (function(){
   try{
@@ -1566,7 +1619,7 @@ Built: 2026-02-04 11:21:19 PT<br>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.0.3 loaded", new Date().toISOString());
+  console.log("[VERSION] v99.0.7 loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -2277,6 +2330,13 @@ window.__LL_hillTopAtX_fill = function(x, yTopGuess, yBottom){
     g.dayLevelLabelFromLevel_ = function dayLevelLabelFromLevel_(lvl){
       const n = Number(lvl);
       return DAY_LEVEL_LABEL[n] || "Lightly Logged";
+    };
+  }
+
+  // Alias for legacy call sites ---------------------------------------------
+  if (typeof g.dayLevelLabelForLevel_ !== "function") {
+    g.dayLevelLabelForLevel_ = function dayLevelLabelForLevel_(lvl){
+      return g.dayLevelLabelFromLevel_(lvl);
     };
   }
 
@@ -3498,6 +3558,7 @@ function todayDayIndexInWeek_(){
 
 function weekModelForIndex_(weekIndex){
   const mondayMs = mondayMsForWeekIndex_(weekIndex);
+  const todayKey = todayDateKeyInTz_();
 
   const weekKey = isoWeekKeyFromMs_(mondayMs); // "YYYY-Www"
   const parts = weekKey.split('-W');
@@ -3538,53 +3599,54 @@ function weekModelForIndex_(weekIndex){
     let primary = colors.primary;
     let secondary = colors.secondary;
 
-    // DayLevel: keep the established offline "level by weekday"
-    let dayLevel = dayLevelForWeekday_(d);
-    let dayLevelLabel = dayLevelLabelFromLevel_(dayLevel);
+    // DayLevel: use GardenExport if available; otherwise offline placeholder by weekday.
+    const ex = window.__LL_EXPORT;
+    const exportActive = !!(ex && ex.ok && ex.byDate);
+    const exportRow = exportActive ? (ex.byDate.get(dateKey) || null) : null;
 
-    // Optional export overrides (per-day)
-    let dailyScore = 0;
-    let totalEntries = 0;
-    let haiku = "";
-    let reflection = "";
-    let themeCloudUrl = "";
+    // Render rules:
+    //  - never render future dates (dateKey > todayKey)
+    //  - when GardenExport is active, only render if a row exists AND DayLevel is present (>0)
+    let render = true;
+    if (dateKey > todayKey) render = false;
 
-    if (ex && ex.byDate.has(dateKey)) {
-      const row = ex.byDate.get(dateKey) || {};
+    let dayLevel = dayLevelForWeekday_(d); // offline placeholder
+    let dayLevelLabel = dayLevelLabelForLevel_(dayLevel);
 
-      // Colors
-      const _isHex = (v)=>{ if(!v) return false; const s=String(v).trim(); return /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(s); };
-      if (_isHex(row.PrimaryColor)) primary = String(row.PrimaryColor).trim();
-            if (_isHex(row.SecondaryColor)) secondary = String(row.SecondaryColor).trim();
+    let primaryColor = "";
+    let secondaryColor = "";
 
-      // Levels (if present)
-      const dl = Number(row.DayLevel);
-      if (Number.isFinite(dl) && dl > 0) {
-        dayLevel = dl;
-        dayLevelLabel = (row.DayLevelLabel != null) ? String(row.DayLevelLabel) : dayLevelLabelFromLevel_(dl);
-      } else if (row.DayLevelLabel != null && String(row.DayLevelLabel).trim()) {
-        dayLevelLabel = String(row.DayLevelLabel);
+    if (exportActive) {
+      if (!exportRow) {
+        render = false;
+      } else {
+        const dl = Number(exportRow.DayLevel);
+        if (!isFinite(dl) || dl <= 0) {
+          render = false;
+        } else {
+          dayLevel = dl;
+          dayLevelLabel = String(exportRow.DayLevelLabel || dayLevelLabelForLevel_(dayLevel));
+        }
+
+        primaryColor = String(exportRow.PrimaryColor || "");
+        secondaryColor = String(exportRow.SecondaryColor || "");
+
+        // week level is week-scoped, but safe to read from any row in the week
+        const wl = Number(exportRow.WeekLevel);
+        if (isFinite(wl) && wl > 0) {
+          weekLevel = wl;
+          weekLevelLabel = String(exportRow.WeekLevelLabel || weekLevelLabelForWeekLevel_(weekLevel));
+        }
       }
-
-      // Stats / text
-      dailyScore = Number(row.DailyScore) || 0;
-      totalEntries = Number(row.TotalEntries) || 0;
-      haiku = (row.Haiku != null) ? String(row.Haiku) : "";
-      reflection = (row.DailyReflection != null) ? String(row.DailyReflection) : "";
-      themeCloudUrl = (row.ThemeCloudPngUrl != null) ? String(row.ThemeCloudPngUrl) : "";
-
-      // Week label override (if present and not already set)
-      if (!weekLevelLabel && row.WeekLevelLabel != null) weekLevelLabel = String(row.WeekLevelLabel);
-      const wl2 = Number(row.WeekLevel);
-      if (Number.isFinite(wl2) && wl2 > 0) weekLevel = wl2;
     }
 
-    // Use the same established stem/leaf tint logic
-    const stemColors = stemColorsForMonthIndex_(monthIndex);
-
+    // Default colors to white if missing/blank
+    if (!primaryColor) primaryColor = "#FFFFFF";
+    if (!secondaryColor) secondaryColor = "#FFFFFF";
     days.push({
       dateObj,
       dateKey,
+      render,
       weekKey,
       weekIndex,
       weekdayIndex: d,
