@@ -200,7 +200,7 @@ console.log("[v89.6.42] loaded", new Date().toISOString());
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>LifeLog Garden Walk v99.1.10</title>
+<title>LifeLog Garden Walk v99.1.11</title>
 <style>
 /* ============================================
    v87.3.63.0: CLEANED + OPTIMIZED CSS
@@ -1551,8 +1551,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 #__versionBanner{position:fixed;left:12px;top:12px;z-index:99999;padding:8px 10px;border-radius:10px;background:rgba(255,0,255,0.22);border:2px solid magenta;color:#111;font:600 12px/1.2 system-ui,Segoe UI,Arial;}
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.1.10_GardenExport_JsonpRouteFix_SyntaxFix.html</span><br>
-Version: v99.1.10<br>
+File: <span id="__bannerFileName">garden_v99.1.11_GardenExport_JsonpRouteFix_SyntaxFix.html</span><br>
+Version: v99.1.11<br>
 Built: 2026-02-05 21:05:00 PT<br>
 <span style="opacity:.9">If you can see this, you opened the correct file.</span></div>
 <script>
@@ -1569,7 +1569,7 @@ Built: 2026-02-05 21:05:00 PT<br>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.1.10 loaded", new Date().toISOString());
+  console.log("[VERSION] v99.1.11 loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -3409,33 +3409,35 @@ const days = [];
     let reflection = "";
     let themeCloudUrl = "";
 
+    let exportRow = null;
+
     if (ex && ex.byDate.has(dateKey)) {
-      const row = ex.byDate.get(dateKey) || {};
+      exportRow = ex.byDate.get(dateKey) || {};
 
       // Colors
       const _isHex = (v)=>{ if(!v) return false; const s=String(v).trim(); return /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(s); };
-      if (_isHex(row.PrimaryColor)) primary = String(row.PrimaryColor).trim();
-            if (_isHex(row.SecondaryColor)) secondary = String(row.SecondaryColor).trim();
+      if (_isHex(exportRow.PrimaryColor)) primary = String(exportRow.PrimaryColor).trim();
+            if (_isHex(exportRow.SecondaryColor)) secondary = String(exportRow.SecondaryColor).trim();
 
       // Levels (if present)
-      const dl = Number(row.DayLevel);
+      const dl = Number(exportRow.DayLevel);
       if (Number.isFinite(dl) && dl > 0) {
         dayLevel = dl;
-        dayLevelLabel = (row.DayLevelLabel != null) ? String(row.DayLevelLabel) : dayLevelLabelFromLevel_(dl);
-      } else if (row.DayLevelLabel != null && String(row.DayLevelLabel).trim()) {
-        dayLevelLabel = String(row.DayLevelLabel);
+        dayLevelLabel = (exportRow.DayLevelLabel != null) ? String(exportRow.DayLevelLabel) : dayLevelLabelFromLevel_(dl);
+      } else if (exportRow.DayLevelLabel != null && String(exportRow.DayLevelLabel).trim()) {
+        dayLevelLabel = String(exportRow.DayLevelLabel);
       }
 
       // Stats / text
-      dailyScore = Number(row.DailyScore) || 0;
-      totalEntries = Number(row.TotalEntries) || 0;
-      haiku = (row.Haiku != null) ? String(row.Haiku) : "";
-      reflection = (row.DailyReflection != null) ? String(row.DailyReflection) : "";
-      themeCloudUrl = (row.ThemeCloudPngUrl != null) ? String(row.ThemeCloudPngUrl) : "";
+      dailyScore = Number(exportRow.DailyScore) || 0;
+      totalEntries = Number(exportRow.TotalEntries) || 0;
+      haiku = (exportRow.Haiku != null) ? String(exportRow.Haiku) : "";
+      reflection = (exportRow.DailyReflection != null) ? String(exportRow.DailyReflection) : "";
+      themeCloudUrl = (exportRow.ThemeCloudPngUrl != null) ? String(exportRow.ThemeCloudPngUrl) : "";
 
       // Week label override (if present and not already set)
-      if (!weekLevelLabel && row.WeekLevelLabel != null) weekLevelLabel = String(row.WeekLevelLabel);
-      const wl2 = Number(row.WeekLevel);
+      if (!weekLevelLabel && exportRow.WeekLevelLabel != null) weekLevelLabel = String(exportRow.WeekLevelLabel);
+      const wl2 = Number(exportRow.WeekLevel);
       if (Number.isFinite(wl2) && wl2 > 0) weekLevel = wl2;
     }
 
@@ -3447,8 +3449,13 @@ const days = [];
     let render = true;
     if (dateKey > todayKey) render = false;
     if (usingExport) {
-      const hasLevel = (row && row.DayLevel !== "" && row.DayLevel != null && Number(row.DayLevel) > 0);
-      if (!hasLevel) render = false;
+      // Only suppress rendering when we *have* an export row for that date but it indicates no DayLevel.
+      // If the export has no row (date-key mismatch or partial export), keep offline rendering so the garden isn't blank.
+      if (exportRow) {
+        const dlx = Number(exportRow.DayLevel);
+        const hasLevel = (Number.isFinite(dlx) && dlx > 0);
+        if (!hasLevel) render = false;
+      }
     }
     if (!render) {
       dayLevel = 0;
