@@ -211,7 +211,7 @@ console.log("[v89.6.42] loaded", new Date().toISOString());
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>LifeLog Garden Walk v99.1.21</title>
+<title>LifeLog Garden Walk v99.1.22</title>
 <style>
 /* ============================================
    v87.3.63.0: CLEANED + OPTIMIZED CSS
@@ -1578,8 +1578,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 #__versionBanner{position:fixed;left:12px;top:12px;z-index:99999;padding:8px 10px;border-radius:10px;background:rgba(255,0,255,0.22);border:2px solid magenta;color:#111;font:600 12px/1.2 system-ui,Segoe UI,Arial;}
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.1.21_GardenExport_HaikuReflectionSkyboxes_Fix1.html</span><br>
-Version: v99.1.21<br>
+File: <span id="__bannerFileName">garden_v99.1.22_GardenExport_HaikuReflectionSkyboxes_Fix3.html</span><br>
+Version: v99.1.22<br>
 Created: 2026-02-05T23:21:16Z<br>
 <b>If you can see this, you opened the correct file.</b>
 </div>
@@ -1597,7 +1597,7 @@ Created: 2026-02-05T23:21:16Z<br>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.1.21 loaded", new Date().toISOString());
+  console.log("[VERSION] v99.1.22 loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -5547,6 +5547,34 @@ function setSkyBoxBody_(box, html){
   if (!body) return;
   body.innerHTML = html;
 }
+function setSkyBoxMeta_(a, b, c){
+  // Supports both call styles:
+  //   setSkyBoxMeta_(boxEl, text)
+  //   setSkyBoxMeta_(side, which, text)
+  let box = null;
+  let text = "";
+  if (a && typeof a === "object" && a.nodeType === 1) {
+    box = a;
+    text = (b == null) ? "" : String(b);
+  } else {
+    const side = a;
+    const which = b;
+    text = (c == null) ? "" : String(c);
+    const grid = ensureSkyBoxes_();
+    box = grid && grid[side] ? grid[side][which] : null;
+  }
+  if(!box) return;
+  const body = box.querySelector('.body');
+  if(!body) return;
+  let meta = body.querySelector('.sbMeta');
+  if(!meta){
+    meta = document.createElement('div');
+    meta.className = 'sbMeta mono';
+    body.insertBefore(meta, body.firstChild);
+  }
+  meta.textContent = text;
+}
+
 
 function escapeHtml_(s){
   return (s ?? '').toString()
@@ -5603,20 +5631,20 @@ function updateSkyBoxesFromDay_(day, weekKey) {
   // 1) Daily Reflection
   const refl = (day && (day.reflection || day.dailyReflection)) ? String(day.reflection || day.dailyReflection) : "";
   if (__llBoxes[1]) {
-    setSkyBoxMeta_(__llBoxes[1], safe(refl ? "From garden export" : "(no daily reflection for this day)"));
-    const reflHtml = safe(refl).replace(/\n/g, "<br>");
+        const reflHtml = safe(refl).replace(/\n/g, "<br>");
     setSkyBoxBody_(__llBoxes[1], reflHtml || `<div class="sbLine">${safe("No reflection text")}</div>`);
+    setSkyBoxMeta_(__llBoxes[1], safe(refl ? "From garden export" : "(no daily reflection for this day)"));
   }
 
   // 2) Haiku
   const haikuRaw = (day && day.haiku) ? String(day.haiku) : "";
   if (__llBoxes[2]) {
-    setSkyBoxMeta_(__llBoxes[2], safe(haikuRaw ? "From garden export" : "(no haiku for this day)"));
-    const haikuLines = haikuRaw.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+        const haikuLines = haikuRaw.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
     const haikuHtml = haikuLines.length
       ? haikuLines.map(line => `<div class="sbLine">${safe(line)}</div>`).join("")
       : `<div class="sbLine">${safe("No haiku text")}</div>`;
     setSkyBoxBody_(__llBoxes[2], haikuHtml);
+    setSkyBoxMeta_(__llBoxes[2], safe(haikuRaw ? "From garden export" : "(no haiku for this day)"));
   }
 
   // 3) Word Wall (optional, exported later)
