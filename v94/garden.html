@@ -1551,8 +1551,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 #__versionBanner{position:fixed;left:12px;top:12px;z-index:99999;padding:8px 10px;border-radius:10px;background:rgba(255,0,255,0.22);border:2px solid magenta;color:#111;font:600 12px/1.2 system-ui,Segoe UI,Arial;}
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">v99.1.6_GardenExport_JsonpFirst_DefaultProxy.html</span><br>
-Version: v99.1.6<br>
+File: <span id="__bannerFileName">v99.1.7_GardenExport_JsonpFirst_DefaultProxy_TryCatchFix.html</span><br>
+Version: v99.1.7<br>
 Built: 2026-02-04 21:42:10 PT<br>
 <span style="opacity:.9">If you can see this, you opened the correct file.</span></div>
 <script>
@@ -1569,7 +1569,7 @@ Built: 2026-02-04 21:42:10 PT<br>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.1.6 loaded", new Date().toISOString());
+  console.log("[VERSION] v99.1.7 loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -8396,7 +8396,6 @@ const LS_KEY = "LL_V94_HOST_CFG";
     if(!base) return null;
     try{
       return base + encodeURIComponent(targetUrl);
-    }
     }catch(e){
       return null;
     }
