@@ -29,7 +29,7 @@
 <html lang="en">
 <head>
 <script>
-// === v99.0.3 patch: safety logging helpers ===
+// === v99.1.9 patch: safety logging helpers ===
 (function(){
   if (typeof window.dbg_ !== 'function') {
     window.dbg_ = function(){ try { console.log.apply(console, arguments); } catch(e) {} };
@@ -200,7 +200,7 @@ console.log("[v89.6.42] loaded", new Date().toISOString());
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>LifeLog Garden Walk v99.0.3</title>
+<title>LifeLog Garden Walk | v99.1.9 | v99.1.9_GardenExport_UpdatedWebappUrl.html</title>
 <style>
 /* ============================================
    v87.3.63.0: CLEANED + OPTIMIZED CSS
@@ -8363,7 +8363,7 @@ const LS_KEY = "LL_V94_HOST_CFG";
         return payload;
       })
       .catch((e1)=>{
-        console.warn("[export] JSONP failed, trying direct fetch...", e1);
+        console.warn("[export] JSONP failed (endpoint likely doesn't support JSONP yet), trying direct fetch...", e1);
         return fetch(url, {
           method: "GET",
           mode: "cors",
