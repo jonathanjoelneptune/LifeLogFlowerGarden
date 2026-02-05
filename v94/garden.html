@@ -1551,9 +1551,9 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 #__versionBanner{position:fixed;left:12px;top:12px;z-index:99999;padding:8px 10px;border-radius:10px;background:rgba(255,0,255,0.22);border:2px solid magenta;color:#111;font:600 12px/1.2 system-ui,Segoe UI,Arial;}
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">v99.1.3_GardenExport_DirectFetch_ProxyFallback.html</span><br>
-Version: v99.1.3<br>
-Built: 2026-02-04 16:35:07 PT<br>
+File: <span id="__bannerFileName">v99.1.4_GardenExport_JSONPFirst_CORSFix.html</span><br>
+Version: v99.1.4<br>
+Built: 2026-02-04 21:03:31 PT<br>
 <span style="opacity:.9">If you can see this, you opened the correct file.</span></div>
 <script>
 (function(){
@@ -1569,7 +1569,7 @@ Built: 2026-02-04 16:35:07 PT<br>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.1.3 loaded", new Date().toISOString());
+  console.log("[VERSION] v99.1.4 loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -8630,62 +8630,105 @@ const LS_KEY = "LL_V94_HOST_CFG";
   // GardenExport loading (direct fetch w/ proxy fallback)
   // ===============================
 
-  function buildExportUrl_(execUrl, bot, limit){
+  function buildExportUrl_(execUrl, bot, limit, format, callbackName){
     if(!execUrl) return null;
     try{
       const u = new URL(execUrl);
       if(bot) u.searchParams.set("bot", String(bot));
       if(limit != null && String(limit).trim() !== "") u.searchParams.set("limit", String(limit));
-      // Ask the Apps Script to return JSON (not JSONP).
-      u.searchParams.set("format", "json");
+      if(format) u.searchParams.set("format", String(format));
+      if(String(format).toLowerCase() === "jsonp" && callbackName){
+        u.searchParams.set("callback", String(callbackName));
+      }else{
+        // Ensure no stale callback param remains
+        u.searchParams.delete("callback");
+      }
       return u.toString();
     }catch(e){
       // If it's not a valid absolute URL, just return as-is.
       return execUrl;
     }
-  }
-
-  function safeJsonParse_(txt){
-    // Some failure modes return HTML. Make this noisy and safe.
-    const s = (txt == null) ? "" : String(txt);
-    const trimmed = s.trim();
-    if(!trimmed) throw new Error("Empty response");
-    if(trimmed[0] === "<"){
-      throw new Error("Non-JSON response (starts with '<'): " + trimmed.slice(0, 80));
-    }
-    return JSON.parse(trimmed);
-  }
+  }}
 
   async function fetchExport(execUrl, bot, limit){
-    const url = buildExportUrl_(execUrl, bot, limit);
-    if(!url){
-      throw new Error("No exec URL provided");
+    const jsonUrl = buildExportUrl_(execUrl, bot, limit, "json");
+    const isLikelyCrossOrigin = (() => {
+      try{
+        const u = new URL(execUrl);
+        return u.origin !== window.location.origin;
+      }catch(e){
+        return false;
+      }
+    })();
+
+    // 1) JSONP first (bypasses CORS). This is the preferred path for GitHub Pages.
+    try{
+      const cb = "__llExportJsonpCb_" + Math.random().toString(16).slice(2);
+      const jsonpUrl = buildExportUrl_(execUrl, bot, limit, "jsonp", cb);
+      const payload = await jsonpFetchExport_(jsonpUrl, cb, 12000);
+      if(!payload) throw new Error("JSONP returned empty payload");
+      return normalizeExportPayload_(payload);
+    }catch(e){
+      console.warn("[export] jsonp script load failed, trying direct/proxy fetch...", e);
     }
 
-    // 1) Direct CORS fetch
+    // 2) Direct fetch (works only if Apps Script sends CORS headers)
     try{
-      const res = await fetch(url, {
-        method: "GET",
-        mode: "cors",
-        credentials: "omit",
-        cache: "no-store",
-      });
-
+      const res = await fetch(jsonUrl, { cache:"no-store", credentials:"omit" });
+      if(!res.ok) throw new Error("HTTP " + res.status);
       const txt = await res.text();
-      if(!res.ok){
-        throw new Error("HTTP " + res.status + " " + res.statusText + " :: " + txt.slice(0, 120));
-      }
-
       const payload = safeJsonParse_(txt);
-      console.log("[export] direct fetch OK", {bytes: txt.length});
-      return payload;
-
+      return normalizeExportPayload_(payload);
     }catch(e){
+      // Most common on GitHub Pages: blocked by CORS.
       console.warn("[export] direct fetch failed, trying proxy fetch...", e);
     }
 
-    // 2) Proxy fallback (AllOrigins)
-    return await proxyFetchExport_(url);
+    // 3) Proxy fetch fallback (CORS-allowing proxy)
+    const proxyPayload = await proxyFetchExport_(jsonUrl);
+    return normalizeExportPayload_(proxyPayload);
+  }
+
+  function jsonpFetchExport_(url, callbackName, timeoutMs){
+    return new Promise((resolve, reject) => {
+      if(!url) return reject(new Error("No JSONP URL"));
+
+      const script = document.createElement("script");
+      script.async = true;
+      script.src = url;
+
+      let done = false;
+      let t = null;
+
+      function cleanup(){
+        if(t){ clearTimeout(t); t = null; }
+        try{ delete window[callbackName]; }catch(e){ window[callbackName] = undefined; }
+        if(script && script.parentNode) script.parentNode.removeChild(script);
+      }
+
+      window[callbackName] = (data) => {
+        if(done) return;
+        done = true;
+        cleanup();
+        resolve(data);
+      };
+
+      script.onerror = () => {
+        if(done) return;
+        done = true;
+        cleanup();
+        reject(new Error("JSONP script error"));
+      };
+
+      t = setTimeout(() => {
+        if(done) return;
+        done = true;
+        cleanup();
+        reject(new Error("JSONP timeout after " + timeoutMs + "ms"));
+      }, timeoutMs || 12000);
+
+      document.head.appendChild(script);
+    });
   }
 
   async function proxyFetchExport_(url){
