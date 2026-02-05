@@ -200,7 +200,7 @@ console.log("[v89.6.42] loaded", new Date().toISOString());
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>LifeLog Garden Walk v99.1.12</title>
+<title>LifeLog Garden Walk v99.1.13</title>
 <style>
 /* ============================================
    v87.3.63.0: CLEANED + OPTIMIZED CSS
@@ -1551,9 +1551,9 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 #__versionBanner{position:fixed;left:12px;top:12px;z-index:99999;padding:8px 10px;border-radius:10px;background:rgba(255,0,255,0.22);border:2px solid magenta;color:#111;font:600 12px/1.2 system-ui,Segoe UI,Arial;}
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.1.12_GardenExport_RenderFlagFix.html</span><br>
-Version: v99.1.12<br>
-Built: 2026-02-05 10:14:57 PT<br>
+File: <span id="__bannerFileName">garden_v99.1.13_GardenExport_RenderFlagFix.html</span><br>
+Version: v99.1.13<br>
+Built: 2026-02-05 10:30:00 PT<br>
 <span style="opacity:.9">If you can see this, you opened the correct file.</span></div>
 <script>
 (function(){
@@ -1569,7 +1569,7 @@ Built: 2026-02-05 10:14:57 PT<br>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.1.12 loaded", new Date().toISOString());
+  console.log("[VERSION] v99.1.13 loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -3382,12 +3382,15 @@ function weekModelForIndex_(weekIndex){
   // Weekday labels for UI + metadata. Monday-first to match the garden layout.
   const WEEKDAY_NAMES = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
 
-  
+  // Export debug: set window.__LL_EXPORT_DAYDBG=true, or add ?expdbg=1, or localStorage.LL_EXPDBG='1'
+  const __EXPDBG__ = !!window.__LL_EXPORT_DAYDBG || (typeof location !== 'undefined' && /[?&]expdbg=1/.test(location.search)) || (typeof localStorage !== 'undefined' && localStorage.getItem('LL_EXPDBG')==='1');
+
     const todayKey = dateKeyFromDate_(new Date());
 const days = [];
   for (let d=0; d<7; d++){
     const dateObj = new Date(mondayMs + d*86400000);
     const dateKey = dateKeyFromDate_(dateObj);
+    const dateKeyN = String(dateKey||"").trim();
     const monthIndex = dateObj.getMonth();
 
     const uid = dayUid_(weekIndex, d);
@@ -3411,8 +3414,8 @@ const days = [];
 
     let exportRow = null;
 
-    if (ex && ex.byDate.has(dateKey)) {
-      exportRow = ex.byDate.get(dateKey) || {};
+    if (ex && ex.byDate.has(dateKeyN)) {
+      exportRow = ex.byDate.get(dateKeyN) || {};
 
       // Colors
       const _isHex = (v)=>{ if(!v) return false; const s=String(v).trim(); return /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(s); };
@@ -3465,6 +3468,27 @@ const days = [];
     if (!primary) primary = "#FFFFFF";
     if (!secondary) secondary = "#FFFFFF";
 const stemColors = stemColorsForMonthIndex_(monthIndex);
+
+    // Per-day export mapping debug
+    if (__EXPDBG__) {
+      let src = "offline";
+      let why = "";
+      if (usingExport) {
+        if (!ex) { src = "export-missing"; why = "__LL_EXPORT not ready"; }
+        else if (ex.byDate && ex.byDate.has(dateKeyN)) {
+          const dlRaw = exportRow ? exportRow.DayLevel : undefined;
+          const dlNum = Number(dlRaw);
+          if (Number.isFinite(dlNum) && dlNum > 0) src = "export";
+          else { src = "export-no-daylevel"; why = "export row exists but DayLevel is blank/0"; }
+        } else {
+          src = "export-no-row";
+          why = "no export row for DateKey (possible whitespace/date mismatch)";
+        }
+      }
+      const dlOut = dayLevel;
+      // Keep this single-line so it is easy to scan.
+      console.log(`[EXPDBG] week=${weekKey} day=${weekdayName} date=${dateKeyN} src=${src} render=${render} level=${dlOut} primary=${primary} secondary=${secondary}${why? " | "+why:""}`);
+    }
 
     days.push({
       dateObj,
@@ -8301,10 +8325,15 @@ const LS_KEY = "LL_V94_HOST_CFG";
     const byWeek = new Map();
     for(const r of payload.rows){
       const dk = (r && r.DateKey != null) ? String(r.DateKey) : "";
-      if(dk) byDate.set(dk, r);
+      const dkN = dk.trim();
+      if(dkN){
+        // Normalize DateKey to avoid invisible whitespace mismatches.
+        byDate.set(dkN, r);
+      }
       const wk = (r && r.WeekKey != null) ? String(r.WeekKey) : "";
-      if(wk && !byWeek.has(wk)){
-        byWeek.set(wk, {
+      const wkN = wk.trim();
+      if(wkN && !byWeek.has(wkN)){
+        byWeek.set(wkN, {
           WeekLevel: r.WeekLevel,
           WeekLevelLabel: r.WeekLevelLabel
         });
