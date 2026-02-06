@@ -211,7 +211,7 @@ console.log("[v89.6.42] loaded", new Date().toISOString());
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>LifeLog Garden Walk v99.1.27</title>
+<title>LifeLog Garden Walk v99.1.28</title>
 <style>
 /* ============================================
    v87.3.63.0: CLEANED + OPTIMIZED CSS
@@ -1451,6 +1451,8 @@ font-weight:800;}
   opacity: 0.55;
   font-weight: 700;
 }
+
+.llSkyBox .body{ overflow:hidden; }
 </style>
 
 
@@ -1597,7 +1599,7 @@ Created: 2026-02-06T00:36:38Z<br>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.1.27 loaded", new Date().toISOString());
+  console.log("[VERSION] v99.1.28 loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -5546,9 +5548,123 @@ function setSkyBoxBody_(box, html){
   const body = box.querySelector('.body');
   if (!body) return;
   body.innerHTML = html;
+  // After content changes, refit to available space.
+  scheduleFitSkyBox_(box);
 }
+
+// -------------------- Skybox text fit (dynamic) --------------------
+// Goal: Keep body text fully inside each skybox card at any viewport size.
+// We only scale body text. Headers remain unchanged.
+const SKYFIT_ = {
+  minPx: 10,
+  maxPx: 22,
+  lineHeightMult: 1.25,
+  epsPx: 1.0,
+};
+
+const _skyFitPending_ = new Set();
+function scheduleFitSkyBox_(box){
+  if (!box) return;
+  _skyFitPending_.add(box);
+  if (scheduleFitSkyBox_._raf) return;
+  scheduleFitSkyBox_._raf = requestAnimationFrame(() => {
+    scheduleFitSkyBox_._raf = null;
+    requestAnimationFrame(() => {
+      const list = Array.from(_skyFitPending_);
+      _skyFitPending_.clear();
+      list.forEach(fitSkyBoxText_);
+    });
+  });
+}
+
+function scheduleFitAllSkyBoxes_(){
+  document.querySelectorAll('.llSkyBox').forEach(b => scheduleFitSkyBox_(b));
+}
+
+function _forceInheritTextStyles_(root){
+  if (!root) return;
+  // Ensure nested elements inherit sizing so the fit calculation actually controls size.
+  root.querySelectorAll('*').forEach(el => {
+    const tag = (el.tagName || '').toLowerCase();
+    // Preserve intentional bolding but ensure sizing inherits.
+    el.style.fontSize = 'inherit';
+    el.style.lineHeight = 'inherit';
+    if (tag === 'pre') {
+      el.style.whiteSpace = 'pre-wrap';
+      el.style.margin = '0';
+    }
+  });
+}
+
+function _fits_(el){
+  if (!el) return true;
+  // Allow a tiny epsilon to avoid jitter from fractional pixels.
+  const eps = SKYFIT_.epsPx;
+  return (el.scrollHeight <= el.clientHeight + eps) && (el.scrollWidth <= el.clientWidth + eps);
+}
+
+function fitElementText_(el){
+  if (!el) return;
+  // If the element has no size yet, defer.
+  if (el.clientWidth <= 0 || el.clientHeight <= 0) return;
+
+  el.style.overflow = 'hidden';
+  el.style.wordBreak = 'break-word';
+  el.style.whiteSpace = 'normal';
+
+  _forceInheritTextStyles_(el);
+
+  let lo = SKYFIT_.minPx;
+  let hi = SKYFIT_.maxPx;
+  let best = lo;
+
+  // Start high, then search down for first fit.
+  for (let iter = 0; iter < 14; iter++){
+    const mid = (lo + hi) / 2;
+    el.style.fontSize = mid.toFixed(2) + 'px';
+    el.style.lineHeight = (mid * SKYFIT_.lineHeightMult).toFixed(2) + 'px';
+
+    // Force reflow for accurate scroll* values.
+    void el.scrollHeight;
+
+    if (_fits_(el)){
+      best = mid;
+      lo = mid;
+    } else {
+      hi = mid;
+    }
+  }
+
+  el.style.fontSize = best.toFixed(2) + 'px';
+  el.style.lineHeight = (best * SKYFIT_.lineHeightMult).toFixed(2) + 'px';
+}
+
+function fitSkyBoxText_(box){
+  if (!box) return;
+  const body = box.querySelector('.body');
+  if (!body) return;
+
+  // Only fit body content, never the header.
+  fitElementText_(body);
+}
+
+// Kick once after DOM is ready and on resize.
+document.addEventListener('DOMContentLoaded', () => {
+  // Defer a bit so layout settles (fonts, images, etc.)
+  setTimeout(scheduleFitAllSkyBoxes_, 80);
+
+  // If skyboxes change (selection, reload), refit.
+  try {
+    const mo = new MutationObserver(() => scheduleFitAllSkyBoxes_());
+    const root = document.querySelector('#skyboxes') || document.body;
+    mo.observe(root, { childList: true, subtree: true, characterData: true });
+  } catch (e) {}
+
+  // If cards resize due to viewport changes, refit.
+  window.addEventListener('resize', () => scheduleFitAllSkyBoxes_());
+});
 function setSkyBoxMeta_(boxOrSide, maybeWhich, maybeText){
-    // v99.1.27: We no longer display the "From garden export" mini row.
+    // v99.1.28: We no longer display the "From garden export" mini row.
     // Keep this helper as a safe remover/no-op and support both call signatures:
     //   (boxEl, text) OR legacy (side, which, text)
     let box = null;
