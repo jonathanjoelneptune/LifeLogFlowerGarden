@@ -1362,7 +1362,13 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
     font-size: 12px;
     margin-bottom: 6px;
   }
-  .llSkyBox .body .sbEmpty{
+  .llSkyBox{display:flex;flex-direction:column;}
+.llSkyBox .head{flex:0 0 auto;padding:16px 18px 8px 18px;box-sizing:border-box;}
+.llSkyBox .head .title{font-weight:700;}
+.llSkyBox .head .sub{display:none;}
+.llSkyBox .body{flex:1 1 auto;min-height:0;overflow:hidden;height:auto;max-height:none;padding:0 18px 16px 18px;box-sizing:border-box;}
+
+.llSkyBox .body .sbEmpty{
     opacity: 0.65;
     font-style: italic;
   }
@@ -1599,7 +1605,7 @@ Created: 2026-02-06T00:36:38Z<br>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.1.28 loaded", new Date().toISOString());
+  console.log("[VERSION] v99.1.29 loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -5557,7 +5563,7 @@ function setSkyBoxBody_(box, html){
 // We only scale body text. Headers remain unchanged.
 const SKYFIT_ = {
   minPx: 10,
-  maxPx: 22,
+  maxPx: 18,
   lineHeightMult: 1.25,
   epsPx: 1.0,
 };
@@ -5605,44 +5611,37 @@ function _fits_(el){
 
 function fitElementText_(el){
   if (!el) return;
-  // If the element has no size yet, defer.
   if (el.clientWidth <= 0 || el.clientHeight <= 0) return;
 
-  el.style.overflow = 'hidden';
-  el.style.wordBreak = 'break-word';
-  el.style.whiteSpace = 'normal';
+  let lo = SKYFIT_.minPx, hi = SKYFIT_.maxPx, best = SKYFIT_.minPx;
 
-  _forceInheritTextStyles_(el);
+  const within = () => (el.scrollHeight <= el.clientHeight) && (el.scrollWidth <= el.clientWidth);
 
-  let lo = SKYFIT_.minPx;
-  let hi = SKYFIT_.maxPx;
-  let best = lo;
-
-  // Start high, then search down for first fit.
-  for (let iter = 0; iter < 14; iter++){
+  for (let i = 0; i < SKYFIT_.iters; i++){
     const mid = (lo + hi) / 2;
-    el.style.fontSize = mid.toFixed(2) + 'px';
-    el.style.lineHeight = (mid * SKYFIT_.lineHeightMult).toFixed(2) + 'px';
-
-    // Force reflow for accurate scroll* values.
+    el.style.fontSize = `${mid}px`;
     void el.scrollHeight;
-
-    if (_fits_(el)){
+    if (within()){
       best = mid;
       lo = mid;
     } else {
       hi = mid;
     }
   }
-
-  el.style.fontSize = best.toFixed(2) + 'px';
-  el.style.lineHeight = (best * SKYFIT_.lineHeightMult).toFixed(2) + 'px';
+  el.style.fontSize = `${best}px`;
 }
 
 function fitSkyBoxText_(box){
   if (!box) return;
+  const head = box.querySelector('.head');
   const body = box.querySelector('.body');
   if (!body) return;
+
+  // Constrain the body to the remaining height under the header.
+  const headH = head ? head.offsetHeight : 0;
+  const availH = Math.max(0, box.clientHeight - headH);
+  body.style.height = `${availH}px`;
+  body.style.maxHeight = `${availH}px`;
 
   // Only fit body content, never the header.
   fitElementText_(body);
