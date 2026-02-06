@@ -211,7 +211,7 @@ console.log("[v89.6.42] loaded", new Date().toISOString());
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>LifeLog Garden Walk v99.1.28</title>
+<title>LifeLog Garden Walk v99.1.32</title>
 <style>
 /* ============================================
    v87.3.63.0: CLEANED + OPTIMIZED CSS
@@ -1586,11 +1586,10 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 #__versionBanner{position:fixed;left:12px;top:12px;z-index:99999;padding:8px 10px;border-radius:10px;background:rgba(255,0,255,0.22);border:2px solid magenta;color:#111;font:600 12px/1.2 system-ui,Segoe UI,Arial;}
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.1.26_GardenExport_HaikuReflectionSkyboxes_Fix5.html</span><br>
-Version: v99.1.26<br>
-Created: 2026-02-06T03:30:00.000Z<br>
-<b>If you can see this, you opened the correct file.</b>
-</div>
+File: <span id="__bannerFileName">garden_v99.1.32_GardenExport_HaikuReflectionSkyboxes_FitText_Fix11.html</span><br>
+Version: v99.1.32<br>
+Created: 2026-02-06T06:32:50Z<br>
+If you can see this, you opened the correct file.</div>
 <script>
 (function(){
   try{
@@ -1605,7 +1604,7 @@ Created: 2026-02-06T03:30:00.000Z<br>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.1.30 loaded", new Date().toISOString());
+  console.log("[VERSION] v99.1.32 loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -5681,26 +5680,61 @@ function scheduleRefitSkyBoxes_(){
   }, 80);
 }
 
-function fitElementText_(el){
+function fitElementText_(el, opts){
   if (!el) return;
   if (el.clientWidth <= 0 || el.clientHeight <= 0) return;
 
-  let lo = SKYFIT_.minPx, hi = SKYFIT_.maxPx, best = SKYFIT_.minPx;
+  const o = Object.assign({
+    minPx: 10,
+    maxPx: 18,
+    lineHeightEm: 1.2,
+    epsilonPx: 1.0
+  }, opts || {});
 
-  const within = () => (el.scrollHeight <= el.clientHeight) && (el.scrollWidth <= el.clientWidth);
+  // Empty content: set to max (so headers look consistent) but no need to measure.
+  const txt = (el.textContent || '').trim();
+  if (!txt){
+    el.style.fontSize = o.maxPx + 'px';
+    el.style.lineHeight = o.lineHeightEm + 'em';
+    return;
+  }
 
-  for (let i = 0; i < SKYFIT_.iters; i++){
+  // Ensure a predictable baseline for measurement.
+  const prevFont = el.style.fontSize;
+  const prevLH = el.style.lineHeight;
+
+  const fits = (px) => {
+    el.style.fontSize = px + 'px';
+    el.style.lineHeight = o.lineHeightEm + 'em';
+    // Force reflow for accurate scroll metrics.
+    // eslint-disable-next-line no-unused-expressions
+    el.offsetHeight;
+    return (el.scrollHeight <= el.clientHeight + o.epsilonPx) &&
+           (el.scrollWidth  <= el.clientWidth  + o.epsilonPx);
+  };
+
+  let lo = o.minPx, hi = o.maxPx, best = o.minPx;
+
+  // If even min doesn't fit, keep min and rely on overflow hidden.
+  if (!fits(lo)){
+    el.style.fontSize = lo + 'px';
+    el.style.lineHeight = o.lineHeightEm + 'em';
+    return;
+  }
+
+  // Binary search for largest fitting size.
+  for (let i=0; i<14; i++){
     const mid = (lo + hi) / 2;
-    el.style.fontSize = `${mid}px`;
-    void el.scrollHeight;
-    if (within()){
-      best = mid;
-      lo = mid;
+    if (fits(mid)){
+      best = mid; lo = mid;
     } else {
       hi = mid;
     }
   }
-  el.style.fontSize = `${best}px`;
+
+  const finalPx = Math.max(o.minPx, Math.min(o.maxPx, Math.floor(best * 10) / 10));
+  el.style.fontSize = finalPx + 'px';
+  el.style.lineHeight = o.lineHeightEm + 'em';
 }
 
 function fitSkyBoxText_(box){
