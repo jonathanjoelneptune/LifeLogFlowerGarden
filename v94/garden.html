@@ -211,7 +211,7 @@ console.log("[v89.6.42] loaded", new Date().toISOString());
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>LifeLog Garden Walk v99.1.23</title>
+<title>LifeLog Garden Walk v99.1.24</title>
 <style>
 /* ============================================
    v87.3.63.0: CLEANED + OPTIMIZED CSS
@@ -1125,8 +1125,6 @@ body.wireframeMode .flowerSvg line {
   100% { transform: translate3d(0,0,0) scale(1); }
 }
 
-
-  .sbLine{margin:2px 0;}
 </style>
 
 <style id="llUtilNoteStyles">
@@ -1578,11 +1576,10 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 #__versionBanner{position:fixed;left:12px;top:12px;z-index:99999;padding:8px 10px;border-radius:10px;background:rgba(255,0,255,0.22);border:2px solid magenta;color:#111;font:600 12px/1.2 system-ui,Segoe UI,Arial;}
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.1.23_GardenExport_HaikuReflectionSkyboxes_Fix3.html</span><br>
-Version: v99.1.23<br>
-Created: 2026-02-05T23:21:16Z<br>
-<b>If you can see this, you opened the correct file.</b>
-</div>
+File:garden.html<span id="__bannerFileName">garden_v99.1.24_GardenExport_HaikuReflectionSkyboxes_TextFromJSONOnly.html</span><br>
+Version: v99.1.24<br>
+Created: 2026-02-06T00:05:48Z<br>
+<span style="opacity:.9">If you can see this, you opened the correct file.</span></div>
 <script>
 (function(){
   try{
@@ -1597,7 +1594,7 @@ Created: 2026-02-05T23:21:16Z<br>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.1.23 loaded", new Date().toISOString());
+  console.log("[VERSION] v99.1.24 loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -3459,25 +3456,9 @@ const days = [];
       // Stats / text
       dailyScore = Number(exportRow.DailyScore) || 0;
       totalEntries = Number(exportRow.TotalEntries) || 0;
-      const getFieldCI_ = (row, keys) => {
-        if (!row || !keys || !keys.length) return "";
-        // direct
-        for (const k of keys) {
-          if (row[k] != null && String(row[k]).trim() !== "") return String(row[k]);
-        }
-        // case-insensitive
-        const lower = {};
-        for (const [rk, rv] of Object.entries(row)) lower[String(rk).toLowerCase()] = rv;
-        for (const k of keys) {
-          const v = lower[String(k).toLowerCase()];
-          if (v != null && String(v).trim() !== "") return String(v);
-        }
-        return "";
-      };
-
-      haiku = getFieldCI_(exportRow, ["Haiku", "DailyHaiku", "HaikuText", "DailyHaikuText"]) || "";
-      reflection = getFieldCI_(exportRow, ["DailyReflection", "Reflection", "Daily_Reflection", "DailyReflectionText"]) || "";
-      themeCloudUrl = getFieldCI_(exportRow, ["ThemeCloudPngUrl", "ThemeCloudUrl", "ThemeCloudPNG", "ThemeCloudPng"]) || "";
+      haiku = (exportRow.Haiku != null) ? String(exportRow.Haiku) : "";
+      reflection = (exportRow.DailyReflection != null) ? String(exportRow.DailyReflection) : "";
+      themeCloudUrl = (exportRow.ThemeCloudPngUrl != null) ? String(exportRow.ThemeCloudPngUrl) : "";
 
       // Week label override (if present and not already set)
       if (!weekLevelLabel && exportRow.WeekLevelLabel != null) weekLevelLabel = String(exportRow.WeekLevelLabel);
@@ -3566,6 +3547,9 @@ const stemColors = stemColorsForMonthIndex_(monthIndex);
       haiku,
       reflection,
       themeCloudUrl,
+      haikuText: haiku,
+      reflectionText: reflection,
+      themeCloudPngUrl: themeCloudUrl,
       stemCore: stemColors.stem,
       stemDark: stemColors.stemDark,
       // Compatibility with flowerSvg() renderer which expects `stemHi`.
@@ -3675,7 +3659,7 @@ function ensureWeekNodes_(weekIdx){
   const week = weekModelForIndex_(weekIdx);
 
   const band = document.createElement("div");
-  band.className = "weekBand weekWrap";
+  band.className = "weekBand";
   band.dataset.weekIndex = String(weekIdx);
   band.dataset.rendered = "false";
   band._weekData = week;
@@ -5547,34 +5531,6 @@ function setSkyBoxBody_(box, html){
   if (!body) return;
   body.innerHTML = html;
 }
-function setSkyBoxMeta_(a, b, c){
-  // Supports both call styles:
-  //   setSkyBoxMeta_(boxEl, text)
-  //   setSkyBoxMeta_(side, which, text)
-  let box = null;
-  let text = "";
-  if (a && typeof a === "object" && a.nodeType === 1) {
-    box = a;
-    text = (b == null) ? "" : String(b);
-  } else {
-    const side = a;
-    const which = b;
-    text = (c == null) ? "" : String(c);
-    const grid = ensureSkyBoxes_();
-    box = grid && grid[side] ? grid[side][which] : null;
-  }
-  if(!box) return;
-  const body = box.querySelector('.body');
-  if(!body) return;
-  let meta = body.querySelector('.sbMeta');
-  if(!meta){
-    meta = document.createElement('div');
-    meta.className = 'sbMeta mono';
-    body.insertBefore(meta, body.firstChild);
-  }
-  meta.textContent = text;
-}
-
 
 function escapeHtml_(s){
   return (s ?? '').toString()
@@ -5583,81 +5539,36 @@ function escapeHtml_(s){
     .replace(/>/g,'&gt;');
 }
 
-function formatDateMMDDYY_(dateKey) {
-  // dateKey is expected as YYYY-MM-DD
-  if (!dateKey || typeof dateKey !== "string") return "--/--/--";
-  const m = dateKey.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if (!m) return "--/--/--";
-  const yy = m[1].slice(2);
-  return `${m[2]}/${m[3]}/${yy}`;
-}
+function updateSkyBoxesFromDay_(day, wrap){
+  // Skybox index map: 0=Statistics, 1=Daily Reflection, 2=Haiku, 3=Word Wall
+  if (!__llBoxes || __llBoxes.length < 4) return;
 
-function updateSkyBoxesFromDay_(day, weekKey) {
-  ensureSkyBoxes_();
+  const dateKey = wrap && wrap.dataset ? (wrap.dataset.dateKey || '') : '';
+  const pretty = dateKey ? dateKey : '';
 
-  const safe = (v) => escapeHtml_(v == null ? "" : String(v));
-  const dateKey = day && day.dateKey ? String(day.dateKey) : "";
-  const dayName = day && day.dayName ? String(day.dayName) : "";
-  const mmddyy = formatDateMMDDYY_(dateKey);
-
-  const levelNum = (day && typeof day.level === "number") ? day.level : parseInt(day && day.level, 10);
-  const levelStr = Number.isFinite(levelNum) && levelNum > 0 ? String(levelNum) : "--";
-
-  const scoreNum = (day && (day.dailyScore != null)) ? day.dailyScore :
-                   (day && (day.score != null)) ? day.score : null;
-  const scoreStr = (typeof scoreNum === "number" && Number.isFinite(scoreNum)) ? String(scoreNum) :
-                   (scoreNum != null && String(scoreNum).trim() !== "") ? String(scoreNum) : "--";
-
-  if (__llSkyHeader) {
-    __llSkyHeader.innerHTML = `${safe(mmddyy)} | Level ${safe(levelStr)} | Score ${safe(scoreStr)}`;
+  // Daily Reflection
+  const refl = (day && (day.reflection || day.dailyReflection || day.reflectionText)) ? (day.reflection || day.dailyReflection || day.reflectionText) : '';
+  if (refl && refl.toString().trim()){
+    setSkyBoxBody_(__llBoxes[1], `<div class="sbMeta">${escapeHtml_(pretty)}</div>${escapeHtml_(refl)}`);
+  } else {
+    setSkyBoxBody_(__llBoxes[1], `<div class="sbMeta">${escapeHtml_(pretty)}</div><div class="sbEmpty">(no daily reflection for this day)</div>`);
   }
 
-  // 0) Daily Statistics
-  if (__llBoxes[0]) {
-    const src = day && day._src ? String(day._src) : "unknown";
-    const p = day && day.primary ? String(day.primary) : "";
-    const s = day && day.secondary ? String(day.secondary) : "";
-    const lines = [
-      `Week: ${safe(weekKey || "--")}`,
-      `Day: ${safe(dayName || "--")}`,
-      `Date: ${safe(dateKey || "--")}`,
-      `Level: ${safe(levelStr)}   Score: ${safe(scoreStr)}`,
-      `Src: ${safe(src)}`,
-      (p || s) ? `Colors: ${safe(p)} / ${safe(s)}` : ""
-    ].filter(Boolean);
-    setSkyBoxBody_(__llBoxes[0], lines.map(l => `<div class="sbLine">${l}</div>`).join(""));
-  }
-
-  // 1) Daily Reflection
-  const refl = (day && (day.reflection || day.dailyReflection)) ? String(day.reflection || day.dailyReflection) : "";
-  if (__llBoxes[1]) {
-        const reflHtml = safe(refl).replace(/\n/g, "<br>");
-    setSkyBoxBody_(__llBoxes[1], reflHtml || `<div class="sbLine">${safe("No reflection text")}</div>`);
-    setSkyBoxMeta_(__llBoxes[1], safe(refl ? "From garden export" : "(no daily reflection for this day)"));
-  }
-
-  // 2) Haiku
-  const haikuRaw = (day && day.haiku) ? String(day.haiku) : "";
-  if (__llBoxes[2]) {
-        const haikuLines = haikuRaw.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
-    const haikuHtml = haikuLines.length
-      ? haikuLines.map(line => `<div class="sbLine">${safe(line)}</div>`).join("")
-      : `<div class="sbLine">${safe("No haiku text")}</div>`;
-    setSkyBoxBody_(__llBoxes[2], haikuHtml);
-    setSkyBoxMeta_(__llBoxes[2], safe(haikuRaw ? "From garden export" : "(no haiku for this day)"));
-  }
-
-  // 3) Word Wall (optional, exported later)
-  const ww = (day && (day.wordWall || day.wordwall || day.wordCloud || day.wordcloud)) ? String(day.wordWall || day.wordwall || day.wordCloud || day.wordcloud) : "";
-  if (__llBoxes[3]) {
-    setSkyBoxMeta_(__llBoxes[3], safe(ww ? "From garden export" : "(word wall not present in export yet)"));
-    const wwHtml = safe(ww).replace(/\n/g, "<br>");
-    setSkyBoxBody_(__llBoxes[3], wwHtml || `<div class="sbLine">${safe("Word wall not available")}</div>`);
+  // Haiku
+  const haiku = (day && (day.haiku || day.haikuText)) ? (day.haiku || day.haikuText) : '';
+  if (haiku && haiku.toString().trim()){
+    // Preserve newlines
+    const lines = haiku.toString().split(/\r?\n/).map(l => escapeHtml_(l)).join('\n');
+    setSkyBoxBody_(__llBoxes[2], `<div class="sbMeta">${escapeHtml_(pretty)}</div>${lines}`);
+  } else {
+    setSkyBoxBody_(__llBoxes[2], `<div class="sbMeta">${escapeHtml_(pretty)}</div><div class="sbEmpty">(no haiku for this day)</div>`);
   }
 }
 
 
-// Phase B Step 1: WeekKey helpers (stable, ISO-week based)
+
+  // ============================================================
+  // Phase B Step 1: WeekKey helpers (stable, ISO-week based)
   // ============================================================
   function isoWeekKeyFromDateKey_(dateKey){
     // dateKey: 'YYYY-MM-DD' (local-ish). Uses UTC math to avoid TZ drift.
@@ -6150,8 +6061,6 @@ function layoutSkyBoxes_(wrap){
   // Center boxes vertically within the available band (below the day header, above the flowers)
   const idealY = minTop + Math.max(0, Math.round((availH - groupH) / 2));
   let groupY = Math.min(Math.max(idealY, minTop), Math.max(minTop, maxBottom - groupH));
-  // Hard clamp to the visible stage so cards never end up below the viewport.
-  groupY = Math.max(minTop, Math.min(groupY, H - STAGE_PAD - groupH));
 
   // Avoid week header overlap by clamping left if needed
   if (keep){
