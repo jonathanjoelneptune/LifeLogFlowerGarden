@@ -214,7 +214,7 @@ console.log("[v89.6.42] loaded", new Date().toISOString());
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>LifeLog Garden Walk v99.1.43</title>
+<title>LifeLog Garden Walk v99.1.44</title>
 <style>
 /* ============================================
    v87.3.63.0: CLEANED + OPTIMIZED CSS
@@ -1593,8 +1593,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 #__versionBanner{position:fixed;left:12px;top:12px;z-index:99999;padding:8px 10px;border-radius:10px;background:rgba(255,0,255,0.22);border:2px solid magenta;color:#111;font:600 12px/1.2 system-ui,Segoe UI,Arial;}
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: garden_v99.1.43_GardenExport_HaikuReflectionSkyboxes_KeepFocusToday_Fix20.html<span id="__bannerFileName">garden_v99.1.43_GardenExport_HaikuReflectionSkyboxes_StatsLayout_Fix16.html [v99.1.43] created 2026-02-06T07:35:53Z</span><br>
-Version: v99.1.43<br>
+File: garden_v99.1.44_GardenExport_HaikuReflectionSkyboxes_KeepFocusToday_Fix20.html<span id="__bannerFileName">garden_v99.1.44_GardenExport_HaikuReflectionSkyboxes_StatsLayout_Fix16.html [v99.1.44] created 2026-02-06T07:35:53Z</span><br>
+Version: v99.1.44<br>
 P26-02-06T20:47:21Z<br>
 If you can see this, you opened the correct file.</div>
 <script>
@@ -1611,7 +1611,7 @@ If you can see this, you opened the correct file.</div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.1.43 loaded", new Date().toISOString());
+  console.log("[VERSION] v99.1.44 loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -3903,24 +3903,6 @@ if(window.__llForceTodayAfterExport_ && fullRebuild){
 // Expose rebuild hook for GardenExport loader (different script scope)
 try { window.__LL_syncRenderedWeeks_ = syncRenderedWeeks_; } catch(e) {}
 try { window.__LL_getFrontIndex = () => (typeof frontIndex === "number" ? frontIndex : 0); } catch(e) {}
-try { 
-  // Programmatic focus setter (used after GardenExport reload to keep today/week centered)
-  window.__LL_setWeekFocusIndex = (idx, fullRebuild=true) => {
-    try {
-      if (typeof idx !== "number" || !isFinite(idx)) return;
-      idx = Math.max(0, Math.round(idx));
-      // Update scroll state (lives in this module scope)
-      try { targetIndex = idx; } catch(e) {}
-      try { currentOffset = idx; } catch(e) {}
-      try { lastFocusIndex = idx; } catch(e) {}
-      try { frontIndex = idx; } catch(e) {}
-      // Re-render
-      try { if (typeof syncRenderedWeeks_ === "function") syncRenderedWeeks_(idx, !!fullRebuild); } catch(e) {}
-      // Keep back-row PNG overlay in sync if present
-      try { if (window.__BACKPNG_HTML_sync) window.__BACKPNG_HTML_sync("focus"); } catch(e) {}
-    } catch(e) {}
-  };
-} catch(e) {}
 
 
 // v87.3.63.0: Lazy render flowers for a band
@@ -8840,40 +8822,153 @@ window.setGardenDataSourceLabel_("GardenExport");
     }catch(e){}
 
     // Force a rebuild so already-rendered weeks pick up export data.
-    try{ forceRebuild(); }catch(e){}
+    try{ forceRebuild(todayWeekIndex_());
+    }catch(e){}
   }
 
-  function forceRebuild(){
+  function forceRebuild(desiredFocus){
+  // Full rebuild after export load. Keep focus on "today" (or a provided focus index).
+  try{ console.log(ts_()+' [FRONT] fullRebuild: clearing rendered bands and recomputing week models'); }catch(e){}
+  const maxIdx = Math.max(0, (WEEK_MODELS ? (WEEK_MODELS.length - 1) : 0));
+  let focus = (typeof desiredFocus === 'number' && isFinite(desiredFocus)) ? desiredFocus : (typeof todayWeekIndex_ === 'function' ? todayWeekIndex_() : 0);
+  focus = Math.max(0, Math.min(maxIdx, focus));
+
+  // Drive both "target" and "current" to the same place so labels + geometry agree.
+  try{ targetIndex = focus; }catch(e){}
+  try{ currentOffset = focus; }catch(e){}
+
+  // Perform a true full rebuild at the intended focus.
+  try{ syncRenderedWeeks_(focus, true); }catch(e){ console.error('forceRebuild syncRenderedWeeks_ failed', e); }
+
+  // Re-sync back-row PNG HTML layer if enabled.
+  try{ syncBackPngFlowers_(focus); }catch(e){}
+
+  // One extra tick after layout to ensure date-strip + skyboxes settle.
   try{
-    const fi = (window && typeof window.__LL_getFrontIndex === "function") ? window.__LL_getFrontIndex() : 0;
-    const desired = (typeof todayWeekIndex_ === "function") ? todayWeekIndex_() : fi;
-
-    // Temporarily ignore wheel/gesture input while we snap (prevents immediate drift)
-    try{ window.__llIgnoreWheelUntilMs_ = performance.now() + 2500; }catch(e){}
-
-    // Preferred: hard snap scroll state + re-render in one place
-    if(window && typeof window.__LL_setWeekFocusIndex === "function"){
-      window.__LL_setWeekFocusIndex(desired, true);
-      console.log("[export] Rebuild requested via __LL_setWeekFocusIndex focus=" + desired + " (fi was " + fi + ")");
-      return;
-    }
-
-    // Fallback: re-render only (may still leave label drift in some builds)
-    const fn = (typeof syncRenderedWeeks_ === "function")
-      ? syncRenderedWeeks_
-      : (window && window.__LL_syncRenderedWeeks_ ? window.__LL_syncRenderedWeeks_ : null);
-
-    if(typeof fn === "function"){
-      fn(desired, true);
-      console.log("[export] Rebuild requested via syncRenderedWeeks_ focus=" + desired + " (fi was " + fi + ")");
-    } else {
-      console.warn("[export] WARN: no rebuild hook found (syncRenderedWeeks_ not in scope). Export applied but no forced rebuild.");
-    }
-  }catch(e){
-    console.warn("[export] ERROR: rebuild failed: " + (e && e.message ? e.message : String(e)));
-  }
+    requestAnimationFrame(() => {
+      try{ syncRenderedWeeks_(focus, false); }catch(e){}
+      try{ syncBackPngFlowers_(focus); }catch(e){}
+    });
+  }catch(e){}
 }
 
+function proxyFetchExport_(targetUrl){
+    // NOTE: this depends on a same-origin proxy endpoint (optional).
+    // If you don't have one, this will fail and we fall back to error handling.
+    const proxyUrl = buildProxyUrl_(targetUrl);
+    if(!proxyUrl) return Promise.reject(new Error("No proxy configured"));
+
+    return fetch(proxyUrl, { method: "GET", cache: "no-store" })
+      .then((res)=>res.text().then((txt)=>({res, txt})))
+      .then(({res, txt})=>{
+        if(!res.ok) throw new Error("Proxy HTTP " + res.status + " " + res.statusText + " :: " + txt.slice(0,120));
+        const payload = safeJsonParse_(txt);
+        console.log("[export] proxy fetch OK", {bytes: txt.length});
+        return payload;
+      });
+  }
+
+
+  function copyShareLink(execUrl, bot, limit){
+    const u = new URL(window.location.href);
+    u.searchParams.set("exec", execUrl);
+    u.searchParams.set("bot", bot);
+    u.searchParams.set("limit", String(limit));
+    navigator.clipboard.writeText(u.toString()).then(()=>{
+      log("Copied share link.");
+    }).catch(()=>{
+      log("WARN: clipboard copy failed.");
+    });
+  }
+
+  function initUI(){
+// Safety: if this file is used as a module in a host page, keep UI init from crashing.  if (typeof window.setGardenDataSourceLabel_ !== 'function' && typeof setGardenDataSourceLabel_ === 'function') { window.setGardenDataSourceLabel_ = setGardenDataSourceLabel_; }
+  const log = (msg)=>{ 
+    try{ 
+      if(typeof logDbg_ === "function") logDbg_(msg); 
+      else console.log(msg);
+    }catch(_e){ console.log(msg); }
+  };
+  const $ = (id)=>document.getElementById(id);
+
+  // Optional UI controls (may be absent in lightweight hosted builds)
+  const execInput = $("llExecInput");
+  const botSelect = $("llBotSelect");
+  const limitInput = $("llLimitInput");
+  const btnReload = $("llBtnReload");
+  const btnCopy = $("llBtnCopy");
+
+  if(!execInput) log("UI: missing llExecInput");
+  if(!botSelect) log("UI: missing llBotSelect");
+  if(!limitInput) log("UI: missing llLimitInput");
+  if(!btnReload) log("UI: missing llBtnReload");
+  if(!btnCopy) log("UI: missing llBtnCopy");
+
+  const qs = (typeof URLSearchParams !== "undefined") ? new URLSearchParams(window.location.search) : null;
+  const qsExec = qs ? (qs.get("exec") || "") : "";
+window.DEFAULT_EXEC_URL_GITHUB = window.DEFAULT_EXEC_URL_GITHUB || 'https://script.google.com/macros/s/AKfycbxPOVYXzpDdh2Fo4CREcf7R9bHpkF4sHLCskUnm0Qvr9BlhbjrAXI_ZVbG3U82FZ2Nt/exec';
+const qsBot = qs ? (qs.get("bot") || "") : "";
+  const qsLimit = qs ? (qs.get("limit") || "") : "";
+
+  // Exec URL resolution precedence:
+  //  1) ?exec=... (querystring)
+  //  2) host_boot.js globals
+  //  3) localStorage (persisted)
+  const hostExec =
+    (window.__LIFELOG_EXEC_URL__ || window.LLG_EXEC_URL || window.LIFELOG_EXEC_URL || "");
+  const lsExec = (function() {
+    try { return localStorage.getItem("LLG_EXEC_URL") || ""; } catch(e) { return ""; }
+  })();
+const autoGithubExec = ((location && location.hostname && location.hostname.includes("github.io")) ? window.DEFAULT_EXEC_URL_GITHUB : "");
+
+  const execUrlRaw = (qsExec || hostExec || lsExec || autoGithubExec || "");
+  const execUrl = normalizeExec(execUrlRaw);
+  if(execInput) execInput.value = execUrl;
+
+  // If we have a URL (from qs or host), persist it for later refreshes
+  if(execUrl && (qsExec || hostExec) && execUrl !== lsExec) {
+    try { localStorage.setItem("LLG_EXEC_URL", execUrl); } catch(e) {}
+  }
+
+  // Auto-load real GardenExport data even in "utility-lite" UI (no reload button present)
+  const bot = (qsBot || (window.__LIFELOG_BOT__ || "Winston"));
+  const limit = (function() {
+    const n = parseInt(qsLimit || (window.__LIFELOG_LIMIT__ || ""), 10);
+    return (Number.isFinite(n) && n > 0) ? n : 5000;
+  })();
+
+  if(execUrl) {
+    window.setGardenDataSourceLabel_("GardenExport (loading...)");
+    if(btnReload) {
+      // classic path: re-use existing UI wiring if present
+      btnReload.click();
+        } else if (typeof fetchExport === "function" && typeof applyExport === "function") {
+      // headless path: fetch + apply + rebuild
+      (()=>{
+        try{
+          fetchExport(execUrl, bot, limit)
+            .then((payload)=>{
+              applyExport(payload);
+              if(typeof forceRebuild === "function") forceRebuild();
+            })
+            .catch((e)=>{
+              log("[export] load failed: " + (e && e.message ? e.message : String(e)));
+              window.setGardenDataSourceLabel_("Offline (export error)");
+            });
+        }catch(e){
+          log("[export] load failed: " + (e && e.message ? e.message : String(e)));
+          window.setGardenDataSourceLabel_("Offline (export error)");
+        }
+      })();
+    } else {
+      log("Exec URL present but export loader is not available; falling back to Offline.");
+      window.setGardenDataSourceLabel_("Offline (placeholder)");
+    }
+  } else {
+    log("Offline mode. Provide exec URL to load real GardenExport data.");
+    window.setGardenDataSourceLabel_("Offline (placeholder)");
+  }
+}
 
   if(document.readyState === "loading"){
     document.addEventListener("DOMContentLoaded", initUI);
