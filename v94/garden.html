@@ -214,7 +214,7 @@ console.log("[v89.6.42] loaded", new Date().toISOString());
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>LifeLog Garden Walk v99.1.40</title>
+<title>LifeLog Garden Walk v99.1.42</title>
 <style>
 /* ============================================
    v87.3.63.0: CLEANED + OPTIMIZED CSS
@@ -1593,9 +1593,9 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 #__versionBanner{position:fixed;left:12px;top:12px;z-index:99999;padding:8px 10px;border-radius:10px;background:rgba(255,0,255,0.22);border:2px solid magenta;color:#111;font:600 12px/1.2 system-ui,Segoe UI,Arial;}
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: garden_v99.1.40_GardenExport_HaikuReflectionSkyboxes_KeepFocusToday_Fix20.html<span id="__bannerFileName">garden_v99.1.40_GardenExport_HaikuReflectionSkyboxes_StatsLayout_Fix16.html [v99.1.40] created 2026-02-06T07:35:53Z</span><br>
-Version: v99.1.40<br>
-Created: 2026-02-06T20:24:33Z<br>
+File: garden_v99.1.42_GardenExport_HaikuReflectionSkyboxes_KeepFocusToday_Fix20.html<span id="__bannerFileName">garden_v99.1.42_GardenExport_HaikuReflectionSkyboxes_StatsLayout_Fix16.html [v99.1.42] created 2026-02-06T07:35:53Z</span><br>
+Version: v99.1.42<br>
+P26-02-06T20:47:21Z<br>
 If you can see this, you opened the correct file.</div>
 <script>
 (function(){
@@ -1611,7 +1611,7 @@ If you can see this, you opened the correct file.</div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.1.40 loaded", new Date().toISOString());
+  console.log("[VERSION] v99.1.42 loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -4187,6 +4187,8 @@ function clampIndex(i){ return Math.max(0, i); }
 
 function triggerEpochClampCue_(reason){
   try{
+    const __now = performance.now();
+    if (window.__llIgnoreWheelUntilMs_ && __now < window.__llIgnoreWheelUntilMs_) return;
     const st = DOM.stage || document.getElementById('stage');
     if (!st) return;
     st.classList.remove('llEpochBounce');
@@ -4201,6 +4203,7 @@ function triggerEpochClampCue_(reason){
 function onWheel(e){
   e.preventDefault();
   const now = performance.now();
+  if (window.__llIgnoreWheelUntilMs_ && now < window.__llIgnoreWheelUntilMs_) { lastWheelAt = now; return; }
   if (now - lastWheelAt < 55) return;
   lastWheelAt = now;
 
@@ -8837,6 +8840,7 @@ window.setGardenDataSourceLabel_("GardenExport");
         // Always re-focus to today's week using the current dataset baseline.
         const desired = (typeof todayWeekIndex_ === "function") ? todayWeekIndex_() : fi;
 
+        window.__llIgnoreWheelUntilMs_ = performance.now() + 2500;
         try { lastFrontIndex = desired; } catch(e) {}
 
         // Hard snap the scroll/offset state so visuals and UI labels match immediately.
