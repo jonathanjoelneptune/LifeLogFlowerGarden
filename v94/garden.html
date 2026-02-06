@@ -211,7 +211,7 @@ console.log("[v89.6.42] loaded", new Date().toISOString());
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>LifeLog Garden Walk v99.1.22</title>
+<title>LifeLog Garden Walk v99.1.23</title>
 <style>
 /* ============================================
    v87.3.63.0: CLEANED + OPTIMIZED CSS
@@ -1578,8 +1578,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 #__versionBanner{position:fixed;left:12px;top:12px;z-index:99999;padding:8px 10px;border-radius:10px;background:rgba(255,0,255,0.22);border:2px solid magenta;color:#111;font:600 12px/1.2 system-ui,Segoe UI,Arial;}
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.1.22_GardenExport_HaikuReflectionSkyboxes_Fix3.html</span><br>
-Version: v99.1.22<br>
+File: <span id="__bannerFileName">garden_v99.1.23_GardenExport_HaikuReflectionSkyboxes_Fix3.html</span><br>
+Version: v99.1.23<br>
 Created: 2026-02-05T23:21:16Z<br>
 <b>If you can see this, you opened the correct file.</b>
 </div>
@@ -1597,7 +1597,7 @@ Created: 2026-02-05T23:21:16Z<br>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.1.22 loaded", new Date().toISOString());
+  console.log("[VERSION] v99.1.23 loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -6150,6 +6150,8 @@ function layoutSkyBoxes_(wrap){
   // Center boxes vertically within the available band (below the day header, above the flowers)
   const idealY = minTop + Math.max(0, Math.round((availH - groupH) / 2));
   let groupY = Math.min(Math.max(idealY, minTop), Math.max(minTop, maxBottom - groupH));
+  // Hard clamp to the visible stage so cards never end up below the viewport.
+  groupY = Math.max(minTop, Math.min(groupY, H - STAGE_PAD - groupH));
 
   // Avoid week header overlap by clamping left if needed
   if (keep){
