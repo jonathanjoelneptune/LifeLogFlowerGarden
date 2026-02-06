@@ -1588,7 +1588,7 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 <div id="__versionBanner">LifeLog Garden Walk<br>
 File: <span id="__bannerFileName">garden_v99.1.26_GardenExport_HaikuReflectionSkyboxes_Fix5.html</span><br>
 Version: v99.1.26<br>
-Created: 2026-02-06T00:36:38Z<br>
+Created: 2026-02-06T03:30:00.000Z<br>
 <b>If you can see this, you opened the correct file.</b>
 </div>
 <script>
@@ -1605,7 +1605,7 @@ Created: 2026-02-06T00:36:38Z<br>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.1.29 loaded", new Date().toISOString());
+  console.log("[VERSION] v99.1.30 loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -5547,6 +5547,23 @@ __llBoxes = titles.map((t,i)=>{
   __llBoxGrid.appendChild(b);
   return b;
 });
+  // Expose skyboxes for refitting on resize.
+  window.__llSkyBoxes = __llBoxes;
+
+  // Auto-refit text when boxes change size (responsive layouts, window resizes, etc).
+  try{
+    if (!window.__llSkyBoxResizeObserver && ("ResizeObserver" in window)){
+      window.__llSkyBoxResizeObserver = new ResizeObserver(() => {
+        scheduleRefitSkyBoxes_();
+      });
+    }
+    if (window.__llSkyBoxResizeObserver){
+      __llBoxes.forEach((b) => {
+        try{ window.__llSkyBoxResizeObserver.observe(b); }catch(e){}
+      });
+    }
+  }catch(e){}
+
 }
 
 function setSkyBoxBody_(box, html){
@@ -5563,7 +5580,8 @@ function setSkyBoxBody_(box, html){
 // We only scale body text. Headers remain unchanged.
 const SKYFIT_ = {
   minPx: 10,
-  maxPx: 18,
+  // NOTE: maxPx is computed per-skybox and per-resize so short content can scale up to fill the box.
+  maxPx: 64,
   lineHeightMult: 1.25,
   epsPx: 1.0,
 };
@@ -5607,6 +5625,60 @@ function _fits_(el){
   // Allow a tiny epsilon to avoid jitter from fractional pixels.
   const eps = SKYFIT_.epsPx;
   return (el.scrollHeight <= el.clientHeight + eps) && (el.scrollWidth <= el.clientWidth + eps);
+}
+
+
+function getSkyBoxFitOpts_(boxEl, bodyEl){
+  try{
+    const rect = boxEl.getBoundingClientRect();
+    const h = Math.max(1, rect.height || boxEl.clientHeight || 1);
+    const w = Math.max(1, rect.width || boxEl.clientWidth || 1);
+
+    // Identify which skybox this is (0=Stats, 1=Reflection, 2=Haiku, 3=Word Wall)
+    const idx = Number((boxEl.dataset && boxEl.dataset.idx) ? boxEl.dataset.idx : (boxEl.getAttribute("data-skybox-idx") || "0"));
+
+    // Allow different scaling aggressiveness per box type.
+    // Goal: short content (haiku) can be big, long content (reflection) stays smaller.
+    let frac = 0.22;   // default
+    if (idx === 0) frac = 0.24;        // Daily Statistics
+    if (idx === 1) frac = 0.18;        // Daily Reflection (usually longest)
+    if (idx === 2) frac = 0.32;        // Haiku (usually shortest)
+    if (idx === 3) frac = 0.22;        // Word Wall
+
+    const computedMax = Math.floor(Math.min(72, Math.max(16, h * frac)));
+
+    // Slightly reduce line height when text is small to use space better.
+    const lh = (idx === 1) ? 1.22 : 1.25;
+
+    return {
+      minPx: SKYFIT_.minPx,
+      maxPx: computedMax,
+      lineHeightMult: lh,
+      epsPx: SKYFIT_.epsPx,
+    };
+  }catch(e){
+    return SKYFIT_;
+  }
+}
+
+function refitAllSkyBoxes_(){
+  try{
+    if (!window.__llSkyBoxes) return;
+    window.__llSkyBoxes.forEach((boxEl) => {
+      const bodyEl = boxEl && boxEl.querySelector ? boxEl.querySelector(".body") : null;
+      if (!bodyEl) return;
+      fitElementText_(bodyEl, getSkyBoxFitOpts_(boxEl, bodyEl));
+    });
+  }catch(e){}
+}
+
+let __llSkyFitResizeTmr = null;
+function scheduleRefitSkyBoxes_(){
+  if (__llSkyFitResizeTmr) clearTimeout(__llSkyFitResizeTmr);
+  __llSkyFitResizeTmr = setTimeout(() => {
+    __llSkyFitResizeTmr = null;
+    refitAllSkyBoxes_();
+  }, 80);
 }
 
 function fitElementText_(el){
@@ -7788,7 +7860,7 @@ window.applySelectedAdornments = applySelectedAdornments;
   }, true);
 
   // Keep halos positioned on resize / scroll
-  window.addEventListener("resize", ()=>setTimeout(applySelectedAdornments, 0));
+  window.addEventListener("resize", ()=>{ setTimeout(applySelectedAdornments, 0); scheduleRefitSkyBoxes_(); });
   window.addEventListener("scroll", ()=>setTimeout(applySelectedAdornments, 0), true);
 
   // Observe DOM so we can enlarge hotspots as they are created
