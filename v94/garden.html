@@ -214,7 +214,7 @@ console.log("[v89.6.42] loaded", new Date().toISOString());
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>LifeLog Garden Walk v99.1.39</title>
+<title>LifeLog Garden Walk v99.1.40</title>
 <style>
 /* ============================================
    v87.3.63.0: CLEANED + OPTIMIZED CSS
@@ -1593,9 +1593,9 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 #__versionBanner{position:fixed;left:12px;top:12px;z-index:99999;padding:8px 10px;border-radius:10px;background:rgba(255,0,255,0.22);border:2px solid magenta;color:#111;font:600 12px/1.2 system-ui,Segoe UI,Arial;}
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: garden_v99.1.39_GardenExport_HaikuReflectionSkyboxes_KeepFocusToday_Fix19.html<span id="__bannerFileName">garden_v99.1.39_GardenExport_HaikuReflectionSkyboxes_StatsLayout_Fix16.html [v99.1.39] created 2026-02-06T07:35:53Z</span><br>
-Version: v99.1.39<br>
-Created: 2026-02-06T19:49:59Z<br>
+File: garden_v99.1.40_GardenExport_HaikuReflectionSkyboxes_KeepFocusToday_Fix20.html<span id="__bannerFileName">garden_v99.1.40_GardenExport_HaikuReflectionSkyboxes_StatsLayout_Fix16.html [v99.1.40] created 2026-02-06T07:35:53Z</span><br>
+Version: v99.1.40<br>
+Created: 2026-02-06T20:24:33Z<br>
 If you can see this, you opened the correct file.</div>
 <script>
 (function(){
@@ -1611,7 +1611,7 @@ If you can see this, you opened the correct file.</div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.1.39 loaded", new Date().toISOString());
+  console.log("[VERSION] v99.1.40 loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -2764,7 +2764,24 @@ const WEEK_LEVEL_NAMES = { 1:"Quiet Week", 2:"Gentle Week", 3:"Strong Week", 4:"
    - Active window: 15 past / 5 future around focusWeekIndex
    - Only the current active row (focusWeekIndex) is selectable
    ============================================================ */
-const GARDEN_EPOCH_DATEKEY = "2025-12-15"; // Monday
+const GARDEN_EPOCH_DATEKEY = "2025-12-15"; 
+// Compute weekIndex (0-based) for today's date relative to GARDEN_EPOCH_DATEKEY.
+function __llComputeFocusWeekIndexForToday_(){
+  try{
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth()+1).padStart(2,"0");
+    const dd = String(today.getDate()).padStart(2,"0");
+    const todayKey = `${yyyy}-${mm}-${dd}`;
+    const epoch = parseDateKey_(GARDEN_EPOCH_DATEKEY);
+    const t = parseDateKey_(todayKey);
+    const days = Math.floor((t - epoch) / 86400000);
+    if(!isFinite(days)) return 0;
+    return Math.max(0, Math.floor(days / 7));
+  }catch(e){ return 0; }
+}
+
+// Monday
 const PAST_WEEKS_RENDERED = 15;
 const FUTURE_WEEKS_RENDERED = 5;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -3803,6 +3820,21 @@ function reflowBandArrays_(){
 }
 
 function syncRenderedWeeks_(focusWeekIndex, fullRebuild=false){
+// After GardenExport is applied, some code paths can inadvertently rebuild with focus=0.
+// If flagged, force the rebuild focus back to today's week and align scroll indices.
+if(window.__llForceTodayAfterExport_ && fullRebuild){
+  try{
+    const tIdx = __llComputeFocusWeekIndexForToday_();
+    if(typeof tIdx === "number" && isFinite(tIdx)){
+      focusWeekIndex = tIdx;
+      try{ targetIndex = tIdx; }catch(e){}
+      try{ currentOffset = tIdx; }catch(e){}
+    }
+  }catch(e){}
+  window.__llForceTodayAfterExport_ = false;
+}
+
+
   dbg_("[FRONT] syncRenderedWeeks start focus="+(focusWeekIndex|0)+" fullRebuild="+!!fullRebuild);
 
   if (fullRebuild){
@@ -8779,7 +8811,8 @@ const LS_KEY = "LL_V94_HOST_CFG";
 
     window.__LL_EXPORT = { payload, byDate, byWeek, stats: { rowCount: payload.rows.length, minDate, maxDate, rowsWithDayLevel } };
     usingExport = true;
-    window.setGardenDataSourceLabel_("GardenExport");
+    window.__llForceTodayAfterExport_ = true;
+window.setGardenDataSourceLabel_("GardenExport");
 
     try{
       console.log("[export] rows=" + payload.rows.length + " dayLevel>0=" + rowsWithDayLevel + " range=" + (minDate||"?") + " .. " + (maxDate||"?"));
