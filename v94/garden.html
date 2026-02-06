@@ -214,7 +214,7 @@ console.log("[v89.6.42] loaded", new Date().toISOString());
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>LifeLog Garden Walk v99.1.44</title>
+<title>LifeLog Garden Walk v99.1.45</title>
 <style>
 /* ============================================
    v87.3.63.0: CLEANED + OPTIMIZED CSS
@@ -1593,9 +1593,9 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 #__versionBanner{position:fixed;left:12px;top:12px;z-index:99999;padding:8px 10px;border-radius:10px;background:rgba(255,0,255,0.22);border:2px solid magenta;color:#111;font:600 12px/1.2 system-ui,Segoe UI,Arial;}
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: garden_v99.1.44_GardenExport_HaikuReflectionSkyboxes_KeepFocusToday_Fix20.html<span id="__bannerFileName">garden_v99.1.44_GardenExport_HaikuReflectionSkyboxes_StatsLayout_Fix16.html [v99.1.44] created 2026-02-06T07:35:53Z</span><br>
-Version: v99.1.44<br>
-P26-02-06T20:47:21Z<br>
+File: <span id="__bannerFileName">garden_v99.1.45_GardenExport_HaikuReflectionSkyboxes_KeepFocusToday_Fix25.html</span><br>
+Version: v99.1.45<br>
+Created: 2026-02-06T21:47:23Z<br>
 If you can see this, you opened the correct file.</div>
 <script>
 (function(){
@@ -1609,9 +1609,10 @@ If you can see this, you opened the correct file.</div>
   }catch(e){}
 })();
 </script>
+
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.1.44 loaded", new Date().toISOString());
+  console.log("[VERSION] v99.1.45 loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -8822,36 +8823,193 @@ window.setGardenDataSourceLabel_("GardenExport");
     }catch(e){}
 
     // Force a rebuild so already-rendered weeks pick up export data.
-    try{ forceRebuild(todayWeekIndex_());
-    }catch(e){}
+    try{ forceRebuild(); }catch(e){}
   }
 
-  function forceRebuild(desiredFocus){
-  // Full rebuild after export load. Keep focus on "today" (or a provided focus index).
-  try{ console.log(ts_()+' [FRONT] fullRebuild: clearing rendered bands and recomputing week models'); }catch(e){}
-  const maxIdx = Math.max(0, (WEEK_MODELS ? (WEEK_MODELS.length - 1) : 0));
-  let focus = (typeof desiredFocus === 'number' && isFinite(desiredFocus)) ? desiredFocus : (typeof todayWeekIndex_ === 'function' ? todayWeekIndex_() : 0);
-  focus = Math.max(0, Math.min(maxIdx, focus));
+  function forceRebuild(){
+    try{
+      const fn = (typeof syncRenderedWeeks_ === "function")
+        ? syncRenderedWeeks_
+        : (window && window.__LL_syncRenderedWeeks_ ? window.__LL_syncRenderedWeeks_ : null);
 
-  // Drive both "target" and "current" to the same place so labels + geometry agree.
-  try{ targetIndex = focus; }catch(e){}
-  try{ currentOffset = focus; }catch(e){}
+      if(typeof fn === "function"){
+        const fi = (window && typeof window.__LL_getFrontIndex === "function")
+          ? window.__LL_getFrontIndex()
+          : 0;
 
-  // Perform a true full rebuild at the intended focus.
-  try{ syncRenderedWeeks_(focus, true); }catch(e){ console.error('forceRebuild syncRenderedWeeks_ failed', e); }
+        // After GardenExport applies, the week index mapping (firstWeekMondayMs_) can shift.
+        // Always re-focus to today's week using the current dataset baseline.
+        const desired = (typeof todayWeekIndex_ === "function") ? todayWeekIndex_() : fi;
 
-  // Re-sync back-row PNG HTML layer if enabled.
-  try{ syncBackPngFlowers_(focus); }catch(e){}
+        window.__llIgnoreWheelUntilMs_ = performance.now() + 2500;
+        try { lastFrontIndex = desired; } catch(e) {}
 
-  // One extra tick after layout to ensure date-strip + skyboxes settle.
-  try{
-    requestAnimationFrame(() => {
-      try{ syncRenderedWeeks_(focus, false); }catch(e){}
-      try{ syncBackPngFlowers_(focus); }catch(e){}
+        // Hard snap the scroll/offset state so visuals and UI labels match immediately.
+        try{
+          if(typeof S === "object" && S){
+            S.targetIndex = desired;
+            S.targetScrollY = desired;
+            S.currentOffset = desired;
+            S.vel = 0;
+            S.lastTs = 0;
+          }
+        }catch(e){}
+
+        fn(desired, true);
+        console.log("[export] Rebuild requested via syncRenderedWeeks_ focus=" + desired + " (fi was " + fi + ")");
+  // [KEEP-FOCUS-TODAY] After GardenExport refresh, force snap back to today's week and re-render.
+  // This prevents a post-export "label drift" where the UI shows the oldest week until a scroll occurs.
+  try {
+    window.setTimeout(() => {
+      try {
+        const t = todayWeekIndex_();
+        S.targetIndex = t;
+        S.currentOffset = t;
+        // Force a sync even if the index did not appear to change.
+        S.lastFrontIndex = -999999;
+        if (typeof window.__LL_syncRenderedWeeks_ === "function") {
+          window.__LL_syncRenderedWeeks_(t, true);
+        } else if (typeof syncRenderedWeeks_ === "function") {
+          syncRenderedWeeks_(t, true);
+        }
+        CACHED.transformsDirty = true;
+      } catch (e2) {}
+    }, 0);
+  } catch (e) {}
+
+      }else{
+        console.warn("[export] WARN: no rebuild hook found (syncRenderedWeeks_ not in scope). Export applied but no forced rebuild.");
+      }
+    }catch(e){
+      console.warn("[export] ERROR: rebuild failed: " + (e && e.message ? e.message : String(e)));
+    }
+  }
+
+  
+  // ===============================
+  // GardenExport loading (direct fetch w/ proxy fallback)
+  // ===============================
+
+  function buildExportUrl_(execUrl, bot, limit){
+    if(!execUrl) return null;
+    try{
+      const u = new URL(execUrl);
+      u.searchParams.set("r","api_garden_export");
+      if(bot) u.searchParams.set("bot", String(bot));
+      if(limit != null && String(limit).trim() !== "") u.searchParams.set("limit", String(limit));
+      // Ask the Apps Script to return JSON (not JSONP).
+      u.searchParams.set("format", "json");
+      return u.toString();
+    }catch(e){
+      // If it's not a valid absolute URL, just return as-is.
+      return execUrl;
+    }
+  }
+
+  function safeJsonParse_(txt){
+    // Some failure modes return HTML. Make this noisy and safe.
+    const s = (txt == null) ? "" : String(txt);
+    const trimmed = s.trim();
+    if(!trimmed) throw new Error("Empty response");
+    if(trimmed[0] === "<"){
+      throw new Error("Non-JSON response (starts with '<'): " + trimmed.slice(0, 80));
+    }
+    return JSON.parse(trimmed);
+  }
+
+  function fetchExport(execUrl, bot, limit){
+    const url = buildExportUrl_(execUrl, bot, limit);
+    if(!url) return Promise.reject(new Error("No exec URL provided"));
+
+    // JSONP-first (works even when CORS blocks fetch), then direct fetch, then proxy fetch.
+    return jsonpFetchExport_(url, 12000)
+      .then((payload)=>{
+        console.log("[export] JSONP OK");
+        return payload;
+      })
+      .catch((e1)=>{
+        console.warn("[export] JSONP failed, trying direct fetch...", e1);
+        return fetch(url, {
+          method: "GET",
+          mode: "cors",
+          credentials: "omit",
+          cache: "no-store",
+        })
+        .then((res)=>res.text().then((txt)=>({res, txt})))
+        .then(({res, txt})=>{
+          if(!res.ok) throw new Error("HTTP " + res.status + " " + res.statusText + " :: " + txt.slice(0,120));
+          const payload = safeJsonParse_(txt);
+          console.log("[export] direct fetch OK", {bytes: txt.length});
+          return payload;
+        })
+        .catch((e2)=>{
+          console.warn("[export] direct fetch failed, trying proxy fetch...", e2);
+          return proxyFetchExport_(url);
+        });
+      });
+  }
+
+  
+  function buildProxyUrl_(targetUrl){
+    // Optional proxy endpoint. You can set window.EXPORT_PROXY_URL = "<proxy base>?url=".
+    // Default (GitHub Pages): AllOrigins raw proxy.
+    const configured = (window.EXPORT_PROXY_URL || "").trim();
+    const defaultBase = (location && location.hostname && location.hostname.endsWith("github.io"))
+      ? "https://api.allorigins.win/raw?url="
+      : "";
+    const base = configured || defaultBase;
+    if(!base) return null;
+    try{
+      return base + encodeURIComponent(targetUrl);
+    }catch(e){
+      return null;
+    }
+  }
+
+  function jsonpFetchExport_(targetUrl, timeoutMs){
+    // Best-effort JSONP: requires the endpoint to support `callback=` (or `cb=`) parameter.
+    // If unsupported, the promise rejects and we fall back to fetch/proxy.
+    timeoutMs = Math.max(1000, Number(timeoutMs || 8000));
+    return new Promise((resolve, reject)=>{
+      const cbName = "__lljsonp_" + Math.random().toString(36).slice(2);
+      const script = document.createElement("script");
+      let done = false;
+
+      function cleanup(){
+        try{ delete window[cbName]; }catch(e){ window[cbName] = undefined; }
+        if(script && script.parentNode) script.parentNode.removeChild(script);
+      }
+
+      const t = setTimeout(()=>{
+        if(done) return;
+        done = true;
+        cleanup();
+        reject(new Error("JSONP timeout"));
+      }, timeoutMs);
+
+      window[cbName] = (payload)=>{
+        if(done) return;
+        done = true;
+        clearTimeout(t);
+        cleanup();
+        resolve(payload);
+      };
+
+      script.onerror = ()=>{
+        if(done) return;
+        done = true;
+        clearTimeout(t);
+        cleanup();
+        reject(new Error("JSONP script error"));
+      };
+
+      const sep = targetUrl.includes("?") ? "&" : "?";
+      // try both callback and cb patterns by using callback=
+      script.src = targetUrl + sep + "callback=" + encodeURIComponent(cbName);
+      script.async = true;
+      document.head.appendChild(script);
     });
-  }catch(e){}
-}
-
+  }
 function proxyFetchExport_(targetUrl){
     // NOTE: this depends on a same-origin proxy endpoint (optional).
     // If you don't have one, this will fail and we fall back to error handling.
