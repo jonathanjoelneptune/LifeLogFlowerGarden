@@ -128,6 +128,102 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
       console.warn('[BRX] render() failed', e);
     }
   };
+
+  // ---------------- Week Nav Buttons (v99.1.53) ----------------
+  function clampWeekIndexForNav_(i){
+    // Clamp to a sane range based on today and the configured render window.
+    try{
+      const t = todayWeekIndex_();
+      const maxAllowed = Math.max(0, t + 24); // allow a bit beyond the FUTURE window
+      return Math.max(0, Math.min(maxAllowed, i|0));
+    }catch(_e){
+      return Math.max(0, i|0);
+    }
+  }
+
+  function navNudgeWeek_(delta){
+    // Bridge to main scroll logic (defined later). Avoid referencing internal vars here.
+    try{
+      if(window.__LL && typeof window.__LL.navNudgeWeek === 'function'){
+        window.__LL.navNudgeWeek(delta|0);
+        return;
+      }
+    }catch(e){}
+    // Fallback: synthesize key events (ArrowUp/ArrowDown) so we reuse existing handlers.
+    const key = (delta|0) < 0 ? 'ArrowUp' : 'ArrowDown';
+    window.dispatchEvent(new KeyboardEvent('keydown', {key, bubbles:true}));
+  }
+
+
+  function navGoToToday_(){
+    try{
+      if(window.__LL && typeof window.__LL.navGoToToday === 'function'){
+        window.__LL.navGoToToday();
+        return;
+      }
+    }catch(e){}
+    // Fallback: approximate by stepping via Arrow keys toward today.
+    let cur = 0;
+    try{ cur = (window.__LL && typeof window.__LL.getFocusWeekIndex==='function') ? (window.__LL.getFocusWeekIndex()|0) : 0; }catch(_e){}
+    let tgt = 0;
+    try{ tgt = todayWeekIndex_()|0; }catch(_e){ tgt = 0; }
+    let steps = Math.max(-60, Math.min(60, tgt - cur)); // safety cap
+    const key = steps < 0 ? 'ArrowUp' : 'ArrowDown';
+    steps = Math.abs(steps);
+    for(let i=0;i<steps;i++){
+      window.dispatchEvent(new KeyboardEvent('keydown', {key, bubbles:true}));
+    }
+  }
+
+
+  function attachHoldRepeat_(btn, onPulse){
+    let holdTimer = null;
+    let repeatTimer = null;
+
+    function stop(){
+      if(holdTimer){ clearTimeout(holdTimer); holdTimer = null; }
+      if(repeatTimer){ clearInterval(repeatTimer); repeatTimer = null; }
+    }
+
+    function start(e){
+      e.preventDefault();
+      onPulse();
+      stop();
+      holdTimer = setTimeout(() => {
+        repeatTimer = setInterval(onPulse, 120);
+      }, 260);
+    }
+
+    btn.addEventListener('mousedown', start);
+    btn.addEventListener('touchstart', start, {passive:false});
+    btn.addEventListener('mouseup', stop);
+    btn.addEventListener('mouseleave', stop);
+    btn.addEventListener('touchend', stop);
+    btn.addEventListener('touchcancel', stop);
+    window.addEventListener('blur', stop);
+  }
+
+  function initWeekNavButtons_(){
+    const root = document.getElementById('weekNavButtons');
+    if(!root) return;
+    const btnUp = root.querySelector('.up');
+    const btnDown = root.querySelector('.down');
+    const btnToday = root.querySelector('.today');
+
+    if(btnUp) attachHoldRepeat_(btnUp, () => navNudgeWeek_(-1));
+    if(btnDown) attachHoldRepeat_(btnDown, () => navNudgeWeek_(+1));
+    if(btnToday) btnToday.addEventListener('click', (e) => { e.preventDefault(); navGoToToday_(); });
+  }
+
+  // Initialize after DOM is ready (main script is already running after DOMContentLoaded, but be safe)
+  try{
+    if(document.readyState === 'loading'){
+      document.addEventListener('DOMContentLoaded', initWeekNavButtons_);
+    }else{
+      initWeekNavButtons_();
+    }
+  }catch(_e){}
+
 })();
 </script>
 
@@ -214,7 +310,7 @@ console.log("[v89.6.42] loaded", new Date().toISOString());
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>LifeLog Garden Walk v99.1.52</title>
+<title>LifeLog Garden Walk v99.1.53</title>
 <style>
 /* ============================================
    v87.3.63.0: CLEANED + OPTIMIZED CSS
@@ -1130,6 +1226,44 @@ body.wireframeMode .flowerSvg line {
 
 
   .sbLine{margin:2px 0;}
+
+/* --- UI Week Nav Buttons (v99.1.53) --- */
+.weekHeader{ display:none !important; } /* remove top-right pink badge */
+#weekNavButtons{
+  position: fixed;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  user-select: none;
+}
+#weekNavButtons .wbtn{
+  width: 56px;
+  height: 44px;
+  border-radius: 10px;
+  border: 2px solid rgba(0,0,0,0.55);
+  background: rgba(255,255,255,0.75);
+  color: rgba(0,0,0,0.85);
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+}
+#weekNavButtons .wbtn:active{ transform: scale(0.98); }
+#weekNavButtons .wbtn.today{
+  width: 70px;
+  height: 46px;
+  font-size: 14px;
+  border-radius: 12px;
+}
+#weekNavButtons .wbtn:focus{ outline: 3px solid rgba(255,105,180,0.6); outline-offset: 2px; }
+@media (max-width: 720px){
+  #weekNavButtons{ right: 10px; }
+}
+
 </style>
 
 <style id="llUtilNoteStyles">
@@ -1610,7 +1744,7 @@ Created: <span id="__bannerCreated">2026-02-06T23:06:16Z</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.1.52 loaded", new Date().toISOString());
+  console.log("[VERSION] v99.1.53 loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -3694,6 +3828,34 @@ let currentOffset = 0;
 let lastWheelAt = 0;
 let lastFrontIndex = -1;
 let lastBackRowsFrontIndex = -9999; // v89.6.18: back-row preview refresh guard
+
+// ===== NAV BUTTON API (exposed for UI bridge script) =====
+window.__LL = window.__LL || {};
+window.__LL.navNudgeWeek = function(delta){
+  try{
+    const step = (delta|0) < 0 ? +1 : -1; // matches ArrowUp/ArrowDown behavior
+    const maxIdx = (typeof todayWeekIndex_ === 'function') ? (todayWeekIndex_()|0) : 0;
+    targetIndex = Math.max(0, Math.min(maxIdx, (targetIndex|0) + step));
+    currentOffset = targetIndex;
+    if(typeof applyTransforms === 'function') applyTransforms();
+    if(typeof syncRenderedWeeks_ === 'function') syncRenderedWeeks_(targetIndex, false);
+  }catch(e){
+    console.warn("[NAV] navNudgeWeek failed", e);
+  }
+};
+window.__LL.navGoToToday = function(){
+  try{
+    const idx = (typeof todayWeekIndex_ === 'function') ? (todayWeekIndex_()|0) : 0;
+    targetIndex = idx;
+    currentOffset = idx;
+    if(typeof applyTransforms === 'function') applyTransforms();
+    if(typeof syncRenderedWeeks_ === 'function') syncRenderedWeeks_(idx, false);
+  }catch(e){
+    console.warn("[NAV] navGoToToday failed", e);
+  }
+};
+// =========================================================
+
 
 // Time of day state
 const todState = { mode: "realtime", manualMinutes: 720, playRate: 0 };
@@ -9183,6 +9345,14 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
   } catch(e){}
 })();
 </script>
+
+
+<!-- Week navigation buttons (Advance 1 week using existing scroll logic, hold to repeat) -->
+<div id="weekNavButtons" aria-label="Week navigation">
+  <button class="wbtn up" type="button" aria-label="Advance 1 week backward">▲</button>
+  <button class="wbtn today" type="button" aria-label="Return to current week">This Week</button>
+  <button class="wbtn down" type="button" aria-label="Advance 1 week forward">▼</button>
+</div>
 
 </body>
 </html>
