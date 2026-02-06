@@ -31,6 +31,9 @@
 <script>
 // === v99.0.3 patch: safety logging helpers ===
 (function(){
+  // [SKYFIT] ensure global handle exists before any listeners
+  window.scheduleRefitSkyBoxes_ = window.scheduleRefitSkyBoxes_ || function(){};
+
   if (typeof window.dbg_ !== 'function') {
     window.dbg_ = function(){ try { console.log.apply(console, arguments); } catch(e) {} };
   }
@@ -211,7 +214,7 @@ console.log("[v89.6.42] loaded", new Date().toISOString());
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>LifeLog Garden Walk v99.1.32</title>
+<title>LifeLog Garden Walk v99.1.36</title>
 <style>
 /* ============================================
    v87.3.63.0: CLEANED + OPTIMIZED CSS
@@ -1357,6 +1360,8 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
     white-space: pre-wrap;
     line-height: 1.35;
   }
+
+.llSkyBox[data-skybox-idx="2"] .body{ text-align:center; }
   .llSkyBox .body .sbMeta{
     opacity: 0.75;
     font-size: 12px;
@@ -1448,6 +1453,8 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
   pointer-events:none;
   white-space: nowrap;
 font-weight:800;}
+
+.llSkyHeader, .llSkyBox .sub{ font-size: var(--llSkyHdrFS, 14px); }
 
 .llSkyHeader .hTxt{
   font-weight: 800;
@@ -1586,8 +1593,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 #__versionBanner{position:fixed;left:12px;top:12px;z-index:99999;padding:8px 10px;border-radius:10px;background:rgba(255,0,255,0.22);border:2px solid magenta;color:#111;font:600 12px/1.2 system-ui,Segoe UI,Arial;}
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.1.32_GardenExport_HaikuReflectionSkyboxes_FitText_Fix11.html</span><br>
-Version: v99.1.32<br>
+File: <span id="__bannerFileName">garden_v99.1.36_GardenExport_HaikuReflectionSkyboxes_StatsLayout_Fix16.html [v99.1.36] created 2026-02-06T07:35:53Z</span><br>
+Version: v99.1.36<br>
 Created: 2026-02-06T06:32:50Z<br>
 If you can see this, you opened the correct file.</div>
 <script>
@@ -1604,7 +1611,7 @@ If you can see this, you opened the correct file.</div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.1.32 loaded", new Date().toISOString());
+  console.log("[VERSION] v99.1.36 loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -3440,6 +3447,18 @@ const days = [];
     // Optional export overrides (per-day)
     let dailyScore = 0;
     let totalEntries = 0;
+    let totalWords = 0;
+    let avgWordsPerEntry = 0;
+    let morningEntries = 0;
+    let afternoonEntries = 0;
+    let eveningEntries = 0;
+    let nightEntries = 0;
+    let moment = 0;
+    let achievement = 0;
+    let introspection = 0;
+    let inspiration = 0;
+    let connection = 0;
+    let emotion = 0;
     let haiku = "";
     let reflection = "";
     let themeCloudUrl = "";
@@ -3466,6 +3485,18 @@ const days = [];
       // Stats / text
       dailyScore = Number(exportRow.DailyScore) || 0;
       totalEntries = Number(exportRow.TotalEntries) || 0;
+    totalWords = Number(exportRow.TotalWords) || 0;
+    avgWordsPerEntry = Number(exportRow.AvgWordsPerEntry) || 0;
+    morningEntries = Number(exportRow.MorningEntries) || 0;
+    afternoonEntries = Number(exportRow.AfternoonEntries) || 0;
+    eveningEntries = Number(exportRow.EveningEntries) || 0;
+    nightEntries = Number(exportRow.NightEntries) || 0;
+    moment = Number(exportRow.Moment) || 0;
+    achievement = Number(exportRow.Achievement) || 0;
+    introspection = Number(exportRow.Introspection) || 0;
+    inspiration = Number(exportRow.Inspiration) || 0;
+    connection = Number(exportRow.Connection) || 0;
+    emotion = Number(exportRow.Emotion) || 0;
       const getFieldCI_ = (row, keys) => {
         if (!row || !keys || !keys.length) return "";
         // direct
@@ -3570,6 +3601,18 @@ const stemColors = stemColorsForMonthIndex_(monthIndex);
       weekLevelLabel,
       dailyScore,
       totalEntries,
+      totalWords,
+      avgWordsPerEntry,
+      morningEntries,
+      afternoonEntries,
+      eveningEntries,
+      nightEntries,
+      moment,
+      achievement,
+      introspection,
+      inspiration,
+      connection,
+      emotion,
       haiku,
       reflection,
       themeCloudUrl,
@@ -5553,7 +5596,7 @@ __llBoxes = titles.map((t,i)=>{
   try{
     if (!window.__llSkyBoxResizeObserver && ("ResizeObserver" in window)){
       window.__llSkyBoxResizeObserver = new ResizeObserver(() => {
-        scheduleRefitSkyBoxes_();
+        window.scheduleRefitSkyBoxes_();
       });
     }
     if (window.__llSkyBoxResizeObserver){
@@ -5679,6 +5722,8 @@ function scheduleRefitSkyBoxes_(){
     refitAllSkyBoxes_();
   }, 80);
 }
+  // [SKYFIT] expose for any external callers
+  window.scheduleRefitSkyBoxes_ = scheduleRefitSkyBoxes_;
 
 function fitElementText_(el, opts){
   if (!el) return;
@@ -5822,18 +5867,36 @@ function updateSkyBoxesFromDay_(day, weekKey) {
 
   // 0) Daily Statistics
   if (__llBoxes[0]) {
-    const src = day && day._src ? String(day._src) : "unknown";
-    const p = day && day.primary ? String(day.primary) : "";
-    const s = day && day.secondary ? String(day.secondary) : "";
+    const n0 = (v) => {
+      const x = Number(v);
+      return Number.isFinite(x) ? x : 0;
+    };
+
+    const te = n0(day && day.totalEntries);
+    const tw = n0(day && day.totalWords);
+    const aw = n0(day && day.avgWordsPerEntry);
+
+    const m = n0(day && day.morningEntries);
+    const a = n0(day && day.afternoonEntries);
+    const e = n0(day && day.eveningEntries);
+    const n = n0(day && day.nightEntries);
+
+    const moments = n0(day && day.moment);
+    const ach = n0(day && day.achievement);
+    const intro = n0(day && day.introspection);
+    const insp = n0(day && day.inspiration);
+    const conn = n0(day && day.connection);
+    const emo = n0(day && day.emotion);
+
     const lines = [
-      `Week: ${safe(weekKey || "--")}`,
-      `Day: ${safe(dayName || "--")}`,
-      `Date: ${safe(dateKey || "--")}`,
-      `Level: ${safe(levelStr)}   Score: ${safe(scoreStr)}`,
-      `Src: ${safe(src)}`,
-      (p || s) ? `Colors: ${safe(p)} / ${safe(s)}` : ""
-    ].filter(Boolean);
-    setSkyBoxBody_(__llBoxes[0], lines.map(l => `<div class="sbLine">${l}</div>`).join(""));
+      `Total Entries: ${te} | Total Words: ${tw} | Average Words: ${aw}`,
+      `Morning: ${m} | Afternoon: ${a} | Evening: ${e} | Night: ${n}`,
+      `Moments: ${moments} | Achievements: ${ach}`,
+      `Introspections: ${intro} | Inspirations: ${insp}`,
+      `Connections: ${conn} | Emotions: ${emo}`
+    ];
+
+    setSkyBoxBody_(__llBoxes[0], lines.map(l => `<div class="sbLine">${safe(l)}</div>`).join(""));
   }
 
   // 1) Daily Reflection
@@ -6192,7 +6255,7 @@ function layoutSkyBoxes_(wrap){
       b.style.boxSizing = 'border-box';
       const sub = b.querySelector('.sub');
       const body = b.querySelector('.body');
-      if (sub) sub.style.fontSize = subPx + 'px';
+      if (sub) sub.style.fontSize = hdrPx + 'px';
       if (body) body.style.fontSize = bodyPx + 'px';
     });
 
@@ -6249,7 +6312,7 @@ function layoutSkyBoxes_(wrap){
       b.style.boxSizing = 'border-box';
       const sub = b.querySelector('.sub');
       const body = b.querySelector('.body');
-      if (sub) sub.style.fontSize = subPx + 'px';
+      if (sub) sub.style.fontSize = hdrPx + 'px';
       if (body) body.style.fontSize = bodyPx + 'px';
       g.appendChild(b);
 
@@ -6317,7 +6380,7 @@ function layoutSkyBoxes_(wrap){
     const groupH = groupH0For(c) * uiScale;
     if (groupH > availH + 0.5) continue;
 
-    const boxW = Math.round(BOX_W0 * uiScale);
+    const boxW = Math.round(BOX_W0 * uiScale * 1.25);
     const boxH = Math.round(BOX_H0 * uiScale);
 
     const fontMul = solveFontMul(uiScale, c, boxW, boxH);
@@ -7894,7 +7957,7 @@ window.applySelectedAdornments = applySelectedAdornments;
   }, true);
 
   // Keep halos positioned on resize / scroll
-  window.addEventListener("resize", ()=>{ setTimeout(applySelectedAdornments, 0); scheduleRefitSkyBoxes_(); });
+  window.addEventListener("resize", ()=>{ setTimeout(applySelectedAdornments, 0); window.scheduleRefitSkyBoxes_(); });
   window.addEventListener("scroll", ()=>setTimeout(applySelectedAdornments, 0), true);
 
   // Observe DOM so we can enlarge hotspots as they are created
