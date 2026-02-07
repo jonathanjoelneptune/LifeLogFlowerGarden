@@ -1,4 +1,7 @@
 
+
+
+
 <!DOCTYPE html>
 <!--
   CHANGELOG
@@ -129,7 +132,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
     }
   };
 
-  // ---------------- Week Nav Buttons (v99.1.69) ----------------
+  // ---------------- Week Nav Buttons (v99.1.93) ----------------
   function clampWeekIndexForNav_(i){
     // Clamp to a sane range based on today and the configured render window.
     try{
@@ -310,7 +313,7 @@ console.log("[v89.6.42] loaded", new Date().toISOString());
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v99.1.69_GardenExport_HaikuReflectionSkyboxes_KeepFocusToday_OptionC_Fix44_SatSunShift10Pct.html</title>
+<title>garden_v99.1.93_GardenExport_HaikuReflectionSkyboxes_KeepFocusToday_OptionC_Fix44_SatSunShift10Pct.html</title>
 <style>
 /* ============================================
    v87.3.63.0: CLEANED + OPTIMIZED CSS
@@ -1227,7 +1230,7 @@ body.wireframeMode .flowerSvg line {
 
   .sbLine{margin:2px 0;}
 
-/* --- UI Week Nav Buttons (v99.1.69) --- */
+/* --- UI Week Nav Buttons (v99.1.93) --- */
 .weekHeader{ display:none !important; } /* remove top-right pink badge */
 #weekNavButtons{
   position: fixed;
@@ -1402,6 +1405,16 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 .weekBand.isFront .flowerHolder{
   filter: none !important;
   box-shadow: none !important;
+}
+
+
+/* --- v99.1.93: keep selection silhouette outline visible on the front row (override v80 filter suppression) --- */
+.weekBand.isFront .llSilSelected svg{
+  filter:
+    drop-shadow(1px 0px 0px rgba(255,255,255,0.98))
+    drop-shadow(-1px 0px 0px rgba(255,255,255,0.98))
+    drop-shadow(0px 1px 0px rgba(255,255,255,0.98))
+    drop-shadow(0px -1px 0px rgba(255,255,255,0.98)) !important;
 }
 
 
@@ -1731,9 +1744,9 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 #__versionBanner{position:fixed;left:12px;top:12px;z-index:99999;padding:8px 10px;border-radius:10px;background:rgba(255,0,255,0.22);border:2px solid magenta;color:#111;font:600 12px/1.2 system-ui,Segoe UI,Arial;}
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.1.69_GardenExport_HaikuReflectionSkyboxes_KeepFocusToday_OptionC_Fix44_SatSunShift10Pct.html</span><br>
-Version: <span id="__bannerVersion">v99.1.69</span><br>
-Created: P26-02-07T13:58:56Z</span></div>
+File: <span id="__bannerFileName">garden_v99.1.93_GardenExport_HaikuReflectionSkyboxes_KeepFocusToday_OptionC_Fix47_FrontRowSelectionOutline.html</span><br>
+Version: <span id="__bannerVersion">v99.1.93</span><br>
+Created: P26-02-07T19:42:38.753Z</span></div>
 <script>
 (function(){
   try{
@@ -1748,7 +1761,7 @@ Created: P26-02-07T13:58:56Z</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.1.69 loaded", new Date().toISOString());
+  console.log("[VERSION] v99.1.93 loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -4064,6 +4077,7 @@ if(window.__llForceTodayAfterExport_ && fullRebuild){
   // Update week header and row interactivity immediately
   updateFrontText(focusWeekIndex|0);
   try{ updateRowInteractivity_(focusWeekIndex|0); }catch(e){}
+  try{ rebindSelectionToVisibleWrap_('syncRenderedWeeks'); }catch(e){}
 }
 
 // Expose rebuild hook for GardenExport loader (different script scope)
@@ -4206,7 +4220,8 @@ function applyTransforms(tNow){
     __llLastRowDir = (prevFront < 0) ? 0 : (frontIndex > prevFront ? +1 : -1);
     lastFrontIndex = frontIndex;
     try{ syncRenderedWeeks_(frontIndex); }catch(e){}
-    try { clearSelection_('row change', __llLastRowDir); if (typeof dbg_==='function') dbg_(`Row change -> clear selection dir=${__llLastRowDir}`); } catch(e) {}
+    try { if (typeof hideSkyBoxes_ === 'function') hideSkyBoxes_('row change', __llLastRowDir); if (typeof dbg_==='function') dbg_(`Row change -> keep selection (hide boxes) dir=${__llLastRowDir}`); } catch(e) {}
+    try{ setTimeout(()=>{ try{ rebindSelectionToVisibleWrap_('row change'); }catch(e){} }, 0); }catch(e) {}
     updateFrontText(frontIndex);
 // v89.6.18: Keep the hill back-row preview synchronized with the currently-front week.
 try{
@@ -5253,6 +5268,8 @@ function updateRowInteractivity_(activeWeekIndex){
 // Selection (simplified)
 // ============================================
 let __llSelectedWrap = null;
+let __llSelectedDateKey = null; // persists selection across week virtualization
+
 
 let __llBoxBasePos = null;
 let __llBoxBaseAnchor = null;
@@ -6247,7 +6264,7 @@ function syncSkyBoxesToWrap_(){
   const uiScale = (__llUiScale || 1);
   const pad = 14 * uiScale;
 
-  // v99.1.69: robust clamp using layout-local bounds (offset geometry),
+  // v99.1.93: robust clamp using layout-local bounds (offset geometry),
   // independent of absolute positioning and independent of current group screen position.
   const leftGutter  = 16 * uiScale;
 
@@ -6314,7 +6331,7 @@ function syncSkyBoxesToWrap_(){
   // Default right bound: stage edge minus gutters
   let maxContentX = stageW - pad - rightGutter - gw;
 
-  // v99.1.69: hard UI-column guard.
+  // v99.1.93: hard UI-column guard.
   // Skyboxes must not extend past the LEFT edge of the week nav UI (▲ / This Week / ▼),
   // which is flush to the stage right side.
   try{
@@ -6742,7 +6759,7 @@ function layoutSkyBoxes_(wrap){
   }
 
 
-  // v99.1.69: Sat/Sun bias shift (rudimentary but effective).
+  // v99.1.93: Sat/Sun bias shift (rudimentary but effective).
 // Saturday: subtle 5% left shift
 // Sunday: stronger 10% left shift
 try{
@@ -6759,7 +6776,7 @@ try{
   }
 }catch(e){}
 
-  // v99.1.69: hard right guard at the week-nav UI column (▲ / This Week / ▼).
+  // v99.1.93: hard right guard at the week-nav UI column (▲ / This Week / ▼).
   // Requirement: skyboxes must NOT extend past the left edge of that UI column (0 padding).
   // This clamp is applied in the *layout* pass (the authoritative placer).
   let __llRightGuardX = null;
@@ -6947,6 +6964,7 @@ function clearSelection_(reason, dir){
     if(window.__LLDBG__){ DBGSTEP('DBGSTEP clearSelection:suppressed', {reason, dir, now:__now, until:__llIgnoreRowClearUntilTs}); }
     return;
   }
+  try{ __llSelectedDateKey = null; }catch(e){}
   // Remove selection state from wraps AND any adornment elements (halo/ring/silhouette)
   try{
     if (__llSelectedWrap){
@@ -6978,6 +6996,25 @@ function clearSelection_(reason, dir){
   }catch(e){}
 }
 
+function rebindSelectionToVisibleWrap_(why){
+  try{
+    const dk = __llSelectedDateKey || (__llSelectedWrap && (__llSelectedWrap.dataset.dateKey || __llSelectedWrap.dataset.datekey)) || '';
+    if (!dk) return;
+    const stage = (DOM && DOM.stage) ? DOM.stage : (document.getElementById('stage') || document);
+    const sel = stage.querySelector(`.flowerWrap[data-datekey="${dk}"],.flowerWrap[data-date-key="${dk}"],[data-datekey="${dk}"],[data-date-key="${dk}"]`);
+    if (!sel) return;
+
+    // Ensure selection classes live on the currently-rendered element
+    if (__llSelectedWrap && __llSelectedWrap !== sel){
+      try{ __llSelectedWrap.classList.remove('isSelected','llSilSelected'); }catch(e){}
+    }
+    __llSelectedWrap = sel;
+    try{ sel.classList.add('isSelected'); }catch(e){}
+    try{ if (typeof window.applySelectedAdornments === 'function') window.applySelectedAdornments(sel); }catch(e){}
+  }catch(e){}
+}
+
+
 
 function setSelection_(wrap){
   // Prevent other document-level click handlers from immediately clearing selection
@@ -6999,6 +7036,7 @@ function setSelection_(wrap){
 
     try{
       const dk = wrap.dataset.dateKey || wrap.dataset.datekey || '';
+      try{ __llSelectedDateKey = dk; }catch(e){}
       const lvl = getWrapLevel_(wrap);
       if (typeof dbg_ === 'function'){
         dbg_(`Flower Selected - ${fmtSelPayload_(wrap)} (switch)`);
@@ -7035,6 +7073,7 @@ function setSelection_(wrap){
     __llSelectedWrap = wrap;
     try{
       const dk = wrap.dataset.dateKey || wrap.dataset.datekey || '';
+      try{ __llSelectedDateKey = dk; }catch(e){}
       const lvl = getWrapLevel_(wrap);
       if (typeof dbg_ === 'function'){
         dbg_(`Flower Selected - ${fmtSelPayload_(wrap)}`);
@@ -9580,3 +9619,4 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
 
 </body>
 </html>
+
