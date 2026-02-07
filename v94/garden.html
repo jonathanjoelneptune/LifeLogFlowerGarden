@@ -129,7 +129,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
     }
   };
 
-  // ---------------- Week Nav Buttons (v99.1.65) ----------------
+  // ---------------- Week Nav Buttons (v99.1.69) ----------------
   function clampWeekIndexForNav_(i){
     // Clamp to a sane range based on today and the configured render window.
     try{
@@ -310,7 +310,7 @@ console.log("[v89.6.42] loaded", new Date().toISOString());
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>LifeLog Garden Walk v99.1.65</title>
+<title>garden_v99.1.69_GardenExport_HaikuReflectionSkyboxes_KeepFocusToday_OptionC_Fix44_SatSunShift10Pct.html</title>
 <style>
 /* ============================================
    v87.3.63.0: CLEANED + OPTIMIZED CSS
@@ -1227,7 +1227,7 @@ body.wireframeMode .flowerSvg line {
 
   .sbLine{margin:2px 0;}
 
-/* --- UI Week Nav Buttons (v99.1.65) --- */
+/* --- UI Week Nav Buttons (v99.1.69) --- */
 .weekHeader{ display:none !important; } /* remove top-right pink badge */
 #weekNavButtons{
   position: fixed;
@@ -1731,9 +1731,9 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 #__versionBanner{position:fixed;left:12px;top:12px;z-index:99999;padding:8px 10px;border-radius:10px;background:rgba(255,0,255,0.22);border:2px solid magenta;color:#111;font:600 12px/1.2 system-ui,Segoe UI,Arial;}
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.1.65_GardenExport_HaikuReflectionSkyboxes_KeepFocusToday_OptionC_Fix40_TrueBoundsClamp.html</span><br>
-Version: <span id="__bannerVersion">v99.1.65</span><br>
-Created: 2026-02-07T06:48:57Z</span></div>
+File: <span id="__bannerFileName">garden_v99.1.69_GardenExport_HaikuReflectionSkyboxes_KeepFocusToday_OptionC_Fix44_SatSunShift10Pct.html</span><br>
+Version: <span id="__bannerVersion">v99.1.69</span><br>
+Created: P26-02-07T13:58:56Z</span></div>
 <script>
 (function(){
   try{
@@ -1748,7 +1748,7 @@ Created: 2026-02-07T06:48:57Z</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.1.65 loaded", new Date().toISOString());
+  console.log("[VERSION] v99.1.69 loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -6247,34 +6247,52 @@ function syncSkyBoxesToWrap_(){
   const uiScale = (__llUiScale || 1);
   const pad = 14 * uiScale;
 
-  // v99.1.65: robust clamp using TRUE content bounds (children are absolutely positioned,
-  // so the parent rect can be 0 and must not be used for sizing).
+  // v99.1.69: robust clamp using layout-local bounds (offset geometry),
+  // independent of absolute positioning and independent of current group screen position.
   const leftGutter  = 16 * uiScale;
-  const rightGutter = 48 * uiScale;
 
-  // Measure actual content bounds (in viewport coords), then convert to offsets relative to group.
+  // Percent-based right gutter (requested) with a minimum pixel floor.
+  // This keeps a consistent "safe area" even as widths change.
+  const rightGutter = Math.max(48 * uiScale, 0.04 * stageW);
+
+  // Measure actual content bounds IN GROUP LOCAL COORDS using offsetLeft/Top chains.
+  // Absolutely-positioned children do not contribute to parent rect sizing; offset chains do.
   let gw = 0, gh = 0, offX = 0, offY = 0;
   try{
-    const gbr = __llBoxGroup.getBoundingClientRect();
     const parts = [];
     if (__llSkyHeader) parts.push(__llSkyHeader);
     if (Array.isArray(__llBoxes)) parts.push.apply(parts, __llBoxes);
 
+    const localRectToGroup_ = (el, group) => {
+      let x = 0, y = 0;
+      let cur = el;
+      // Walk offsetParent chain until we hit group (or stop)
+      while (cur && cur !== group){
+        x += (cur.offsetLeft || 0);
+        y += (cur.offsetTop  || 0);
+        cur = cur.offsetParent;
+      }
+      const w = (el.offsetWidth  || 0);
+      const h = (el.offsetHeight || 0);
+      return { left:x, top:y, right:x+w, bottom:y+h, w, h };
+    };
+
     let minL = Infinity, minT = Infinity, maxR = -Infinity, maxB = -Infinity;
     for (const el of parts){
-      if (!el || !el.getBoundingClientRect) continue;
-      const r = el.getBoundingClientRect();
-      if (!isFinite(r.left) || !isFinite(r.top) || !isFinite(r.right) || !isFinite(r.bottom)) continue;
+      if (!el || !el.offsetParent) continue;
+      const r = localRectToGroup_(el, __llBoxGroup);
+      if (!(r.w > 0) || !(r.h > 0)) continue;
       minL = Math.min(minL, r.left);
       minT = Math.min(minT, r.top);
       maxR = Math.max(maxR, r.right);
       maxB = Math.max(maxB, r.bottom);
     }
+
     if (isFinite(minL) && isFinite(minT) && isFinite(maxR) && isFinite(maxB)){
       gw = Math.max(0, maxR - minL);
       gh = Math.max(0, maxB - minT);
-      offX = minL - gbr.left;
-      offY = minT - gbr.top;
+      offX = minL;
+      offY = minT;
     }
   }catch(e){}
 
@@ -6292,7 +6310,23 @@ function syncSkyBoxesToWrap_(){
 
   // Clamp X/Y using content bounds (x + offX ... x + offX + gw)
   const minContentX = pad + leftGutter;
-  const maxContentX = stageW - pad - rightGutter - gw;
+
+  // Default right bound: stage edge minus gutters
+  let maxContentX = stageW - pad - rightGutter - gw;
+
+  // v99.1.69: hard UI-column guard.
+  // Skyboxes must not extend past the LEFT edge of the week nav UI (▲ / This Week / ▼),
+  // which is flush to the stage right side.
+  try{
+    const ui = document.getElementById('weekNavButtons');
+    if (ui){
+      const uiRect = ui.getBoundingClientRect();
+      // Convert UI left edge (client) into stage-local X.
+      const uiLeftInStage = (uiRect.left - a.srect.left);
+      // 0 padding per user request: right edge of content must be <= uiLeftInStage
+      maxContentX = Math.min(maxContentX, uiLeftInStage - gw);
+    }
+  }catch(e){}
 
   if (maxContentX >= minContentX){
     x = Math.max(minContentX - offX, Math.min(maxContentX - offX, x));
@@ -6706,7 +6740,47 @@ function layoutSkyBoxes_(wrap){
       groupX = Math.min(groupX, Math.max(STAGE_PAD, keep.x - STAGE_PAD - best.groupW));
     }
   }
-  groupX = Math.max(STAGE_PAD, Math.min(W - STAGE_PAD - best.groupW, groupX));
+
+
+  // v99.1.69: Sat/Sun bias shift (rudimentary but effective).
+  // Requirement: for Saturday/Sunday, pre-shift the skybox group left by ~10% of stage width
+  // so it naturally clears the right-side UI column before clamps.
+  try{
+    const dk = (wrap && wrap.dataset && (wrap.dataset.dateKey || wrap.dataset.datekey)) || null;
+    if (dk){
+      const d = new Date(dk + 'T00:00:00Z'); // stable day-of-week
+      const dow = d.getUTCDay(); // 0=Sun ... 6=Sat
+      if (dow === 0 || dow === 6){
+        groupX -= (W * 0.10);
+      }
+    }
+  }catch(e){}
+
+  // v99.1.69: hard right guard at the week-nav UI column (▲ / This Week / ▼).
+  // Requirement: skyboxes must NOT extend past the left edge of that UI column (0 padding).
+  // This clamp is applied in the *layout* pass (the authoritative placer).
+  let __llRightGuardX = null;
+  try{
+    const ui = document.getElementById('weekNavButtons');
+    if (ui){
+      const sr = stage.getBoundingClientRect();
+      const ur = ui.getBoundingClientRect();
+      const uiLeft = (ur.left - sr.left);
+      if (isFinite(uiLeft)) __llRightGuardX = uiLeft;
+    }
+  }catch(e){}
+  if (__llRightGuardX != null){
+    const rightLimit = (__llRightGuardX - best.groupW); // 0 padding
+    groupX = Math.min(groupX, rightLimit);
+  }
+
+  // Stage clamp (respects right guard if present)
+  {
+    const rightBound = (__llRightGuardX != null)
+      ? Math.min(W - STAGE_PAD - best.groupW, (__llRightGuardX - best.groupW))
+      : (W - STAGE_PAD - best.groupW);
+    groupX = Math.max(STAGE_PAD, Math.min(rightBound, groupX));
+  }
 
   // Apply sizing to actual nodes
   applySizing(uiScale, boxW, boxH, fontMul);
