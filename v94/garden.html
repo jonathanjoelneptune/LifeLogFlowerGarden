@@ -129,7 +129,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
     }
   };
 
-  // ---------------- Week Nav Buttons (v99.1.63) ----------------
+  // ---------------- Week Nav Buttons (v99.1.65) ----------------
   function clampWeekIndexForNav_(i){
     // Clamp to a sane range based on today and the configured render window.
     try{
@@ -310,7 +310,7 @@ console.log("[v89.6.42] loaded", new Date().toISOString());
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>LifeLog Garden Walk v99.1.63</title>
+<title>LifeLog Garden Walk v99.1.65</title>
 <style>
 /* ============================================
    v87.3.63.0: CLEANED + OPTIMIZED CSS
@@ -1227,7 +1227,7 @@ body.wireframeMode .flowerSvg line {
 
   .sbLine{margin:2px 0;}
 
-/* --- UI Week Nav Buttons (v99.1.63) --- */
+/* --- UI Week Nav Buttons (v99.1.65) --- */
 .weekHeader{ display:none !important; } /* remove top-right pink badge */
 #weekNavButtons{
   position: fixed;
@@ -1731,9 +1731,9 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 #__versionBanner{position:fixed;left:12px;top:12px;z-index:99999;padding:8px 10px;border-radius:10px;background:rgba(255,0,255,0.22);border:2px solid magenta;color:#111;font:600 12px/1.2 system-ui,Segoe UI,Arial;}
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.1.63_GardenExport_HaikuReflectionSkyboxes_KeepFocusToday_OptionC_Fix38_TextFit.html</span><br>
-Version: <span id="__bannerVersion">v99.1.63</span><br>
-Created: <span id="__bannerCreated">2026-02-07T06:10:35Z</span></div>
+File: <span id="__bannerFileName">garden_v99.1.65_GardenExport_HaikuReflectionSkyboxes_KeepFocusToday_OptionC_Fix40_TrueBoundsClamp.html</span><br>
+Version: <span id="__bannerVersion">v99.1.65</span><br>
+Created: 2026-02-07T06:48:57Z</span></div>
 <script>
 (function(){
   try{
@@ -1748,7 +1748,7 @@ Created: <span id="__bannerCreated">2026-02-07T06:10:35Z</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.1.63 loaded", new Date().toISOString());
+  console.log("[VERSION] v99.1.65 loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -6244,23 +6244,74 @@ function syncSkyBoxesToWrap_(){
   let x = (a.ax + __llLayoutOffset.x);
   let y = (a.ay + __llLayoutOffset.y);
 
-  // Clamp to stay within the scene (never outside stage)
-  const br = __llBoxGroup.getBoundingClientRect();
-  const gw = br.width || (__llLastGroupW || 0);
-  const gh = br.height || (__llLastGroupH || 0);
+  const uiScale = (__llUiScale || 1);
+  const pad = 14 * uiScale;
+
+  // v99.1.65: robust clamp using TRUE content bounds (children are absolutely positioned,
+  // so the parent rect can be 0 and must not be used for sizing).
+  const leftGutter  = 16 * uiScale;
+  const rightGutter = 48 * uiScale;
+
+  // Measure actual content bounds (in viewport coords), then convert to offsets relative to group.
+  let gw = 0, gh = 0, offX = 0, offY = 0;
+  try{
+    const gbr = __llBoxGroup.getBoundingClientRect();
+    const parts = [];
+    if (__llSkyHeader) parts.push(__llSkyHeader);
+    if (Array.isArray(__llBoxes)) parts.push.apply(parts, __llBoxes);
+
+    let minL = Infinity, minT = Infinity, maxR = -Infinity, maxB = -Infinity;
+    for (const el of parts){
+      if (!el || !el.getBoundingClientRect) continue;
+      const r = el.getBoundingClientRect();
+      if (!isFinite(r.left) || !isFinite(r.top) || !isFinite(r.right) || !isFinite(r.bottom)) continue;
+      minL = Math.min(minL, r.left);
+      minT = Math.min(minT, r.top);
+      maxR = Math.max(maxR, r.right);
+      maxB = Math.max(maxB, r.bottom);
+    }
+    if (isFinite(minL) && isFinite(minT) && isFinite(maxR) && isFinite(maxB)){
+      gw = Math.max(0, maxR - minL);
+      gh = Math.max(0, maxB - minT);
+      offX = minL - gbr.left;
+      offY = minT - gbr.top;
+    }
+  }catch(e){}
+
+  // Fallback if measuring fails
+  if (!(gw > 0) || !(gh > 0)){
+    try{
+      const br = __llBoxGroup.getBoundingClientRect();
+      gw = br.width || 0;
+      gh = br.height || 0;
+      offX = 0; offY = 0;
+    }catch(e){}
+  }
+
   __llLastGroupW = gw; __llLastGroupH = gh;
 
-  const pad = 14 * (__llUiScale || 1);
-  x = Math.max(pad, Math.min(stageW - gw - pad, x));
-  y = Math.max(pad, Math.min(stageH - gh - pad, y));
+  // Clamp X/Y using content bounds (x + offX ... x + offX + gw)
+  const minContentX = pad + leftGutter;
+  const maxContentX = stageW - pad - rightGutter - gw;
 
-  // Strong "above flower" preference: ensure the group bottom stays above the anchor,
+  if (maxContentX >= minContentX){
+    x = Math.max(minContentX - offX, Math.min(maxContentX - offX, x));
+  }else{
+    // Too wide for gutters: legacy clamp to stage
+    x = Math.max(pad - offX, Math.min((stageW - pad - gw) - offX, x));
+  }
+
+  const minContentY = pad;
+  const maxContentY = stageH - pad - gh;
+  y = Math.max(minContentY - offY, Math.min(maxContentY - offY, y));
+
+  // Strong "above flower" preference: ensure the content bottom stays above the anchor,
   // unless there is physically no space.
-  const preferGap = 18 * (__llUiScale || 1);
+  const preferGap = 18 * uiScale;
   const maxYAbove = Math.max(pad, a.ay - gh - preferGap);
   if (maxYAbove >= pad){
-    y = Math.min(y, maxYAbove);
-    y = Math.max(pad, y);
+    y = Math.min(y, maxYAbove - offY);
+    y = Math.max(pad - offY, y);
   }
 
   __llBoxGroup.style.left = x + 'px';
