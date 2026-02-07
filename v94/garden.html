@@ -6743,18 +6743,21 @@ function layoutSkyBoxes_(wrap){
 
 
   // v99.1.69: Sat/Sun bias shift (rudimentary but effective).
-  // Requirement: for Saturday/Sunday, pre-shift the skybox group left by ~10% of stage width
-  // so it naturally clears the right-side UI column before clamps.
-  try{
-    const dk = (wrap && wrap.dataset && (wrap.dataset.dateKey || wrap.dataset.datekey)) || null;
-    if (dk){
-      const d = new Date(dk + 'T00:00:00Z'); // stable day-of-week
-      const dow = d.getUTCDay(); // 0=Sun ... 6=Sat
-      if (dow === 0 || dow === 6){
-        groupX -= (W * 0.10);
-      }
+// Saturday: subtle 5% left shift
+// Sunday: stronger 10% left shift
+try{
+  const dk = (wrap && wrap.dataset && (wrap.dataset.dateKey || wrap.dataset.datekey)) || null;
+  if (dk){
+    const d = new Date(dk + 'T00:00:00Z'); // stable day-of-week
+    const dow = d.getUTCDay(); // 0=Sun ... 6=Sat
+
+    if (dow === 6){          // Saturday
+      groupX -= (W * 0.05);
+    } else if (dow === 0){   // Sunday
+      groupX -= (W * 0.10);
     }
-  }catch(e){}
+  }
+}catch(e){}
 
   // v99.1.69: hard right guard at the week-nav UI column (▲ / This Week / ▼).
   // Requirement: skyboxes must NOT extend past the left edge of that UI column (0 padding).
