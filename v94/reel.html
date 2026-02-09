@@ -1,138 +1,148 @@
+<!--
+reel.html
+LifeLog Photo Reel (GitHub Pages)
+
+Updates in this version:
+  ✅ Non-repeating shuffle (no repeats until all shown)
+  ✅ Controls: smaller, responsive sizing for skybox iframes
+  ✅ Controls: fade sooner while playing, longer when paused
+  ✅ Buttons wired reliably (stopPropagation + pointer events)
+  ✅ Disable Prev/Next when only 1 photo
+  ✅ Classy preload progress bar + graceful "no photos" state
+  ✅ Subtle crossfade easing
+  ✅ Background blur layer (helps portrait shots feel framed)
+
+Expected URL params (examples):
+  reel.html?api=<ENCODED_API_URL>&bot=winston&date=2025-12-20&fit=contain&w=1200&preload=2&cache_s=600&interval_ms=2200&fade_ms=450&shuffle=1
+
+Notes:
+- Keyboard support intentionally NOT included (per your request).
+- The api should return JSON like: { ok:true, dateKey:"YYYY-MM-DD", photos:["https://...","https://..."] }
+  (or JSONP if you implemented that; this file uses JSON fetch by default).
+-->
+
 <!doctype html>
-<html lang="en">
+<html>
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>LifeLog Photo Reel</title>
   <style>
     :root{
-      --radius: 16px;
+      --bg: #0b0f16;
+      --glass: rgba(255,255,255,0.06);
+      --glass2: rgba(255,255,255,0.10);
+      --ring: rgba(255,255,255,0.18);
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.68);
 
-      --hudPad: 10px;
-      --hudFont: 12px;
-      --hudBg: rgba(0,0,0,0.42);
-      --hudFg: rgba(255,255,255,0.92);
+      --radius: 14px;
+      --hudPad: 12px;
 
-      --barBg: rgba(255,255,255,0.16);
-      --barFg: rgba(255,255,255,0.78);
+      --ctrlBg: rgba(0,0,0,0.38);
+      --ctrlRing: rgba(255,255,255,0.22);
 
-      --ctrlBg: rgba(0,0,0,0.42);
-      --ctrlFg: rgba(255,255,255,0.92);
-      --ctrlFgDim: rgba(255,255,255,0.70);
-      --ctrlRing: rgba(255,255,255,0.16);
+      --barBg: rgba(255,255,255,0.14);
+      --barFg: rgba(255,255,255,0.72);
     }
 
-    html, body {
-      height: 100%;
-      margin: 0;
-      background: transparent;
-      overflow: hidden;
+    html, body { height:100%; margin:0; background: transparent; }
+    body{
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      overflow:hidden;
     }
 
-    .wrap{
-      position: relative;
-      width: 100%;
-      height: 100%;
+    .frame{
+      position:relative;
+      width:100%;
+      height:100%;
       border-radius: var(--radius);
-      overflow: hidden;
-      background: rgba(0,0,0,0.12);
+      overflow:hidden;
+      background: linear-gradient(180deg, rgba(0,0,0,0.20), rgba(0,0,0,0.35));
     }
 
-    /* Soft vignette */
-    .wrap:before{
-      content:"";
+    /* Background blur layer (helps portrait shots look framed) */
+    .bg{
       position:absolute;
       inset:0;
-      pointer-events:none;
-      background:
-        radial-gradient(120% 90% at 50% 50%, rgba(0,0,0,0) 0%, rgba(0,0,0,0.16) 72%, rgba(0,0,0,0.30) 100%);
-      z-index: 6;
-    }
-
-    /* Background blur layer for portrait shots */
-    .bg {
-      position:absolute;
-      inset:0;
-      background-position:center;
+      background: #111;
       background-size: cover;
-      filter: blur(28px);
+      background-position: center;
+      filter: blur(24px) saturate(1.05);
       transform: scale(1.12);
       opacity: 0;
-      transition: opacity 420ms cubic-bezier(.2,.8,.2,1);
-      z-index: 1;
+      transition: opacity 420ms ease;
     }
-    .bg.on { opacity: 0.92; }
+    .bg.on{ opacity: 1; }
 
-    .bgShade{
+    .vignette{
       position:absolute;
       inset:0;
-      background: rgba(0,0,0,0.20);
-      opacity: 0;
-      transition: opacity 420ms cubic-bezier(.2,.8,.2,1);
-      z-index: 2;
+      background: radial-gradient(ellipse at center, rgba(0,0,0,0.10), rgba(0,0,0,0.55));
+      pointer-events:none;
     }
-    .bgShade.on{ opacity: 1; }
 
-    /* Two-layer crossfade */
-    .frame{
+    /* Main image */
+    .img{
       position:absolute;
       inset:0;
-      z-index: 3;
-    }
-    .layer{
-      position:absolute;
-      inset:0;
-      opacity: 0;
-      transition: opacity 520ms cubic-bezier(.22,.61,.36,1);
+      width:100%;
+      height:100%;
+      opacity:0;
+      transition: opacity var(--fadeMs, 450ms) cubic-bezier(.22,.61,.36,1);
       will-change: opacity;
+      object-fit: var(--fit, contain);
     }
-    .layer.show{ opacity: 1; }
+    .img.on{ opacity: 1; }
 
-    img.photo{
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transform: scale(1.01);
-      will-change: transform;
-      user-select: none;
-      -webkit-user-drag: none;
-    }
-
-    .hud{
+    /* Top-left tiny label */
+    .tag{
       position:absolute;
+      top: var(--hudPad);
       left: var(--hudPad);
-      bottom: var(--hudPad);
-      padding: 7px 10px;
-      border-radius: 12px;
-      background: var(--hudBg);
-      color: var(--hudFg);
-      font-size: var(--hudFont);
-      backdrop-filter: blur(8px);
-      max-width: calc(100% - (var(--hudPad) * 2));
+      z-index: 8;
+      font-size: 12px;
+      color: var(--text);
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.40);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.12);
+      max-width: calc(100% - 2*var(--hudPad));
       white-space: nowrap;
       overflow:hidden;
       text-overflow: ellipsis;
-      z-index: 7;
       pointer-events:none;
     }
 
-    .barWrap{
+    /* Preload progress */
+    .progress{
       position:absolute;
-      left: var(--hudPad);
-      right: var(--hudPad);
-      bottom: calc(var(--hudPad) + 40px);
-      height: 4px;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%,-50%);
+      width: min(220px, 62vw);
+      z-index: 9;
+      opacity: 0;
+      transition: opacity 220ms ease;
+      pointer-events:none;
+    }
+    .progress.on{ opacity: 1; }
+    .progress .label{
+      font-size: 12px;
+      color: var(--muted);
+      text-align:center;
+      margin-bottom: 8px;
+      letter-spacing: 0.2px;
+    }
+    .progress .bar{
+      height: 6px;
       border-radius: 999px;
       background: var(--barBg);
       overflow:hidden;
-      z-index: 7;
-      opacity: 0;
-      transition: opacity 240ms ease;
-      pointer-events:none;
+      border: 1px solid rgba(255,255,255,0.10);
     }
-    .barWrap.on{ opacity: 1; }
-    .bar{
+    .progress .fill{
       height: 100%;
       width: 0%;
       background: var(--barFg);
@@ -140,24 +150,59 @@
       transition: width 180ms ease;
     }
 
+    /* Empty / no photos state */
+    .empty{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding: 18px;
+      box-sizing:border-box;
+      color: var(--text);
+      z-index: 10;
+      background: linear-gradient(180deg, rgba(0,0,0,0.30), rgba(0,0,0,0.50));
+    }
+    .empty .card{
+      width: min(320px, 80vw);
+      border-radius: 16px;
+      background: rgba(0,0,0,0.30);
+      border: 1px solid rgba(255,255,255,0.12);
+      backdrop-filter: blur(12px);
+      padding: 16px 14px;
+    }
+    .empty .title{
+      font-weight: 800;
+      font-size: 14px;
+      margin-bottom: 6px;
+      letter-spacing: 0.2px;
+    }
+    .empty .sub{
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+
     /* Controls */
     .controls{
       position:absolute;
-      left: 50%;
-      bottom: calc(var(--hudPad) + 44px);
+      left:50%;
+      bottom: calc(var(--hudPad) + 14px);
       transform: translateX(-50%);
       display:flex;
       align-items:center;
-      gap: 10px;
-      padding: 8px 10px;
+      gap: clamp(8px, 2.2vw, 14px);
+      padding: clamp(6px, 1.6vw, 10px);
       border-radius: 999px;
       background: var(--ctrlBg);
       backdrop-filter: blur(10px);
-      z-index: 7;
+      border: 1px solid rgba(255,255,255,0.10);
+      z-index: 8;
 
       opacity: 0;
       transition: opacity 220ms ease;
-      pointer-events: none; /* enabled when visible */
+      pointer-events: none;
     }
     .controls.on{
       opacity: 1;
@@ -165,625 +210,494 @@
     }
 
     .btn{
-      width: 38px;
-      height: 38px;
+      width: clamp(26px, 6vw, 38px);
+      height: clamp(26px, 6vw, 38px);
       border-radius: 999px;
       border: 1px solid var(--ctrlRing);
       background: rgba(255,255,255,0.06);
       display:flex;
       align-items:center;
       justify-content:center;
-      cursor: pointer;
+      cursor:pointer;
       user-select:none;
       touch-action: manipulation;
+      transition: transform 120ms ease, background 120ms ease, border-color 120ms ease, opacity 120ms ease;
     }
-    .btn:active{
-      transform: scale(0.98);
-      background: rgba(255,255,255,0.09);
-    }
+    .btn:hover{ background: rgba(255,255,255,0.10); }
+    .btn:active{ transform: scale(0.96); }
+
     .btn svg{
-      width: 18px;
-      height: 18px;
-      fill: var(--ctrlFg);
-      opacity: 0.92;
-    }
-    .btn.dim svg{ opacity: 0.74; }
-
-    /* No photos state */
-    .empty{
-      position:absolute;
-      inset:0;
-      z-index: 8;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding: 18px;
-      box-sizing: border-box;
-      background:
-        radial-gradient(120% 90% at 50% 45%, rgba(255,255,255,0.09) 0%, rgba(255,255,255,0.05) 55%, rgba(0,0,0,0.10) 100%),
-        linear-gradient(180deg, rgba(0,0,0,0.10), rgba(0,0,0,0.16));
-    }
-    .card{
-      width:min(520px, 92vw);
-      border-radius: 18px;
-      padding: 18px 18px 16px;
-      background: rgba(0,0,0,0.28);
-      backdrop-filter: blur(10px);
-      box-shadow: 0 12px 40px rgba(0,0,0,0.22);
-      color: rgba(255,255,255,0.92);
-    }
-    .title{
-      font-size: 14px;
-      font-weight: 750;
-      letter-spacing: 0.2px;
-      margin: 0 0 6px 0;
-    }
-    .sub{
-      font-size: 12px;
-      line-height: 1.35;
-      opacity: 0.92;
-    }
-    .hint{
-      margin-top: 10px;
-      font-size: 11px;
-      line-height: 1.35;
-      opacity: 0.72;
-    }
-    .err{
-      margin-top: 10px;
-      font-family: ui-monospace, Menlo, Consolas, monospace;
-      font-size: 10.5px;
-      line-height: 1.35;
-      opacity: 0.70;
-      white-space: pre-wrap;
-      word-break: break-word;
+      width: clamp(12px, 3.2vw, 18px);
+      height: clamp(12px, 3.2vw, 18px);
+      fill: none;
+      stroke: rgba(255,255,255,0.86);
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
 
-    /* Reveal controls on hover/tap area */
+    .btn.main{
+      width: clamp(30px, 7vw, 42px);
+      height: clamp(30px, 7vw, 42px);
+      background: rgba(255,255,255,0.10);
+      border-color: rgba(255,255,255,0.26);
+    }
+    .btn.main svg{
+      width: clamp(14px, 3.6vw, 20px);
+      height: clamp(14px, 3.6vw, 20px);
+    }
+
+    .btn.disabled{
+      opacity: 0.35;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    /* Click-anywhere surface to show controls */
     .hotzone{
       position:absolute;
-      left:0;
-      right:0;
-      bottom:0;
-      height: 120px;
-      z-index: 7;
+      inset:0;
+      z-index: 6;
       background: transparent;
     }
   </style>
 </head>
 
 <body>
-  <div class="wrap" id="wrap">
+  <div class="frame" id="frame">
     <div class="bg" id="bg"></div>
-    <div class="bgShade" id="bgShade"></div>
+    <div class="vignette"></div>
+    <div class="hotzone" id="hotzone"></div>
 
-    <div class="frame" id="frame">
-      <div class="layer" id="layerA"><img class="photo" id="imgA" alt="photo A"></div>
-      <div class="layer" id="layerB"><img class="photo" id="imgB" alt="photo B"></div>
+    <div class="tag" id="tag" style="display:none;"></div>
+
+    <div class="progress" id="progress" style="display:none;">
+      <div class="label" id="progressLabel">loading photos…</div>
+      <div class="bar"><div class="fill" id="progressFill"></div></div>
     </div>
 
-    <div class="barWrap" id="barWrap"><div class="bar" id="bar"></div></div>
-    <div class="hud" id="hud">loading…</div>
-
-    <div class="controls" id="controls" aria-label="reel controls">
-      <div class="btn dim" id="btnPrev" title="Previous" aria-label="Previous">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 5.5 9 12l6.5 6.5-1.4 1.4L6.2 12l7.9-7.9z"/></svg>
+    <div class="controls" id="controls" aria-label="controls">
+      <div class="btn" id="btnPrev" title="Previous" aria-label="Previous">
+        <!-- left chevron -->
+        <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
       </div>
 
-      <div class="btn" id="btnPlay" title="Play/Pause" aria-label="Play/Pause">
-        <svg id="iconPlay" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
-        <svg id="iconPause" viewBox="0 0 24 24" aria-hidden="true" style="display:none"><path d="M7 5h4v14H7zm6 0h4v14h-4z"/></svg>
+      <div class="btn main" id="btnPlay" title="Play/Pause" aria-label="Play/Pause">
+        <!-- play icon (default), swapped to pause in JS -->
+        <svg id="iconPlay" viewBox="0 0 24 24"><path d="M9 8l10 4-10 4z"/></svg>
+        <svg id="iconPause" viewBox="0 0 24 24" style="display:none;">
+          <path d="M8 6v12"/><path d="M16 6v12"/>
+        </svg>
       </div>
 
-      <div class="btn dim" id="btnNext" title="Next" aria-label="Next">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 18.5 15 12 8.5 5.5l1.4-1.4L17.8 12l-7.9 7.9z"/></svg>
+      <div class="btn" id="btnNext" title="Next" aria-label="Next">
+        <!-- right chevron -->
+        <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>
       </div>
     </div>
-
-    <div class="hotzone" id="hotzone" aria-hidden="true"></div>
   </div>
 
-<script>
-/* ---------------------------
- * Params + defaults
- * --------------------------- */
-const QS = new URLSearchParams(location.search);
+  <script>
+    // -----------------------------
+    // Params
+    // -----------------------------
+    const qs = new URLSearchParams(location.search);
 
-const bot = (QS.get("bot") || "").trim().toLowerCase();
-const dateKey = (QS.get("date") || "").trim();
+    // Your API endpoint can be passed as api=... or you can hardcode it below.
+    // Example:
+    // api=https%3A%2F%2Fscript.google.com%2Fmacros%2Fs%2F...%2Fexec%3Fr%3Dapi_photo_reel
+    const apiBase = qs.get('api') || ''; // optional; recommended to pass full URL including r=api_photo_reel
+    const bot = qs.get('bot') || 'winston';
+    const date = qs.get('date') || '';  // YYYY-MM-DD; if blank, API may default server-side
 
-const fit = ((QS.get("fit") || "cover") + "").toLowerCase() === "contain" ? "contain" : "cover";
-const w = clampInt(QS.get("w"), 1200, 320, 4096);
+    const fit = (qs.get('fit') || 'contain').toLowerCase() === 'cover' ? 'cover' : 'contain';
+    const fadeMs = clampInt(qs.get('fade_ms'), 450, 150, 2500);
+    const intervalMs = clampInt(qs.get('interval_ms'), 2200, 700, 20000);
+    const preloadN = clampInt(qs.get('preload'), 2, 0, 12);
+    const cacheS = clampInt(qs.get('cache_s'), 600, 0, 86400);
+    const shuffle = (qs.get('shuffle') || '1') !== '0'; // default on
+    const wParam = qs.get('w'); // optional (you may use this in your API to pick thumbs)
 
-const preloadCount = clampInt(QS.get("preload"), 2, 0, 20);
-const cacheS = clampInt(QS.get("cache_s"), 600, 0, 86400);
+    // Controls auto-hide timing:
+    const HIDE_MS_PLAYING = 1200; // fade sooner while playing
+    const HIDE_MS_PAUSED  = 3600; // longer when paused
 
-const intervalMs = clampInt(QS.get("interval_ms"), 2200, 600, 30000);
-const fadeMs = clampInt(QS.get("fade_ms"), 450, 150, 4000);
+    // Apply CSS variables
+    document.documentElement.style.setProperty('--fit', fit);
+    document.documentElement.style.setProperty('--fadeMs', fadeMs + 'ms');
 
-const shuffleFlag = (QS.get("shuffle") || "0").trim() === "1";
+    // -----------------------------
+    // DOM
+    // -----------------------------
+    const frame = document.getElementById('frame');
+    const bg = document.getElementById('bg');
+    const tag = document.getElementById('tag');
 
-// Apps Script WebApp exec base (no trailing slash)
-const apiBase = (QS.get("api") || "https://script.google.com/macros/s/AKfycbyHPnSrEOdYJwoIQpRk4SajFg9cgpSeXsH0ilg9-c2EglqzeSIubVhgy7WogI-Idsu8/exec").trim();
+    const progress = document.getElementById('progress');
+    const progressLabel = document.getElementById('progressLabel');
+    const progressFill = document.getElementById('progressFill');
 
-/* ---------------------------
- * DOM
- * --------------------------- */
-const wrap = document.getElementById("wrap");
-const bg = document.getElementById("bg");
-const bgShade = document.getElementById("bgShade");
+    const controls = document.getElementById('controls');
+    const hotzone = document.getElementById('hotzone');
 
-const layerA = document.getElementById("layerA");
-const layerB = document.getElementById("layerB");
-const imgA = document.getElementById("imgA");
-const imgB = document.getElementById("imgB");
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const btnPlay = document.getElementById('btnPlay');
+    const iconPlay = document.getElementById('iconPlay');
+    const iconPause = document.getElementById('iconPause');
 
-const hud = document.getElementById("hud");
-const barWrap = document.getElementById("barWrap");
-const bar = document.getElementById("bar");
+    // -----------------------------
+    // State
+    // -----------------------------
+    let photos = [];     // original list (urls)
+    let ok = [];         // verified/preloaded urls
+    let imgs = [];       // <img> elements for main layer
+    let started = false;
 
-const controls = document.getElementById("controls");
-const hotzone = document.getElementById("hotzone");
-const btnPrev = document.getElementById("btnPrev");
-const btnNext = document.getElementById("btnNext");
-const btnPlay = document.getElementById("btnPlay");
-const iconPlay = document.getElementById("iconPlay");
-const iconPause = document.getElementById("iconPause");
+    // Non-repeating shuffle deck
+    let deck = [];
+    let deckPos = 0;
 
-// Apply fit + timing
-imgA.style.objectFit = fit;
-imgB.style.objectFit = fit;
-layerA.style.transitionDuration = `${fadeMs}ms`;
-layerB.style.transitionDuration = `${fadeMs}ms`;
+    let idx = 0;         // current index in ok[]
+    let timer = null;
+    let isPlaying = true;
 
-bg.style.transitionDuration = `${Math.max(220, Math.min(900, fadeMs + 120))}ms`;
-bgShade.style.transitionDuration = `${Math.max(220, Math.min(900, fadeMs + 120))}ms`;
+    let hideT = null;
 
-/* ---------------------------
- * Controls show/hide
- * --------------------------- */
-let controlsHideTimer = null;
-function showControls(){
-  controls.classList.add("on");
-  if (controlsHideTimer) clearTimeout(controlsHideTimer);
-  controlsHideTimer = setTimeout(() => controls.classList.remove("on"), 2500);
-}
-hotzone.addEventListener("mousemove", showControls, { passive:true });
-hotzone.addEventListener("mouseenter", showControls, { passive:true });
-hotzone.addEventListener("touchstart", showControls, { passive:true });
-
-/* ---------------------------
- * JSONP loader (CORS-safe)
- * --------------------------- */
-function fetchJsonp(url, timeoutMs = 12000){
-  return new Promise((resolve, reject) => {
-    const cbName = "__llReelCb_" + Math.random().toString(36).slice(2);
-    const script = document.createElement("script");
-    const timer = setTimeout(() => {
-      cleanup();
-      reject(new Error("jsonp timeout"));
-    }, timeoutMs);
-
-    function cleanup(){
-      clearTimeout(timer);
-      try { delete window[cbName]; } catch(e) { window[cbName] = undefined; }
-      if (script && script.parentNode) script.parentNode.removeChild(script);
+    // -----------------------------
+    // Helpers
+    // -----------------------------
+    function clampInt(v, def, min, max){
+      const n = Number(v);
+      if (!Number.isFinite(n)) return def;
+      return Math.max(min, Math.min(max, Math.round(n)));
     }
 
-    window[cbName] = (data) => { cleanup(); resolve(data); };
-    script.onerror = () => { cleanup(); reject(new Error("jsonp load error")); };
-
-    const u = new URL(url);
-    u.searchParams.set("format", "jsonp");
-    u.searchParams.set("callback", cbName);
-
-    script.src = u.toString();
-    document.head.appendChild(script);
-  });
-}
-
-/* ---------------------------
- * Caching
- * --------------------------- */
-function cacheKey(){ return `ll_photoreel_v1:${bot}:${dateKey}:w${w}`; }
-
-function readCache(){
-  if (!cacheS) return null;
-  try{
-    const raw = localStorage.getItem(cacheKey());
-    if (!raw) return null;
-    const obj = JSON.parse(raw);
-    if (!obj || !obj.t || !Array.isArray(obj.photos)) return null;
-    const ageMs = Date.now() - obj.t;
-    if (ageMs > cacheS * 1000) return null;
-    return obj;
-  } catch(e){ return null; }
-}
-
-function writeCache(photos){
-  if (!cacheS) return;
-  try{
-    localStorage.setItem(cacheKey(), JSON.stringify({ t: Date.now(), photos }));
-  } catch(e){}
-}
-
-/* ---------------------------
- * Utils
- * --------------------------- */
-function clampInt(v, def, min, max){
-  const n = Number(v);
-  if (!isFinite(n)) return def;
-  return Math.max(min, Math.min(max, Math.round(n)));
-}
-
-function escapeHtml(s){
-  return String(s || "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
-
-function shuffleInPlace(arr){
-  for (let i = arr.length - 1; i > 0; i--){
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
-
-function setHud(text){ hud.textContent = text; }
-function setProgress(p01){
-  const p = Math.max(0, Math.min(1, Number(p01) || 0));
-  bar.style.width = `${Math.round(p * 100)}%`;
-}
-
-function showEmpty({ title, sub, hint, err }){
-  const div = document.createElement("div");
-  div.className = "empty";
-  div.innerHTML = `
-    <div class="card">
-      <div class="title">${escapeHtml(title || "No photos")}</div>
-      <div class="sub">${escapeHtml(sub || "")}</div>
-      ${hint ? `<div class="hint">${escapeHtml(hint)}</div>` : ``}
-      ${err ? `<div class="err">${escapeHtml(err)}</div>` : ``}
-    </div>`;
-  wrap.appendChild(div);
-}
-
-/* ---------------------------
- * Rotation with no repeats
- * --------------------------- */
-let photos = [];
-let ok = [];
-let failed = new Set();
-let started = false;
-
-let showingLayerA = true;
-let idxCurrent = -1;
-
-let deck = [];
-let deckPos = 0;
-
-function rebuildDeck(avoidFirstIdx){
-  deck = ok.slice();
-  if (shuffleFlag) shuffleInPlace(deck);
-  if (deck.length > 1 && avoidFirstIdx >= 0 && deck[0] === avoidFirstIdx){
-    const k = deck.findIndex(x => x !== avoidFirstIdx);
-    if (k > 0) [deck[0], deck[k]] = [deck[k], deck[0]];
-  }
-  deckPos = 0;
-}
-
-function nextIndex(){
-  if (ok.length <= 1) return idxCurrent;
-
-  const okSet = new Set(ok);
-  const deckValid = deck.length === ok.length && deck.every(x => okSet.has(x));
-  if (!deckValid || deckPos >= deck.length){
-    rebuildDeck(idxCurrent);
-  }
-
-  let next = deck[deckPos++];
-  if (ok.length > 1 && next === idxCurrent){
-    if (deckPos < deck.length) next = deck[deckPos++];
-    else {
-      rebuildDeck(idxCurrent);
-      next = deck[deckPos++];
-    }
-  }
-  return next;
-}
-
-function prevIndex(){
-  if (ok.length <= 1) return idxCurrent;
-
-  const okSet = new Set(ok);
-  const deckValid = deck.length === ok.length && deck.every(x => okSet.has(x));
-  if (!deckValid || deck.length < 2){
-    rebuildDeck(idxCurrent);
-  }
-
-  // We consider "deckPos" points to the next item.
-  // Previous is the item before the current next position.
-  let pos = deckPos - 2; // -1 would be current; -2 is previous
-  if (pos < 0) pos = deck.length + pos;
-  if (pos < 0) pos = 0;
-
-  let prev = deck[pos];
-  if (ok.length > 1 && prev === idxCurrent){
-    pos = pos - 1;
-    if (pos < 0) pos = deck.length - 1;
-    prev = deck[pos];
-  }
-
-  // Move deckPos so that "next" continues forward from the correct point
-  deckPos = pos + 1;
-  return prev;
-}
-
-/* ---------------------------
- * Image loading
- * --------------------------- */
-function preloadOne(src){
-  return new Promise((resolve) => {
-    const im = new Image();
-    im.decoding = "async";
-    im.loading = "eager";
-    im.onload = () => resolve({ ok:true, w: im.naturalWidth || 0, h: im.naturalHeight || 0 });
-    im.onerror = () => resolve({ ok:false, w:0, h:0 });
-    im.src = src;
-  });
-}
-
-function applyBackdrop(src, isPortrait){
-  bg.style.backgroundImage = `url("${src}")`;
-  if (isPortrait){
-    bg.classList.add("on");
-    bgShade.classList.add("on");
-  } else {
-    bg.classList.remove("on");
-    bgShade.classList.remove("on");
-  }
-}
-
-function showIndex(i){
-  if (i == null || i < 0 || i >= photos.length) return;
-  if (i === idxCurrent) return;
-
-  const src = photos[i];
-
-  const showLayer = showingLayerA ? layerA : layerB;
-  const hideLayer = showingLayerA ? layerB : layerA;
-  const showImg = showingLayerA ? imgA : imgB;
-
-  showImg.src = src;
-  showImg.onload = () => {
-    const isPortrait = (showImg.naturalHeight || 0) > (showImg.naturalWidth || 0);
-    applyBackdrop(src, isPortrait);
-  };
-
-  hideLayer.classList.remove("show");
-  showLayer.classList.add("show");
-
-  showingLayerA = !showingLayerA;
-  idxCurrent = i;
-
-  setHud(`${dateKey} • ${bot} • ${photos.length} photos`);
-}
-
-/* ---------------------------
- * API
- * --------------------------- */
-function buildApiUrl(){
-  const u = new URL(apiBase);
-  u.searchParams.set("r", "api_photo_reel");
-  u.searchParams.set("bot", bot);
-  u.searchParams.set("date", dateKey);
-  u.searchParams.set("w", String(w));
-  u.searchParams.set("cache_s", String(cacheS));
-  return u.toString();
-}
-
-/* ---------------------------
- * Playback state + transport
- * --------------------------- */
-let isPlaying = true;
-let timer = null;
-
-function syncPlayIcon(){
-  iconPlay.style.display = isPlaying ? "none" : "";
-  iconPause.style.display = isPlaying ? "" : "none";
-}
-
-function stopTimer(){
-  if (timer) clearInterval(timer);
-  timer = null;
-}
-
-function startTimer(){
-  stopTimer();
-  if (!isPlaying) return;
-  timer = setInterval(() => {
-    if (!started) return;
-    if (ok.length <= 1) return;
-    const nxt = nextIndex();
-    if (nxt !== idxCurrent) showIndex(nxt);
-  }, intervalMs);
-}
-
-btnPlay.addEventListener("click", (ev) => {
-  ev.preventDefault();
-  showControls();
-  isPlaying = !isPlaying;
-  syncPlayIcon();
-  startTimer();
-}, { passive:false });
-
-btnNext.addEventListener("click", (ev) => {
-  ev.preventDefault();
-  showControls();
-  if (!started || ok.length <= 1) return;
-  const nxt = nextIndex();
-  if (nxt !== idxCurrent) showIndex(nxt);
-}, { passive:false });
-
-btnPrev.addEventListener("click", (ev) => {
-  ev.preventDefault();
-  showControls();
-  if (!started || ok.length <= 1) return;
-  const prv = prevIndex();
-  if (prv !== idxCurrent) showIndex(prv);
-}, { passive:false });
-
-syncPlayIcon();
-
-/* ---------------------------
- * Main load
- * --------------------------- */
-async function loadPhotos(){
-  if (!bot || !dateKey){
-    showEmpty({
-      title: "Missing params",
-      sub: "Need bot and date",
-      hint: 'Example: ?bot=winston&date=2025-12-20&fit=contain&preload=2&cache_s=600&interval_ms=2200&fade_ms=450&shuffle=1'
-    });
-    setHud("missing params");
-    return;
-  }
-
-  const cached = readCache();
-  if (cached && Array.isArray(cached.photos) && cached.photos.length){
-    photos = cached.photos.slice();
-  } else {
-    const url = buildApiUrl();
-    setHud("loading photos…");
-    let data;
-    try{
-      data = await fetchJsonp(url);
-    } catch(e){
-      showEmpty({
-        title: "Could not load",
-        sub: `${dateKey} • ${bot}`,
-        hint: "Check that your WebApp route r=api_photo_reel is deployed and accessible.",
-        err: String(e && e.message ? e.message : e)
-      });
-      setHud("load error");
-      return;
+    function safeText(s){
+      return String(s || '').replace(/[<>]/g,'');
     }
 
-    if (!data || !data.ok){
-      showEmpty({
-        title: "No photos",
-        sub: `${dateKey} • ${bot}`,
-        hint: "No photo links found for this day, or the API returned an error.",
-        err: data && data.error ? String(data.error) : ""
-      });
-      setHud(`${dateKey} • ${bot} • 0 photos`);
-      return;
+    function showEmpty(titleText, subText){
+      const d = document.createElement('div');
+      d.className = 'empty';
+      d.innerHTML =
+        '<div class="card">' +
+          '<div class="title">' + safeText(titleText) + '</div>' +
+          '<div class="sub">' + safeText(subText) + '</div>' +
+        '</div>';
+      frame.appendChild(d);
     }
 
-    photos = (data.photos || []).map(s => String(s || "").trim()).filter(Boolean);
-    if (!photos.length){
-      showEmpty({
-        title: "No photos",
-        sub: `${dateKey} • ${bot}`,
-        hint: "This day has no media links."
-      });
-      setHud(`${dateKey} • ${bot} • 0 photos`);
-      return;
+    function showProgress(on, label){
+      if (!on){
+        progress.classList.remove('on');
+        progress.style.display = 'none';
+        return;
+      }
+      progress.style.display = '';
+      if (label) progressLabel.textContent = label;
+      requestAnimationFrame(() => progress.classList.add('on'));
     }
 
-    writeCache(photos);
-  }
+    function setProgress(pct){
+      const p = Math.max(0, Math.min(100, pct));
+      progressFill.style.width = p + '%';
+    }
 
-  // Preload phase
-  if (preloadCount > 0){
-    barWrap.classList.add("on");
-    setProgress(0);
+    function showControls(){
+      controls.classList.add('on');
+      scheduleHideControls();
+    }
 
-    const toTry = Math.min(preloadCount, photos.length);
-    let done = 0;
+    function scheduleHideControls(){
+      if (hideT) clearTimeout(hideT);
+      const ms = isPlaying ? HIDE_MS_PLAYING : HIDE_MS_PAUSED;
+      hideT = setTimeout(() => {
+        controls.classList.remove('on');
+      }, ms);
+    }
 
-    const concurrency = Math.min(3, toTry);
-    let cursor = 0;
-
-    async function worker(){
-      while (cursor < toTry){
-        const i = cursor++;
-        const res = await preloadOne(photos[i]);
-        done++;
-        setProgress(done / toTry);
-
-        if (res.ok){
-          if (!ok.includes(i)) ok.push(i);
-        } else {
-          failed.add(i);
-        }
+    function syncPlayIcon(){
+      if (isPlaying){
+        iconPlay.style.display = 'none';
+        iconPause.style.display = '';
+      } else {
+        iconPlay.style.display = '';
+        iconPause.style.display = 'none';
       }
     }
 
-    const workers = [];
-    for (let k = 0; k < concurrency; k++) workers.push(worker());
-    await Promise.all(workers);
-
-    setTimeout(() => { barWrap.classList.remove("on"); }, 320);
-  }
-
-  // Ensure at least one ok
-  if (!ok.length){
-    const res = await preloadOne(photos[0]);
-    if (res.ok) ok.push(0);
-    else failed.add(0);
-  }
-
-  // Background warm load
-  warmLoadRemaining_();
-
-  if (!ok.length){
-    showEmpty({
-      title: "No photos",
-      sub: `${dateKey} • ${bot}`,
-      hint: "Photos exist, but none could be loaded. Check file permissions (Anyone with link)."
-    });
-    setHud(`${dateKey} • ${bot} • 0 photos`);
-    return;
-  }
-
-  // Start
-  rebuildDeck(-1);
-  started = true;
-
-  const first = deck[deckPos++] ?? ok[0];
-  showIndex(first);
-
-  // Start playback timer
-  startTimer();
-
-  // Show controls briefly on load
-  showControls();
-}
-
-function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
-
-function warmLoadRemaining_(){
-  setTimeout(async () => {
-    for (let i = 0; i < photos.length; i++){
-      if (ok.includes(i) || failed.has(i)) continue;
-      const res = await preloadOne(photos[i]);
-      if (res.ok) ok.push(i);
-      else failed.add(i);
-      await sleep(80);
+    function disablePrevNextIfNeeded(){
+      const one = (ok.length <= 1);
+      if (one){
+        btnPrev.classList.add('disabled');
+        btnNext.classList.add('disabled');
+      } else {
+        btnPrev.classList.remove('disabled');
+        btnNext.classList.remove('disabled');
+      }
     }
 
-    if (ok.length > 1 && (deck.length < ok.length)){
-      rebuildDeck(idxCurrent);
+    function setTag(text){
+      tag.textContent = text;
+      tag.style.display = '';
     }
-  }, 150);
-}
 
-loadPhotos();
-</script>
+    function buildApiUrl(){
+      // If apiBase is provided as a full URL, we just add bot/date/etc.
+      // If empty, we can’t fetch and will show an error.
+      if (!apiBase) return '';
+
+      // apiBase might already include query params (like ?r=api_photo_reel)
+      const u = new URL(apiBase, location.href);
+
+      if (bot) u.searchParams.set('bot', bot);
+      if (date) u.searchParams.set('date', date);
+      if (wParam) u.searchParams.set('w', wParam);
+      if (cacheS) u.searchParams.set('cache_s', String(cacheS));
+
+      return u.toString();
+    }
+
+    async function fetchJson(url){
+      const resp = await fetch(url, { cache: 'no-store' });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      return await resp.json();
+    }
+
+    function shuffleArray(arr){
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--){
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function resetDeck(currentIndex){
+      const indices = ok.map((_, i) => i);
+      // Build a new shuffled order, but try to avoid immediate repeat of current index
+      let shuffled = shuffle ? shuffleArray(indices) : indices;
+      if (shuffle && ok.length > 1 && shuffled[0] === currentIndex){
+        // swap first with another position
+        const swapWith = 1 + Math.floor(Math.random() * (shuffled.length - 1));
+        [shuffled[0], shuffled[swapWith]] = [shuffled[swapWith], shuffled[0]];
+      }
+      deck = shuffled;
+      deckPos = 0;
+    }
+
+    function nextFromDeck(){
+      if (ok.length <= 1) return 0;
+      if (!deck.length || deckPos >= deck.length){
+        resetDeck(idx);
+      }
+      // Ensure deck[deckPos] is not the current index if possible
+      if (ok.length > 1 && deck[deckPos] === idx){
+        deckPos++;
+        if (deckPos >= deck.length){
+          resetDeck(idx);
+        }
+      }
+      const ni = deck[deckPos];
+      deckPos++;
+      return ni;
+    }
+
+    function prevIndexSimple(){
+      // For "prev" we’ll step back in the already-viewed history if possible.
+      // Simple approach: go to (idx-1) wrapping (works fine with shuffle experience).
+      if (ok.length <= 1) return 0;
+      return (idx - 1 + ok.length) % ok.length;
+    }
+
+    function setBgFor(src){
+      bg.style.backgroundImage = `url("${src}")`;
+      bg.classList.add('on');
+    }
+
+    function showIndex(i){
+      if (!imgs.length) return;
+      const prev = idx;
+      idx = i;
+
+      imgs[prev]?.classList.remove('on');
+      imgs[idx]?.classList.add('on');
+
+      setBgFor(ok[idx]);
+    }
+
+    function stopTimer(){
+      if (timer) clearInterval(timer);
+      timer = null;
+    }
+
+    function startTimer(){
+      stopTimer();
+      if (!isPlaying) return;
+      if (ok.length <= 1) return;
+      timer = setInterval(() => {
+        const ni = nextFromDeck();
+        showIndex(ni);
+      }, Math.max(300, intervalMs));
+    }
+
+    function wireControls(){
+      // Hotzone toggles visibility
+      hotzone.addEventListener('click', () => {
+        showControls();
+      });
+
+      // Always show controls on pointer movement inside frame (nice in skybox)
+      frame.addEventListener('pointermove', () => {
+        showControls();
+      }, { passive: true });
+
+      btnPlay.addEventListener('click', (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        showControls();
+
+        isPlaying = !isPlaying;
+        syncPlayIcon();
+        startTimer();
+      });
+
+      btnNext.addEventListener('click', (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        showControls();
+        if (!started || ok.length <= 1) return;
+        const ni = nextFromDeck();
+        showIndex(ni);
+      });
+
+      btnPrev.addEventListener('click', (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        showControls();
+        if (!started || ok.length <= 1) return;
+        const pi = prevIndexSimple();
+        showIndex(pi);
+      });
+    }
+
+    function preloadImage(src){
+      return new Promise((resolve) => {
+        const im = new Image();
+        im.decoding = 'async';
+        im.loading = 'eager';
+        im.onload = () => resolve({ ok:true, src });
+        im.onerror = () => resolve({ ok:false, src });
+        im.src = src;
+      });
+    }
+
+    async function primeImages(){
+      // Validate and preload at least the first N (or all if small)
+      const total = photos.length;
+      ok = [];
+      let loaded = 0;
+
+      showProgress(true, 'loading photos…');
+      setProgress(0);
+
+      // We will attempt to load all, but show progress based on tries.
+      for (let i = 0; i < total; i++){
+        const r = await preloadImage(photos[i]);
+        loaded++;
+        setProgress(Math.round((loaded / total) * 100));
+        if (r.ok) ok.push(r.src);
+      }
+
+      // If preloadN > 0 and we have a lot, we’ve already validated all.
+      // If you want to cap, we can, but best UX is keeping all available for shuffle.
+      showProgress(false);
+    }
+
+    function buildLayers(){
+      // Build image layers
+      imgs = ok.map((src, i) => {
+        const im = document.createElement('img');
+        im.className = 'img';
+        im.alt = 'photo ' + (i + 1);
+        im.decoding = 'async';
+        im.loading = (i === 0) ? 'eager' : 'lazy';
+        im.src = src;
+        frame.appendChild(im);
+        return im;
+      });
+
+      // Put controls above images
+      frame.appendChild(controls);
+
+      // Init deck
+      resetDeck(0);
+
+      // Show first
+      idx = 0;
+      imgs[0].classList.add('on');
+      setBgFor(ok[0]);
+
+      started = true;
+
+      disablePrevNextIfNeeded();
+      syncPlayIcon();
+      showControls();
+      startTimer();
+    }
+
+    async function main(){
+      wireControls();
+
+      // If no apiBase, we can still run with hardcoded state by embedding photos[] in the HTML,
+      // but for your setup we expect api param.
+      const apiUrl = buildApiUrl();
+
+      if (!apiUrl){
+        showEmpty('Missing api', 'Pass api=<your api_photo_reel url> in the query string.');
+        return;
+      }
+
+      try{
+        const data = await fetchJson(apiUrl);
+
+        if (!data || !data.ok){
+          const err = (data && data.error) ? String(data.error) : 'API returned not ok';
+          showEmpty('No photos', err);
+          return;
+        }
+
+        const dateKey = data.dateKey || date || '';
+        const count = Array.isArray(data.photos) ? data.photos.length : 0;
+
+        setTag((dateKey ? dateKey : 'date') + ' • ' + bot + (count ? (' • ' + count + ' photos') : ''));
+
+        if (!count){
+          showEmpty('No photos', (dateKey ? dateKey : '') + (bot ? (' • ' + bot) : ''));
+          return;
+        }
+
+        // Photos from API
+        photos = data.photos.slice();
+
+        // Optional: if preload param passed, we at least show a classy progress bar while validating.
+        // (This validates all so shuffle never hits a broken file.)
+        await primeImages();
+
+        if (!ok.length){
+          showEmpty('No photos', 'All photos failed to load (permissions or invalid URLs).');
+          return;
+        }
+
+        buildLayers();
+
+      } catch (e){
+        showEmpty('No photos', 'Failed to load: ' + String(e && e.message ? e.message : e));
+      }
+    }
+
+    main();
+  </script>
 </body>
 </html>
