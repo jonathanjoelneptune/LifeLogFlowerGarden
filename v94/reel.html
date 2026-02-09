@@ -1,555 +1,629 @@
 <!doctype html>
-<html lang="en">
+<html>
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>LifeLog Photo Reel</title>
   <style>
     :root{
-      --r: 12px;
-      --hud-bg: rgba(0,0,0,0.35);
-      --hud-fg: rgba(255,255,255,0.92);
-      --hud-fg-dim: rgba(255,255,255,0.70);
-      --btn-bg: rgba(0,0,0,0.40);
-      --btn-bg-hover: rgba(0,0,0,0.60);
-      --btn-fg: rgba(255,255,255,0.90);
-      --dot-off: rgba(255,255,255,0.35);
-      --dot-on: rgba(255,255,255,0.90);
-      --blur: 18px;
+      --radius: 14px;
+      --hudPad: 10px;
+
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.62);
+
+      --ctrlBg: rgba(0,0,0,0.38);
+      --ctrlRing: rgba(255,255,255,0.18);
+
+      --barBg: rgba(255,255,255,0.14);
+      --barFg: rgba(255,255,255,0.72);
+
+      --dotOff: rgba(255,255,255,0.30);
+      --dotOn: rgba(255,255,255,0.92);
+
+      --fadeMs: 450ms;
+      --fit: contain;
+
+      --blur: 22px;
     }
 
-    html, body { height: 100%; margin: 0; background: transparent; }
-    body { overflow: hidden; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
-
-    .stage{
-      position: relative;
-      width: 100%;
-      height: 100%;
-      border-radius: var(--r);
-      overflow: hidden;
-      background: rgba(0,0,0,0.08);
+    html, body { height:100%; margin:0; background: transparent; }
+    body{
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      overflow:hidden;
     }
 
-    /* Blurred background */
+    .frame{
+      position:relative;
+      width:100%;
+      height:100%;
+      border-radius: var(--radius);
+      overflow:hidden;
+      background: linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.40));
+    }
+
+    /* background blur */
     .bg{
       position:absolute;
-      inset:-16px;
-      background-position:center;
-      background-size:cover;
-      filter: blur(var(--blur));
-      transform: scale(1.08);
-      opacity: 0.85;
+      inset:-18px;
+      background: #111;
+      background-size: cover;
+      background-position: center;
+      filter: blur(var(--blur)) saturate(1.05);
+      transform: scale(1.10);
+      opacity: 0;
+      transition: opacity 420ms ease;
+      will-change: opacity;
     }
-    .bg::after{
-      content:"";
+    .bg.on{ opacity: 1; }
+
+    .vignette{
       position:absolute;
       inset:0;
-      background: radial-gradient(ellipse at center, rgba(0,0,0,0.10), rgba(0,0,0,0.35));
+      background: radial-gradient(ellipse at center, rgba(0,0,0,0.10), rgba(0,0,0,0.58));
+      pointer-events:none;
     }
 
-    /* Foreground image (single element fade logic) */
+    /* two-layer crossfade images (THIS is the “perfect” fade pattern) */
     .img{
       position:absolute;
       inset:0;
-      width: 100%;
-      height: 100%;
-      object-fit: contain; /* default; may switch to cover */
-      opacity: 0;
-      transition: opacity 900ms ease-in-out;
+      width:100%;
+      height:100%;
+      opacity:0;
+      transition: opacity var(--fadeMs) cubic-bezier(.22,.61,.36,1);
       will-change: opacity;
+      object-fit: var(--fit);
       user-select:none;
       -webkit-user-drag:none;
     }
-    .img.show{ opacity: 1; }
+    .img.on{ opacity:1; }
 
-    /* Tiny classy preload bar */
-    .preloadWrap{
+    /* optional tiny tag */
+    .tag{
       position:absolute;
-      left: 10px;
-      right: 10px;
-      top: 10px;
-      height: 4px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.18);
-      overflow:hidden;
-      opacity: 0;
-      transition: opacity 300ms ease;
-      pointer-events:none;
-    }
-    .preloadWrap.on{ opacity: 1; }
-    .preloadBar{
-      height: 100%;
-      width: 0%;
-      background: rgba(255,255,255,0.75);
-      border-radius: 999px;
-      transition: width 180ms ease;
-    }
-
-    /* UI group: hud + dots + controls */
-    .ui{
-      position:absolute;
-      inset:0;
-      pointer-events:none;
-    }
-
-    .hud{
-      position:absolute;
-      left: 10px;
-      bottom: 10px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: var(--hud-bg);
-      color: var(--hud-fg);
+      top: var(--hudPad);
+      left: var(--hudPad);
+      z-index: 10;
       font-size: 11px;
-      line-height: 1;
-      backdrop-filter: blur(8px);
-      max-width: calc(100% - 20px);
-      box-sizing:border-box;
-      white-space:nowrap;
+      color: var(--text);
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.38);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.10);
+      max-width: calc(100% - 2*var(--hudPad));
+      white-space: nowrap;
       overflow:hidden;
-      text-overflow:ellipsis;
-      opacity: 0;
-      transform: translateY(6px);
-      transition: opacity 350ms ease, transform 350ms ease;
-    }
-    .hud.show{
-      opacity: 1;
-      transform: translateY(0px);
-    }
+      text-overflow: ellipsis;
+      pointer-events:none;
 
-    .dots{
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 220ms ease, transform 220ms ease;
+    }
+    .tag.show{ opacity: 1; transform: translateY(0); }
+
+    /* preload progress (tiny, classy) */
+    .progress{
       position:absolute;
       left: 50%;
+      top: 10px;
       transform: translateX(-50%);
-      bottom: 10px;
-      display:flex;
-      gap: 6px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: rgba(0,0,0,0.22);
-      backdrop-filter: blur(8px);
+      width: min(220px, 70vw);
+      z-index: 11;
       opacity: 0;
-      transform: translateY(6px);
-      transition: opacity 350ms ease, transform 350ms ease;
-    }
-    .dots.show{ opacity: 1; transform: translateY(0); }
-    .dot{
-      width: 6px; height: 6px;
-      border-radius: 999px;
-      background: var(--dot-off);
-    }
-    .dot.on{ background: var(--dot-on); }
-
-    /* Controls appear on hover */
-    .controls{
-      position:absolute;
-      right: 10px;
-      bottom: 10px;
-      display:flex;
-      gap: 8px;
-      opacity: 0;
-      transform: translateY(6px);
-      transition: opacity 220ms ease, transform 220ms ease;
+      transition: opacity 220ms ease;
       pointer-events:none;
     }
-    .stage:hover .controls{
-      opacity: 1;
-      transform: translateY(0);
-      pointer-events:auto;
-    }
-
-    .btn{
-      border: none;
-      background: var(--btn-bg);
-      color: var(--btn-fg);
+    .progress.on{ opacity: 1; }
+    .progress .bar{
+      height: 4px;
       border-radius: 999px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      cursor:pointer;
-      padding: 0;
-      width: clamp(22px, 3.8vw, 34px);
-      height: clamp(22px, 3.8vw, 34px);
-      backdrop-filter: blur(8px);
-      transition: background 160ms ease, opacity 160ms ease, transform 160ms ease;
+      background: var(--barBg);
+      overflow:hidden;
+      border: 1px solid rgba(255,255,255,0.10);
     }
-    .btn:hover{ background: var(--btn-bg-hover); transform: translateY(-1px); }
-    .btn:active{ transform: translateY(0px); }
-    .btn:disabled{
-      opacity: 0.35;
-      cursor: default;
-      transform: none;
-    }
-    .icon{
-      width: clamp(12px, 2.2vw, 16px);
-      height: clamp(12px, 2.2vw, 16px);
-      display:block;
+    .progress .fill{
+      height: 100%;
+      width: 0%;
+      background: var(--barFg);
+      border-radius: 999px;
+      transition: width 160ms ease;
     }
 
-    /* Empty state */
+    /* graceful empty state */
     .empty{
-      position:absolute; inset:0;
+      position:absolute;
+      inset:0;
       display:flex;
       align-items:center;
       justify-content:center;
       text-align:center;
-      padding: 16px;
+      padding: 18px;
       box-sizing:border-box;
-      color: rgba(255,255,255,0.92);
-      background: rgba(0,0,0,0.30);
+      color: var(--text);
+      z-index: 12;
+      background: linear-gradient(180deg, rgba(0,0,0,0.26), rgba(0,0,0,0.52));
     }
     .empty .card{
-      max-width: 360px;
-      background: rgba(0,0,0,0.28);
-      backdrop-filter: blur(10px);
-      border-radius: 14px;
-      padding: 14px 14px;
-      box-sizing:border-box;
+      width: min(340px, 84vw);
+      border-radius: 16px;
+      background: rgba(0,0,0,0.30);
+      border: 1px solid rgba(255,255,255,0.12);
+      backdrop-filter: blur(12px);
+      padding: 16px 14px;
     }
-    .empty .title{ font-weight: 700; font-size: 14px; }
-    .empty .sub{ margin-top: 8px; font-size: 12px; color: rgba(255,255,255,0.75); line-height: 1.35; }
-    .empty .tiny{ margin-top: 10px; font-size: 11px; color: rgba(255,255,255,0.65); line-height: 1.35; }
+    .empty .title{
+      font-weight: 800;
+      font-size: 14px;
+      margin-bottom: 6px;
+      letter-spacing: 0.2px;
+    }
+    .empty .sub{
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+
+    /* controls + dots (fade together) */
+    .ui{
+      position:absolute;
+      left:50%;
+      bottom: calc(var(--hudPad) + 10px);
+      transform: translateX(-50%);
+      display:flex;
+      align-items:center;
+      gap: clamp(8px, 2.2vw, 14px);
+      padding: clamp(6px, 1.6vw, 10px);
+      border-radius: 999px;
+      background: var(--ctrlBg);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.10);
+      z-index: 10;
+
+      opacity: 0;
+      transform: translateX(-50%) translateY(6px);
+      transition: opacity 220ms ease, transform 220ms ease;
+      pointer-events: none;
+    }
+    .ui.on{
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      pointer-events: auto;
+    }
+
+    .dots{
+      display:flex;
+      align-items:center;
+      gap: 6px;
+      margin: 0 4px;
+      opacity: 0.92;
+    }
+    .dot{
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--dotOff);
+      transition: background 160ms ease, transform 160ms ease, opacity 160ms ease;
+    }
+    .dot.on{
+      background: var(--dotOn);
+      transform: scale(1.05);
+    }
+
+    .btn{
+      width: clamp(24px, 5.6vw, 36px);
+      height: clamp(24px, 5.6vw, 36px);
+      border-radius: 999px;
+      border: 1px solid var(--ctrlRing);
+      background: rgba(255,255,255,0.06);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      user-select:none;
+      touch-action: manipulation;
+      transition: transform 120ms ease, background 120ms ease, border-color 120ms ease, opacity 120ms ease;
+    }
+    .btn:hover{ background: rgba(255,255,255,0.10); }
+    .btn:active{ transform: scale(0.96); }
+
+    .btn svg{
+      width: clamp(12px, 3.1vw, 18px);
+      height: clamp(12px, 3.1vw, 18px);
+      fill: none;
+      stroke: rgba(255,255,255,0.86);
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .btn.main{
+      width: clamp(28px, 6.5vw, 40px);
+      height: clamp(28px, 6.5vw, 40px);
+      background: rgba(255,255,255,0.10);
+      border-color: rgba(255,255,255,0.24);
+    }
+
+    .btn.disabled{
+      opacity: 0.35;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    /* hover/move shows UI */
+    .hotzone{
+      position:absolute;
+      inset:0;
+      z-index: 9;
+      background: transparent;
+    }
   </style>
 </head>
+
 <body>
-  <div class="stage" id="stage">
+  <div class="frame" id="frame">
     <div class="bg" id="bg"></div>
+    <div class="vignette"></div>
 
-    <div class="preloadWrap" id="preloadWrap"><div class="preloadBar" id="preloadBar"></div></div>
+    <img class="img" id="imgA" alt="">
+    <img class="img" id="imgB" alt="">
 
-    <img class="img" id="img" alt="">
+    <div class="hotzone" id="hotzone"></div>
 
-    <div class="ui" id="ui">
-      <div class="hud" id="hud"></div>
-      <div class="dots" id="dots"></div>
+    <div class="tag" id="tag" style="display:none;"></div>
 
-      <div class="controls" id="controls">
-        <button class="btn" id="btnPrev" title="Previous" aria-label="Previous">
-          <svg class="icon" viewBox="0 0 24 24" fill="none">
-            <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
-        <button class="btn" id="btnPlay" title="Pause" aria-label="Pause">
-          <svg class="icon" id="iconPause" viewBox="0 0 24 24" fill="none">
-            <path d="M9 7v10M15 7v10" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-          </svg>
-          <svg class="icon" id="iconPlay" viewBox="0 0 24 24" fill="none" style="display:none;">
-            <path d="M10 8l8 4-8 4V8z" fill="currentColor"/>
-          </svg>
-        </button>
-        <button class="btn" id="btnNext" title="Next" aria-label="Next">
-          <svg class="icon" viewBox="0 0 24 24" fill="none">
-            <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
-      </div>
+    <div class="progress" id="progress" style="display:none;">
+      <div class="bar"><div class="fill" id="progressFill"></div></div>
+    </div>
+
+    <div class="ui" id="ui" aria-label="controls">
+      <button class="btn" id="btnPrev" title="Previous" aria-label="Previous">
+        <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+
+      <div class="dots" id="dots" aria-label="dots"></div>
+
+      <button class="btn main" id="btnPlay" title="Play/Pause" aria-label="Play/Pause">
+        <svg id="iconPlay" viewBox="0 0 24 24"><path d="M9 8l10 4-10 4z"/></svg>
+        <svg id="iconPause" viewBox="0 0 24 24" style="display:none;"><path d="M8 6v12"/><path d="M16 6v12"/></svg>
+      </button>
+
+      <button class="btn" id="btnNext" title="Next" aria-label="Next">
+        <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
     </div>
   </div>
 
 <script>
-(function(){
+(() => {
   const qs = new URLSearchParams(location.search);
 
-  const api = qs.get('api') || '';
+  const apiBase = qs.get('api') || '';
   const bot = qs.get('bot') || 'winston';
   const date = qs.get('date') || '';
+
   const fit = (qs.get('fit') || 'contain').toLowerCase() === 'cover' ? 'cover' : 'contain';
-
-  const intervalMs = clampInt(qs.get('interval_ms'), 2200, 500, 60000);
-  const fadeMs = clampInt(qs.get('fade_ms'), 900, 150, 8000);
-  const preloadN = clampInt(qs.get('preload'), 2, 0, 24);
+  const fadeMs = clampInt(qs.get('fade_ms'), 450, 150, 2500);
+  const intervalMs = clampInt(qs.get('interval_ms'), 2200, 700, 20000);
+  const preloadN = clampInt(qs.get('preload'), 2, 0, 24);         // how many “next” to prioritize
   const cacheS = clampInt(qs.get('cache_s'), 600, 0, 86400);
-  const shuffle = (qs.get('shuffle') || '0') === '1' || (qs.get('shuffle') || '').toLowerCase() === 'true';
+  const shuffle = (qs.get('shuffle') || '1') !== '0';
+  const showTag = (qs.get('tag') || '0') !== '0';                  // default OFF (prevents “HUD reload” vibe)
+  const showDots = (qs.get('dots') || '1') !== '0';                // default ON
 
-  const stage = document.getElementById('stage');
+  const HIDE_MS_PLAYING = 1100;
+  const HIDE_MS_PAUSED  = 3200;
+
+  document.documentElement.style.setProperty('--fit', fit);
+  document.documentElement.style.setProperty('--fadeMs', fadeMs + 'ms');
+
+  const frame = document.getElementById('frame');
   const bg = document.getElementById('bg');
-  const img = document.getElementById('img');
+  const tagEl = document.getElementById('tag');
 
-  const preloadWrap = document.getElementById('preloadWrap');
-  const preloadBar = document.getElementById('preloadBar');
+  const progress = document.getElementById('progress');
+  const progressFill = document.getElementById('progressFill');
 
-  const hud = document.getElementById('hud');
-  const dots = document.getElementById('dots');
+  const hotzone = document.getElementById('hotzone');
+  const ui = document.getElementById('ui');
 
   const btnPrev = document.getElementById('btnPrev');
-  const btnPlay = document.getElementById('btnPlay');
   const btnNext = document.getElementById('btnNext');
-  const iconPause = document.getElementById('iconPause');
+  const btnPlay = document.getElementById('btnPlay');
   const iconPlay = document.getElementById('iconPlay');
+  const iconPause = document.getElementById('iconPause');
 
-  img.style.objectFit = fit;
-  img.style.transitionDuration = fadeMs + 'ms';
+  const dotsEl = document.getElementById('dots');
+
+  const imgA = document.getElementById('imgA');
+  const imgB = document.getElementById('imgB');
+
+  let photos = [];
+  let ok = [];
+
+  // active layer toggle
+  let frontIsA = true;
+  let frontImg = imgA;
+  let backImg = imgB;
+
+  let idx = 0;
+  let isPlaying = true;
+  let timer = null;
+  let hideT = null;
+
+  // non-repeating shuffle deck
+  let deck = [];
+  let deckPos = 0;
 
   function clampInt(v, def, min, max){
     const n = Number(v);
-    if (!isFinite(n)) return def;
+    if (!Number.isFinite(n)) return def;
     return Math.max(min, Math.min(max, Math.round(n)));
   }
 
-  function escapeHtml(s){
-    return String(s||'')
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  function safeText(s){
+    return String(s || '').replace(/[<>]/g,'');
   }
 
-  function renderEmpty(title, sub, tiny){
-    stage.innerHTML = `
-      <div class="empty">
-        <div class="card">
-          <div class="title">${escapeHtml(title)}</div>
-          <div class="sub">${escapeHtml(sub || '')}</div>
-          ${tiny ? `<div class="tiny">${tiny}</div>` : ``}
-        </div>
-      </div>`;
+  function showEmpty(titleText, subText){
+    const d = document.createElement('div');
+    d.className = 'empty';
+    d.innerHTML =
+      '<div class="card">' +
+        '<div class="title">' + safeText(titleText) + '</div>' +
+        '<div class="sub">' + safeText(subText) + '</div>' +
+      '</div>';
+    frame.appendChild(d);
   }
 
-  function showUi(on){
-    hud.classList.toggle('show', !!on);
-    dots.classList.toggle('show', !!on && photos.length > 1);
+  function setBgFor(src){
+    bg.style.backgroundImage = `url("${src}")`;
+    bg.classList.add('on');
   }
 
-  function showHud(text, mode){
-    // mode: "playing" (short) or "paused" (long)
-    hud.textContent = text;
-    showUi(true);
-    const ttl = (mode === 'paused') ? 3500 : 1300;
-    clearTimeout(showHud._t);
-    showHud._t = setTimeout(() => showUi(false), ttl);
+  function showProgress(on){
+    if (!on){
+      progress.classList.remove('on');
+      progress.style.display = 'none';
+      return;
+    }
+    progress.style.display = '';
+    requestAnimationFrame(() => progress.classList.add('on'));
   }
 
-  function setProgress(p){
-    const pct = Math.max(0, Math.min(100, Math.round(p * 100)));
-    preloadBar.style.width = pct + '%';
+  function setProgress(pct){
+    const p = Math.max(0, Math.min(100, pct));
+    progressFill.style.width = p + '%';
   }
-  function setPreloadVisible(on){
-    preloadWrap.classList.toggle('on', !!on);
+
+  function showUI(){
+    ui.classList.add('on');
+    scheduleHideUI();
+  }
+
+  function scheduleHideUI(){
+    if (hideT) clearTimeout(hideT);
+    const ms = isPlaying ? HIDE_MS_PLAYING : HIDE_MS_PAUSED;
+    hideT = setTimeout(() => ui.classList.remove('on'), ms);
+  }
+
+  function syncPlayIcon(){
+    if (isPlaying){
+      iconPlay.style.display = 'none';
+      iconPause.style.display = '';
+    } else {
+      iconPlay.style.display = '';
+      iconPause.style.display = 'none';
+    }
+  }
+
+  function disablePrevNextIfNeeded(){
+    const one = (ok.length <= 1);
+    btnPrev.classList.toggle('disabled', one);
+    btnNext.classList.toggle('disabled', one);
   }
 
   function buildApiUrl(){
-    if (!api) return '';
-    const u = new URL(api);
-    u.searchParams.set('bot', bot);
+    if (!apiBase) return '';
+    const u = new URL(apiBase, location.href);
+    if (bot) u.searchParams.set('bot', bot);
     if (date) u.searchParams.set('date', date);
-    u.searchParams.set('format', 'json');
     if (cacheS > 0) u.searchParams.set('cache_s', String(cacheS));
     if (cacheS === 0) u.searchParams.set('_t', String(Date.now()));
     return u.toString();
   }
 
-  function preloadOne(url){
+  async function fetchJson(url){
+    const resp = await fetch(url, { cache: 'no-store' });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    return await resp.json();
+  }
+
+  function shuffleArray(arr){
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function resetDeck(currentIndex){
+    const indices = ok.map((_, i) => i);
+    let shuffled = shuffle ? shuffleArray(indices) : indices;
+    if (shuffle && ok.length > 1 && shuffled[0] === currentIndex){
+      const swapWith = 1 + Math.floor(Math.random() * (shuffled.length - 1));
+      [shuffled[0], shuffled[swapWith]] = [shuffled[swapWith], shuffled[0]];
+    }
+    deck = shuffled;
+    deckPos = 0;
+  }
+
+  function nextFromDeck(){
+    if (ok.length <= 1) return 0;
+    if (!deck.length || deckPos >= deck.length) resetDeck(idx);
+
+    if (ok.length > 1 && deck[deckPos] === idx){
+      deckPos++;
+      if (deckPos >= deck.length) resetDeck(idx);
+    }
+    const ni = deck[deckPos];
+    deckPos++;
+    return ni;
+  }
+
+  function prevSimple(){
+    if (ok.length <= 1) return 0;
+    return (idx - 1 + ok.length) % ok.length;
+  }
+
+  function buildDots(){
+    dotsEl.innerHTML = '';
+    if (!showDots || ok.length <= 1){
+      dotsEl.style.display = 'none';
+      return;
+    }
+    dotsEl.style.display = 'flex';
+    for (let i = 0; i < ok.length; i++){
+      const d = document.createElement('div');
+      d.className = 'dot' + (i === 0 ? ' on' : '');
+      dotsEl.appendChild(d);
+    }
+  }
+
+  function setDot(i){
+    if (!showDots || ok.length <= 1) return;
+    const kids = dotsEl.children;
+    for (let k = 0; k < kids.length; k++){
+      kids[k].classList.toggle('on', k === i);
+    }
+  }
+
+  function swapFrontBack(){
+    frontIsA = !frontIsA;
+    frontImg = frontIsA ? imgA : imgB;
+    backImg = frontIsA ? imgB : imgA;
+  }
+
+  function preloadImage(src){
     return new Promise((resolve) => {
       const im = new Image();
       im.decoding = 'async';
       im.onload = () => resolve(true);
       im.onerror = () => resolve(false);
-      im.src = url;
+      im.src = src;
     });
   }
 
-  // Shuffle without repeats until cycle completes
-  function makeCycleOrder(n){
-    const arr = Array.from({length:n}, (_,i)=>i);
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
+  async function ensureLoaded(src){
+    // Decode/load gate to avoid jarring fade into blank
+    const okLoad = await preloadImage(src);
+    return okLoad;
   }
 
-  let photos = [];
-  let idx = 0;
+  async function showIndex(i){
+    if (!ok[i]) return;
+    if (i === idx && frontImg.classList.contains('on')) return;
 
-  let order = [];
-  let orderPos = 0;
+    const nextSrc = ok[i];
 
-  let playing = true;
-  let timer = null;
+    // Load next into back layer first (hidden)
+    backImg.classList.remove('on');
+    backImg.src = nextSrc;
 
-  function setPlayIcon(){
-    if (playing){
-      iconPause.style.display = '';
-      iconPlay.style.display = 'none';
-    } else {
-      iconPause.style.display = 'none';
-      iconPlay.style.display = '';
-    }
-  }
-
-  function setControlsDisabled(){
-    const one = photos.length <= 1;
-    btnPrev.disabled = one;
-    btnNext.disabled = one;
-  }
-
-  function ensureDotsBuilt(){
-    dots.innerHTML = '';
-    if (photos.length <= 1) return;
-    for (let i=0;i<photos.length;i++){
-      const d = document.createElement('div');
-      d.className = 'dot';
-      dots.appendChild(d);
-    }
-  }
-
-  function updateDots(activeIndex){
-    if (photos.length <= 1) return;
-    const kids = dots.children;
-    for (let i=0;i<kids.length;i++){
-      kids[i].classList.toggle('on', i === activeIndex);
-    }
-  }
-
-  function setBg(url){
-    bg.style.backgroundImage = `url("${url}")`;
-  }
-
-  // ORIGINAL-style fade logic:
-  // - fade out current (opacity -> 0)
-  // - when hidden, swap src
-  // - fade back in
-  function fadeTo(url, nextIdx){
-    if (!url) return;
-
-    const doSwap = () => {
-      img.removeEventListener('transitionend', doSwap);
-      img.src = url;
-      img.alt = 'photo ' + (nextIdx + 1);
-      setBg(url);
-
-      // fade in on next frame
-      requestAnimationFrame(() => img.classList.add('show'));
-    };
-
-    // if first time (not showing yet), just show immediately after load below
-    if (!img.classList.contains('show')){
-      img.src = url;
-      img.alt = 'photo ' + (nextIdx + 1);
-      setBg(url);
-      requestAnimationFrame(() => img.classList.add('show'));
-      updateDots(nextIdx);
+    const loaded = await ensureLoaded(nextSrc);
+    if (!loaded){
+      // if a particular url fails, skip forward once
+      if (ok.length > 1){
+        const ni = nextFromDeck();
+        return showIndex(ni);
+      }
       return;
     }
 
-    // fade out, then swap at end of transition
-    img.addEventListener('transitionend', doSwap, { once: true });
-    img.classList.remove('show');
-    updateDots(nextIdx);
-  }
+    // Set background blur to the same image
+    setBgFor(nextSrc);
 
-  function nextIndex(){
-    if (photos.length <= 1) return 0;
+    // Crossfade: back in, front out (no UI changes here)
+    backImg.classList.add('on');
+    frontImg.classList.remove('on');
 
-    if (shuffle){
-      if (!order.length || orderPos >= order.length){
-        order = makeCycleOrder(photos.length);
-        if (order.length > 1 && order[0] === idx){
-          [order[0], order[1]] = [order[1], order[0]];
-        }
-        orderPos = 0;
-      }
-      return order[orderPos++];
-    }
+    // Now back becomes front for next time
+    swapFrontBack();
 
-    return (idx + 1) % photos.length;
-  }
-
-  function prevIndex(){
-    if (photos.length <= 1) return 0;
-    if (!shuffle) return (idx - 1 + photos.length) % photos.length;
-
-    // simple shuffle prev: go back one in history
-    if (!prevIndex._hist) prevIndex._hist = [idx];
-    const h = prevIndex._hist;
-    if (h.length >= 2){
-      h.pop();
-      return h[h.length - 1];
-    }
-    return idx;
-  }
-
-  function rememberHistory(i){
-    if (!shuffle) return;
-    if (!prevIndex._hist) prevIndex._hist = [];
-    const h = prevIndex._hist;
-    if (!h.length || h[h.length - 1] !== i) h.push(i);
-    if (h.length > 200) h.splice(0, h.length - 200);
-  }
-
-  function stepTo(i, reason){
-    if (!photos[i]) return;
     idx = i;
-    rememberHistory(i);
+    setDot(idx);
+  }
 
-    fadeTo(photos[i], i);
-
-    if (reason === 'init'){
-      showHud(`${date || ''} • ${bot} • ${photos.length} photos`, 'playing');
-    } else if (reason === 'user'){
-      showHud(`${idx + 1} / ${photos.length}`, playing ? 'playing' : 'paused');
-    }
+  function stopTimer(){
+    if (timer) clearInterval(timer);
+    timer = null;
   }
 
   function startTimer(){
     stopTimer();
-    if (!playing) return;
-    if (photos.length <= 1) return;
+    if (!isPlaying) return;
+    if (ok.length <= 1) return;
     timer = setInterval(() => {
-      const ni = nextIndex();
-      stepTo(ni, 'auto');
-    }, intervalMs);
+      const ni = nextFromDeck();
+      showIndex(ni);
+    }, Math.max(300, intervalMs));
   }
 
-  function stopTimer(){
-    if (timer){ clearInterval(timer); timer = null; }
+  function wireControls(){
+    hotzone.addEventListener('pointermove', () => showUI(), { passive: true });
+    hotzone.addEventListener('mouseenter', () => showUI(), { passive: true });
+
+    btnPlay.addEventListener('click', (ev) => {
+      ev.preventDefault(); ev.stopPropagation();
+      showUI();
+      isPlaying = !isPlaying;
+      syncPlayIcon();
+      if (isPlaying) startTimer(); else stopTimer();
+    });
+
+    btnNext.addEventListener('click', (ev) => {
+      ev.preventDefault(); ev.stopPropagation();
+      showUI();
+      if (ok.length <= 1) return;
+      const ni = nextFromDeck();
+      showIndex(ni);
+      if (isPlaying) startTimer();
+    });
+
+    btnPrev.addEventListener('click', (ev) => {
+      ev.preventDefault(); ev.stopPropagation();
+      showUI();
+      if (ok.length <= 1) return;
+      const pi = prevSimple();
+      showIndex(pi);
+      if (isPlaying) startTimer();
+    });
   }
 
-  // Controls
-  btnNext.addEventListener('click', () => {
-    if (photos.length <= 1) return;
-    const ni = nextIndex();
-    stepTo(ni, 'user');
-    startTimer();
-  });
+  async function backgroundPreload(){
+    // Non-blocking preload/validation. Does NOT delay first image.
+    if (ok.length <= 1) return;
 
-  btnPrev.addEventListener('click', () => {
-    if (photos.length <= 1) return;
-    const pi = prevIndex();
-    stepTo(pi, 'user');
-    startTimer();
-  });
+    showProgress(true);
+    setProgress(0);
 
-  btnPlay.addEventListener('click', () => {
-    playing = !playing;
-    setPlayIcon();
-    if (playing){
-      showHud(`${idx + 1} / ${photos.length}`, 'playing');
-      startTimer();
-    } else {
-      stopTimer();
-      showHud(`${idx + 1} / ${photos.length}`, 'paused');
-    }
-  });
-
-  // Background preload (non-blocking)
-  async function backgroundPreload(startFrom, showBar){
-    const n = photos.length;
-    if (n <= 1) return;
-
+    const n = ok.length;
     const indices = [];
     for (let i = 0; i < n; i++){
-      if (i === startFrom) continue;
+      if (i === idx) continue;
       indices.push(i);
     }
 
-    // If preloadN is set, prioritize next N after current
-    if (preloadN > 0){
+    // prioritize next preloadN after current idx
+    if (preloadN > 0 && n > 2){
       const pri = [];
       for (let k = 1; k <= preloadN; k++){
-        const j = (startFrom + k) % n;
-        if (j !== startFrom) pri.push(j);
+        pri.push((idx + k) % n);
       }
-      // merge unique in front
-      const set = new Set([startFrom]);
+      const set = new Set([idx]);
       const merged = [];
       for (const j of pri){ if (!set.has(j)){ set.add(j); merged.push(j); } }
       for (const j of indices){ if (!set.has(j)){ set.add(j); merged.push(j); } }
@@ -557,117 +631,96 @@
       indices.push(...merged);
     }
 
-    if (showBar){
-      setPreloadVisible(true);
-      setProgress(0);
-    }
-
     let done = 0;
     const total = indices.length;
 
-    // Yield between loads to keep UI responsive
-    for (const k of indices){
-      await preloadOne(photos[k]);
+    for (const j of indices){
+      await preloadImage(ok[j]);
       done++;
-      if (showBar && total > 0) setProgress(done / total);
-      await new Promise(r => setTimeout(r, 0));
+      setProgress(total ? Math.round((done / total) * 100) : 100);
+      await new Promise(r => setTimeout(r, 0)); // yield
     }
 
-    if (showBar){
-      setTimeout(() => setPreloadVisible(false), 450);
-    }
+    setTimeout(() => showProgress(false), 450);
   }
 
-  // Init
-  (async function init(){
-    if (!api){
-      renderEmpty('Missing api', 'Pass api=your api_photo_reel url in the query string.', '');
+  async function main(){
+    wireControls();
+
+    const apiUrl = buildApiUrl();
+    if (!apiUrl){
+      showEmpty('Missing api', 'Pass api=<your api_photo_reel url> in the query string.');
       return;
     }
 
-    const url = buildApiUrl();
-    let json = null;
-
+    let data;
     try{
-      const res = await fetch(url, { cache: 'no-store' });
-      json = await res.json();
-    }catch(e){
-      renderEmpty('Could not load', 'API fetch failed', 'Check that api_photo_reel returns JSON and is publicly accessible.');
+      data = await fetchJson(apiUrl);
+    } catch (e){
+      showEmpty('No photos', 'Failed to load: ' + String(e && e.message ? e.message : e));
       return;
     }
 
-    if (!json || !json.ok){
-      renderEmpty('No photos', `${date || ''} • ${bot}`, (json && json.error) ? String(json.error) : 'API returned an error.');
+    if (!data || !data.ok){
+      const err = (data && data.error) ? String(data.error) : 'API returned not ok';
+      showEmpty('No photos', err);
       return;
     }
 
-    photos = Array.isArray(json.photos) ? json.photos.filter(Boolean) : [];
+    photos = Array.isArray(data.photos) ? data.photos.filter(Boolean) : [];
     if (!photos.length){
-      renderEmpty('No photos', `${json.dateKey || date || ''} • ${bot}`, '');
+      showEmpty('No photos', (data.dateKey || date || '') + ' • ' + bot);
       return;
     }
 
-    // Build dots + controls now
-    ensureDotsBuilt();
-    updateDots(0);
-    setControlsDisabled();
-
-    // Prepare shuffle cycle
-    if (shuffle){
-      order = makeCycleOrder(photos.length);
-      if (order.length > 1 && order[0] === 0){
-        [order[0], order[1]] = [order[1], order[0]];
-      }
-      orderPos = 0;
-      prevIndex._hist = [0];
+    // Keep the tag STATIC (no re-setting per photo, prevents “reloading UI” feel)
+    if (showTag){
+      const dateKey = data.dateKey || date || '';
+      const count = photos.length;
+      tagEl.textContent = (dateKey ? dateKey : 'date') + ' • ' + bot + (count ? (' • ' + count + ' photos') : '');
+      tagEl.style.display = '';
+      requestAnimationFrame(() => tagEl.classList.add('show'));
+    } else {
+      tagEl.style.display = 'none';
     }
 
-    // Show FIRST PHOTO ASAP:
-    // Load first photo, show immediately once it loads (no waiting on others).
-    setPreloadVisible(false);
-    img.classList.remove('show');
-    img.src = photos[0];
-    img.alt = 'photo 1';
-    setBg(photos[0]);
+    // Use all photos as playable list (don’t block on validating all)
+    ok = photos.slice();
 
-    img.onload = () => {
-      requestAnimationFrame(() => img.classList.add('show'));
-      playing = true;
-      setPlayIcon();
-      stepTo(0, 'init');
-      startTimer();
+    // Build dots once
+    buildDots();
 
-      // After first is visible, preload remaining in background.
-      // Show progress bar only if preloadN > 0 (your “tiny, classy” preference).
-      backgroundPreload(0, preloadN > 0);
-    };
+    // Init shuffle deck
+    resetDeck(0);
 
-    img.onerror = () => {
-      // If first fails, try to find first loadable quickly
-      (async () => {
-        for (let i=1;i<photos.length;i++){
-          const ok = await preloadOne(photos[i]);
-          if (ok){
-            img.src = photos[i];
-            img.alt = 'photo ' + (i + 1);
-            setBg(photos[i]);
-            idx = i;
-            updateDots(i);
-            requestAnimationFrame(() => img.classList.add('show'));
-            playing = true;
-            setPlayIcon();
-            showHud(`${date || ''} • ${bot} • ${photos.length} photos`, 'playing');
-            startTimer();
-            backgroundPreload(i, preloadN > 0);
-            return;
-          }
-        }
-        renderEmpty('No photos', `${json.dateKey || date || ''} • ${bot}`, 'All images failed to load.');
-      })();
-    };
+    // Show first photo ASAP (only wait on first image load)
+    const first = ok[0];
+    backImg.src = first;
+    const loaded = await ensureLoaded(first);
+    if (!loaded){
+      showEmpty('No photos', 'First photo failed to load.');
+      return;
+    }
 
-  })();
+    // Put first image on front
+    frontImg.src = first;
+    frontImg.classList.add('on');
+    backImg.classList.remove('on');
+    setBgFor(first);
 
+    idx = 0;
+    setDot(0);
+
+    disablePrevNextIfNeeded();
+    syncPlayIcon();
+    showUI();
+    startTimer();
+
+    // Start background preload without affecting playback
+    backgroundPreload();
+  }
+
+  main();
 })();
 </script>
 </body>
