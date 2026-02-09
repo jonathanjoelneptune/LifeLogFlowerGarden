@@ -303,4 +303,147 @@
         // Foreground image
         const img = document.createElement('img');
         img.className = 'fg';
-        img.alt = 'photo ' + (i + 1
+        img.alt = 'photo ' + (i + 1);
+        img.loading = (i === 0) ? 'eager' : 'lazy';
+        img.decoding = 'async';
+        img.src = src;
+        img.style.objectFit = fit;
+
+        slide.appendChild(bg);
+        slide.appendChild(img);
+        wrap.appendChild(slide);
+        return slide;
+      });
+
+      // HUD
+      const hud = document.createElement('div');
+      hud.className = 'hud';
+      hud.textContent = `${dateKey} • ${bot} • ${photos.length} photos${shuffle ? " • shuffled" : ""}`;
+      wrap.appendChild(hud);
+
+      // Show first, then rotate
+      let idx = 0;
+      slides[0].classList.add('show');
+
+      // If only one photo, stop here
+      if (slides.length <= 1) return;
+
+      setInterval(() => {
+        const prev = idx;
+        idx = (idx + 1) % slides.length;
+        slides[prev].classList.remove('show');
+        slides[idx].classList.add('show');
+      }, Math.max(300, intervalMs));
+    }
+
+    // ----------------------------
+    // No-photos / error UI
+    // ----------------------------
+    function showEmpty({ title, sub, hint, chips }) {
+      preloadEl.classList.add('hide');
+
+      const nodes = Array.from(wrap.children);
+      for (const n of nodes) {
+        if (n.id === 'preload') continue;
+        wrap.removeChild(n);
+      }
+
+      const outer = document.createElement('div');
+      outer.className = 'empty';
+
+      const card = document.createElement('div');
+      card.className = 'card';
+
+      const t = document.createElement('div');
+      t.className = 'title';
+      t.textContent = title || "No photos";
+
+      const s = document.createElement('div');
+      s.className = 'sub';
+      s.textContent = sub || "";
+
+      const h = document.createElement('div');
+      h.className = 'hint';
+      h.textContent = hint || "";
+
+      const row = document.createElement('div');
+      row.className = 'chiprow';
+      (chips || []).forEach(c => {
+        const chip = document.createElement('div');
+        chip.className = 'chip';
+        chip.textContent = c;
+        row.appendChild(chip);
+      });
+
+      card.appendChild(t);
+      if (sub) card.appendChild(s);
+      if (hint) card.appendChild(h);
+      if (chips && chips.length) card.appendChild(row);
+
+      outer.appendChild(card);
+      wrap.appendChild(outer);
+    }
+
+    // ----------------------------
+    // Preload helper with progress bar
+    // ----------------------------
+    async function preloadSome(urls, n) {
+      const count = Math.min(Math.max(0, n), urls.length);
+      if (!count) {
+        setPreloadPct(100);
+        return;
+      }
+
+      preloadEl.classList.remove('hide');
+      setPreloadPct(0);
+
+      let done = 0;
+
+      // preload sequentially to make progress feel smooth
+      for (let i = 0; i < count; i++) {
+        await preloadImage(urls[i]).catch(() => null);
+        done++;
+        setPreloadPct(Math.round((done / count) * 100));
+      }
+    }
+
+    function preloadImage(src) {
+      return new Promise((resolve, reject) => {
+        const im = new Image();
+        im.onload = () => resolve(true);
+        im.onerror = () => reject(new Error("image load failed"));
+        im.src = src;
+      });
+    }
+
+    function setPreloadPct(pct) {
+      const v = Math.max(0, Math.min(100, Number(pct) || 0));
+      preloadBar.style.width = v + "%";
+    }
+
+    // ----------------------------
+    // Utilities
+    // ----------------------------
+    function clampInt(v, def, min, max) {
+      const n = Number(v);
+      if (!isFinite(n)) return def;
+      return Math.max(min, Math.min(max, Math.round(n)));
+    }
+
+    // Fisher–Yates
+    function shuffleArray(arr) {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    // Safe for background-image usage
+    function cssEscapeUrl(u) {
+      return String(u || "").replace(/"/g, '\\"');
+    }
+  </script>
+</body>
+</html>
