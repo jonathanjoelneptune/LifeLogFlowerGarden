@@ -21,7 +21,6 @@
     html, body { height: 100%; margin: 0; background: transparent; }
     body { overflow: hidden; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
 
-    /* Edge-to-edge in skybox */
     .stage{
       position: relative;
       width: 100%;
@@ -31,10 +30,10 @@
       background: rgba(0,0,0,0.08);
     }
 
-    /* Blurred background layer */
+    /* Blurred background */
     .bg{
       position:absolute;
-      inset:-16px; /* expand to avoid blur edges */
+      inset:-16px;
       background-position:center;
       background-size:cover;
       filter: blur(var(--blur));
@@ -48,25 +47,20 @@
       background: radial-gradient(ellipse at center, rgba(0,0,0,0.10), rgba(0,0,0,0.35));
     }
 
-    /* Foreground image layers */
-    .imgLayer{
+    /* Foreground image (single element fade logic) */
+    .img{
       position:absolute;
       inset:0;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
-    .imgLayer img{
       width: 100%;
       height: 100%;
-      object-fit: contain; /* default; can switch to cover */
+      object-fit: contain; /* default; may switch to cover */
       opacity: 0;
-      transition: opacity 900ms cubic-bezier(.2,.9,.2,1);
+      transition: opacity 900ms ease-in-out;
       will-change: opacity;
       user-select:none;
       -webkit-user-drag:none;
     }
-    .imgLayer img.show{ opacity: 1; }
+    .img.show{ opacity: 1; }
 
     /* Tiny classy preload bar */
     .preloadWrap{
@@ -91,7 +85,13 @@
       transition: width 180ms ease;
     }
 
-    /* HUD: created once; fades away */
+    /* UI group: hud + dots + controls */
+    .ui{
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+    }
+
     .hud{
       position:absolute;
       left: 10px;
@@ -111,15 +111,12 @@
       opacity: 0;
       transform: translateY(6px);
       transition: opacity 350ms ease, transform 350ms ease;
-      pointer-events:none;
     }
     .hud.show{
       opacity: 1;
       transform: translateY(0px);
     }
-    .hud .dim{ color: var(--hud-fg-dim); }
 
-    /* Dots */
     .dots{
       position:absolute;
       left: 50%;
@@ -132,10 +129,10 @@
       background: rgba(0,0,0,0.22);
       backdrop-filter: blur(8px);
       opacity: 0;
-      transition: opacity 250ms ease;
-      pointer-events:none;
+      transform: translateY(6px);
+      transition: opacity 350ms ease, transform 350ms ease;
     }
-    .dots.show{ opacity: 1; }
+    .dots.show{ opacity: 1; transform: translateY(0); }
     .dot{
       width: 6px; height: 6px;
       border-radius: 999px;
@@ -153,13 +150,14 @@
       opacity: 0;
       transform: translateY(6px);
       transition: opacity 220ms ease, transform 220ms ease;
-      pointer-events:none; /* enabled on hover */
+      pointer-events:none;
     }
     .stage:hover .controls{
       opacity: 1;
       transform: translateY(0);
       pointer-events:auto;
     }
+
     .btn{
       border: none;
       background: var(--btn-bg);
@@ -211,8 +209,6 @@
     .empty .title{ font-weight: 700; font-size: 14px; }
     .empty .sub{ margin-top: 8px; font-size: 12px; color: rgba(255,255,255,0.75); line-height: 1.35; }
     .empty .tiny{ margin-top: 10px; font-size: 11px; color: rgba(255,255,255,0.65); line-height: 1.35; }
-    .empty a{ color: rgba(255,255,255,0.9); }
-
   </style>
 </head>
 <body>
@@ -221,31 +217,32 @@
 
     <div class="preloadWrap" id="preloadWrap"><div class="preloadBar" id="preloadBar"></div></div>
 
-    <div class="imgLayer" id="layerA"><img id="imgA" alt=""></div>
-    <div class="imgLayer" id="layerB"><img id="imgB" alt=""></div>
+    <img class="img" id="img" alt="">
 
-    <div class="hud" id="hud"></div>
-    <div class="dots" id="dots"></div>
+    <div class="ui" id="ui">
+      <div class="hud" id="hud"></div>
+      <div class="dots" id="dots"></div>
 
-    <div class="controls" id="controls">
-      <button class="btn" id="btnPrev" title="Previous" aria-label="Previous">
-        <svg class="icon" viewBox="0 0 24 24" fill="none">
-          <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-      <button class="btn" id="btnPlay" title="Pause" aria-label="Pause">
-        <svg class="icon" id="iconPause" viewBox="0 0 24 24" fill="none">
-          <path d="M9 7v10M15 7v10" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-        </svg>
-        <svg class="icon" id="iconPlay" viewBox="0 0 24 24" fill="none" style="display:none;">
-          <path d="M10 8l8 4-8 4V8z" fill="currentColor"/>
-        </svg>
-      </button>
-      <button class="btn" id="btnNext" title="Next" aria-label="Next">
-        <svg class="icon" viewBox="0 0 24 24" fill="none">
-          <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
+      <div class="controls" id="controls">
+        <button class="btn" id="btnPrev" title="Previous" aria-label="Previous">
+          <svg class="icon" viewBox="0 0 24 24" fill="none">
+            <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <button class="btn" id="btnPlay" title="Pause" aria-label="Pause">
+          <svg class="icon" id="iconPause" viewBox="0 0 24 24" fill="none">
+            <path d="M9 7v10M15 7v10" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+          </svg>
+          <svg class="icon" id="iconPlay" viewBox="0 0 24 24" fill="none" style="display:none;">
+            <path d="M10 8l8 4-8 4V8z" fill="currentColor"/>
+          </svg>
+        </button>
+        <button class="btn" id="btnNext" title="Next" aria-label="Next">
+          <svg class="icon" viewBox="0 0 24 24" fill="none">
+            <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -259,19 +256,17 @@
   const fit = (qs.get('fit') || 'contain').toLowerCase() === 'cover' ? 'cover' : 'contain';
 
   const intervalMs = clampInt(qs.get('interval_ms'), 2200, 500, 60000);
-  const fadeMs = clampInt(qs.get('fade_ms'), 1000, 150, 8000);
+  const fadeMs = clampInt(qs.get('fade_ms'), 900, 150, 8000);
   const preloadN = clampInt(qs.get('preload'), 2, 0, 24);
   const cacheS = clampInt(qs.get('cache_s'), 600, 0, 86400);
   const shuffle = (qs.get('shuffle') || '0') === '1' || (qs.get('shuffle') || '').toLowerCase() === 'true';
 
   const stage = document.getElementById('stage');
   const bg = document.getElementById('bg');
+  const img = document.getElementById('img');
 
   const preloadWrap = document.getElementById('preloadWrap');
   const preloadBar = document.getElementById('preloadBar');
-
-  const imgA = document.getElementById('imgA');
-  const imgB = document.getElementById('imgB');
 
   const hud = document.getElementById('hud');
   const dots = document.getElementById('dots');
@@ -282,34 +277,13 @@
   const iconPause = document.getElementById('iconPause');
   const iconPlay = document.getElementById('iconPlay');
 
-  // Apply fit + fade duration
-  imgA.style.objectFit = fit;
-  imgB.style.objectFit = fit;
-  imgA.style.transitionDuration = fadeMs + 'ms';
-  imgB.style.transitionDuration = fadeMs + 'ms';
+  img.style.objectFit = fit;
+  img.style.transitionDuration = fadeMs + 'ms';
 
   function clampInt(v, def, min, max){
     const n = Number(v);
     if (!isFinite(n)) return def;
     return Math.max(min, Math.min(max, Math.round(n)));
-  }
-
-  function showHud(text, mode){
-    // mode: "playing" (short) or "paused" (long)
-    hud.textContent = text;
-    hud.classList.add('show');
-    const ttl = (mode === 'paused') ? 3500 : 1300;
-    clearTimeout(showHud._t);
-    showHud._t = setTimeout(()=>hud.classList.remove('show'), ttl);
-  }
-
-  function setProgress(p){
-    const pct = Math.max(0, Math.min(100, Math.round(p * 100)));
-    preloadBar.style.width = pct + '%';
-  }
-
-  function setPreloadVisible(on){
-    preloadWrap.classList.toggle('on', !!on);
   }
 
   function escapeHtml(s){
@@ -329,7 +303,28 @@
       </div>`;
   }
 
-  // Build API URL
+  function showUi(on){
+    hud.classList.toggle('show', !!on);
+    dots.classList.toggle('show', !!on && photos.length > 1);
+  }
+
+  function showHud(text, mode){
+    // mode: "playing" (short) or "paused" (long)
+    hud.textContent = text;
+    showUi(true);
+    const ttl = (mode === 'paused') ? 3500 : 1300;
+    clearTimeout(showHud._t);
+    showHud._t = setTimeout(() => showUi(false), ttl);
+  }
+
+  function setProgress(p){
+    const pct = Math.max(0, Math.min(100, Math.round(p * 100)));
+    preloadBar.style.width = pct + '%';
+  }
+  function setPreloadVisible(on){
+    preloadWrap.classList.toggle('on', !!on);
+  }
+
   function buildApiUrl(){
     if (!api) return '';
     const u = new URL(api);
@@ -337,12 +332,10 @@
     if (date) u.searchParams.set('date', date);
     u.searchParams.set('format', 'json');
     if (cacheS > 0) u.searchParams.set('cache_s', String(cacheS));
-    // cache buster to avoid GitHub cache sticking during dev; keep stable when cache_s>0
     if (cacheS === 0) u.searchParams.set('_t', String(Date.now()));
     return u.toString();
   }
 
-  // PRELOAD helpers
   function preloadOne(url){
     return new Promise((resolve) => {
       const im = new Image();
@@ -353,7 +346,7 @@
     });
   }
 
-  // Shuffle without repeats until all shown (cycle bag)
+  // Shuffle without repeats until cycle completes
   function makeCycleOrder(n){
     const arr = Array.from({length:n}, (_,i)=>i);
     for (let i = arr.length - 1; i > 0; i--) {
@@ -364,33 +357,21 @@
   }
 
   let photos = [];
-  let order = [];
-  let orderPos = 0;
   let idx = 0;
 
-  let usingA = true;
+  let order = [];
+  let orderPos = 0;
+
   let playing = true;
   let timer = null;
 
-  function updateDots(activeIndex){
-    if (photos.length <= 1){
-      dots.classList.remove('show');
-      dots.innerHTML = '';
-      return;
-    }
-    dots.classList.add('show');
-    if (!dots._built){
-      dots.innerHTML = '';
-      for (let i=0;i<photos.length;i++){
-        const d = document.createElement('div');
-        d.className = 'dot';
-        dots.appendChild(d);
-      }
-      dots._built = true;
-    }
-    const kids = dots.children;
-    for (let i=0;i<kids.length;i++){
-      kids[i].classList.toggle('on', i === activeIndex);
+  function setPlayIcon(){
+    if (playing){
+      iconPause.style.display = '';
+      iconPlay.style.display = 'none';
+    } else {
+      iconPause.style.display = 'none';
+      iconPlay.style.display = '';
     }
   }
 
@@ -400,44 +381,58 @@
     btnNext.disabled = one;
   }
 
-  function setPlayIcon(){
-    if (playing){
-      iconPause.style.display = '';
-      iconPlay.style.display = 'none';
-      btnPlay.title = 'Pause';
-      btnPlay.setAttribute('aria-label', 'Pause');
-    } else {
-      iconPause.style.display = 'none';
-      iconPlay.style.display = '';
-      btnPlay.title = 'Play';
-      btnPlay.setAttribute('aria-label', 'Play');
+  function ensureDotsBuilt(){
+    dots.innerHTML = '';
+    if (photos.length <= 1) return;
+    for (let i=0;i<photos.length;i++){
+      const d = document.createElement('div');
+      d.className = 'dot';
+      dots.appendChild(d);
     }
   }
 
-  function bgFor(url){
+  function updateDots(activeIndex){
+    if (photos.length <= 1) return;
+    const kids = dots.children;
+    for (let i=0;i<kids.length;i++){
+      kids[i].classList.toggle('on', i === activeIndex);
+    }
+  }
+
+  function setBg(url){
     bg.style.backgroundImage = `url("${url}")`;
   }
 
-  function crossfadeTo(url, nextIdx){
-    const show = usingA ? imgB : imgA;
-    const hide = usingA ? imgA : imgB;
+  // ORIGINAL-style fade logic:
+  // - fade out current (opacity -> 0)
+  // - when hidden, swap src
+  // - fade back in
+  function fadeTo(url, nextIdx){
+    if (!url) return;
 
-    // Prepare new image in hidden layer, then fade
-    show.classList.remove('show');
-    show.src = url;
-    show.alt = `photo ${nextIdx + 1}`;
+    const doSwap = () => {
+      img.removeEventListener('transitionend', doSwap);
+      img.src = url;
+      img.alt = 'photo ' + (nextIdx + 1);
+      setBg(url);
 
-    // Ensure it has a frame to apply opacity transition
-    requestAnimationFrame(() => {
-      // Fade in new, fade out old
-      hide.classList.remove('show');
-      show.classList.add('show');
-      usingA = !usingA;
-    });
+      // fade in on next frame
+      requestAnimationFrame(() => img.classList.add('show'));
+    };
 
-    // Update blurred background immediately (looks smoother)
-    bgFor(url);
+    // if first time (not showing yet), just show immediately after load below
+    if (!img.classList.contains('show')){
+      img.src = url;
+      img.alt = 'photo ' + (nextIdx + 1);
+      setBg(url);
+      requestAnimationFrame(() => img.classList.add('show'));
+      updateDots(nextIdx);
+      return;
+    }
 
+    // fade out, then swap at end of transition
+    img.addEventListener('transitionend', doSwap, { once: true });
+    img.classList.remove('show');
     updateDots(nextIdx);
   }
 
@@ -447,15 +442,12 @@
     if (shuffle){
       if (!order.length || orderPos >= order.length){
         order = makeCycleOrder(photos.length);
-        // Avoid repeating the same image across cycle boundary if possible
         if (order.length > 1 && order[0] === idx){
-          const swapWith = 1 + Math.floor(Math.random() * (order.length - 1));
-          [order[0], order[swapWith]] = [order[swapWith], order[0]];
+          [order[0], order[1]] = [order[1], order[0]];
         }
         orderPos = 0;
       }
-      const ni = order[orderPos++];
-      return ni;
+      return order[orderPos++];
     }
 
     return (idx + 1) % photos.length;
@@ -463,17 +455,16 @@
 
   function prevIndex(){
     if (photos.length <= 1) return 0;
-    if (shuffle){
-      // In shuffle mode, "prev" goes to last shown by tracking a small history
-      if (prevIndex._hist && prevIndex._hist.length >= 2){
-        // Current idx is last element; go to prior
-        prevIndex._hist.pop();
-        const p = prevIndex._hist[prevIndex._hist.length - 1];
-        return (typeof p === 'number') ? p : idx;
-      }
-      return idx;
+    if (!shuffle) return (idx - 1 + photos.length) % photos.length;
+
+    // simple shuffle prev: go back one in history
+    if (!prevIndex._hist) prevIndex._hist = [idx];
+    const h = prevIndex._hist;
+    if (h.length >= 2){
+      h.pop();
+      return h[h.length - 1];
     }
-    return (idx - 1 + photos.length) % photos.length;
+    return idx;
   }
 
   function rememberHistory(i){
@@ -486,18 +477,15 @@
 
   function stepTo(i, reason){
     if (!photos[i]) return;
-
     idx = i;
     rememberHistory(i);
 
-    // Crossfade
-    crossfadeTo(photos[i], i);
+    fadeTo(photos[i], i);
 
-    // Quiet HUD: show once on start, and on user actions
     if (reason === 'init'){
-      showHud(`${date || ''}  \u2022  ${bot}  \u2022  ${photos.length} photos`, 'playing');
+      showHud(`${date || ''} • ${bot} • ${photos.length} photos`, 'playing');
     } else if (reason === 'user'){
-      showHud(`${idx + 1} <span class="dim">/</span> ${photos.length}`, playing ? 'playing' : 'paused');
+      showHud(`${idx + 1} / ${photos.length}`, playing ? 'playing' : 'paused');
     }
   }
 
@@ -505,7 +493,6 @@
     stopTimer();
     if (!playing) return;
     if (photos.length <= 1) return;
-
     timer = setInterval(() => {
       const ni = nextIndex();
       stepTo(ni, 'auto');
@@ -516,7 +503,7 @@
     if (timer){ clearInterval(timer); timer = null; }
   }
 
-  // User controls
+  // Controls
   btnNext.addEventListener('click', () => {
     if (photos.length <= 1) return;
     const ni = nextIndex();
@@ -543,7 +530,55 @@
     }
   });
 
-  // Load + init
+  // Background preload (non-blocking)
+  async function backgroundPreload(startFrom, showBar){
+    const n = photos.length;
+    if (n <= 1) return;
+
+    const indices = [];
+    for (let i = 0; i < n; i++){
+      if (i === startFrom) continue;
+      indices.push(i);
+    }
+
+    // If preloadN is set, prioritize next N after current
+    if (preloadN > 0){
+      const pri = [];
+      for (let k = 1; k <= preloadN; k++){
+        const j = (startFrom + k) % n;
+        if (j !== startFrom) pri.push(j);
+      }
+      // merge unique in front
+      const set = new Set([startFrom]);
+      const merged = [];
+      for (const j of pri){ if (!set.has(j)){ set.add(j); merged.push(j); } }
+      for (const j of indices){ if (!set.has(j)){ set.add(j); merged.push(j); } }
+      indices.length = 0;
+      indices.push(...merged);
+    }
+
+    if (showBar){
+      setPreloadVisible(true);
+      setProgress(0);
+    }
+
+    let done = 0;
+    const total = indices.length;
+
+    // Yield between loads to keep UI responsive
+    for (const k of indices){
+      await preloadOne(photos[k]);
+      done++;
+      if (showBar && total > 0) setProgress(done / total);
+      await new Promise(r => setTimeout(r, 0));
+    }
+
+    if (showBar){
+      setTimeout(() => setPreloadVisible(false), 450);
+    }
+  }
+
+  // Init
   (async function init(){
     if (!api){
       renderEmpty('Missing api', 'Pass api=your api_photo_reel url in the query string.', '');
@@ -572,39 +607,12 @@
       return;
     }
 
-    // Preload first + next N (tiny progress bar)
-    setPreloadVisible(preloadN > 0);
-    const toPreload = [0];
-    for (let i=1; i<=preloadN; i++){
-      if (i < photos.length) toPreload.push(i);
-    }
-
-    let done = 0;
-    const total = toPreload.length;
-    for (const k of toPreload){
-      await preloadOne(photos[k]);
-      done++;
-      setProgress(done / total);
-    }
-    setTimeout(() => setPreloadVisible(false), 450);
-
-    // Init first frame
-    // Put first photo into A, show it, B hidden
-    imgA.src = photos[0];
-    imgA.alt = 'photo 1';
-    imgB.src = '';
-    imgA.classList.add('show');
-    imgB.classList.remove('show');
-    usingA = true;
-
-    bgFor(photos[0]);
-
-    // Dots + controls
-    dots._built = false;
+    // Build dots + controls now
+    ensureDotsBuilt();
     updateDots(0);
     setControlsDisabled();
 
-    // Shuffle cycle init: ensure we don't repeat immediately
+    // Prepare shuffle cycle
     if (shuffle){
       order = makeCycleOrder(photos.length);
       if (order.length > 1 && order[0] === 0){
@@ -614,10 +622,49 @@
       prevIndex._hist = [0];
     }
 
-    playing = true;
-    setPlayIcon();
-    stepTo(0, 'init');
-    startTimer();
+    // Show FIRST PHOTO ASAP:
+    // Load first photo, show immediately once it loads (no waiting on others).
+    setPreloadVisible(false);
+    img.classList.remove('show');
+    img.src = photos[0];
+    img.alt = 'photo 1';
+    setBg(photos[0]);
+
+    img.onload = () => {
+      requestAnimationFrame(() => img.classList.add('show'));
+      playing = true;
+      setPlayIcon();
+      stepTo(0, 'init');
+      startTimer();
+
+      // After first is visible, preload remaining in background.
+      // Show progress bar only if preloadN > 0 (your “tiny, classy” preference).
+      backgroundPreload(0, preloadN > 0);
+    };
+
+    img.onerror = () => {
+      // If first fails, try to find first loadable quickly
+      (async () => {
+        for (let i=1;i<photos.length;i++){
+          const ok = await preloadOne(photos[i]);
+          if (ok){
+            img.src = photos[i];
+            img.alt = 'photo ' + (i + 1);
+            setBg(photos[i]);
+            idx = i;
+            updateDots(i);
+            requestAnimationFrame(() => img.classList.add('show'));
+            playing = true;
+            setPlayIcon();
+            showHud(`${date || ''} • ${bot} • ${photos.length} photos`, 'playing');
+            startTimer();
+            backgroundPreload(i, preloadN > 0);
+            return;
+          }
+        }
+        renderEmpty('No photos', `${json.dateKey || date || ''} • ${bot}`, 'All images failed to load.');
+      })();
+    };
 
   })();
 
