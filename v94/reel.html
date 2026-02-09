@@ -6,770 +6,622 @@
   <title>LifeLog Photo Reel</title>
   <style>
     :root{
-      --radius: 14px;
-      --bg: rgba(0,0,0,0.10);
-      --fgText: rgba(255,255,255,0.92);
-      --fgTextDim: rgba(255,255,255,0.72);
-      --panel: rgba(0,0,0,0.42);
-      --panelSoft: rgba(0,0,0,0.28);
-      --stroke: rgba(255,255,255,0.12);
-      --easeXfade: cubic-bezier(0.22, 0.80, 0.20, 1.00);
-      --blurPx: 22px;
-      --bgScale: 1.18;
-      --shadow: 0 10px 30px rgba(0,0,0,0.22);
+      --r: 12px;
+      --hud-bg: rgba(0,0,0,0.35);
+      --hud-fg: rgba(255,255,255,0.92);
+      --hud-fg-dim: rgba(255,255,255,0.70);
+      --btn-bg: rgba(0,0,0,0.40);
+      --btn-bg-hover: rgba(0,0,0,0.60);
+      --btn-fg: rgba(255,255,255,0.90);
+      --dot-off: rgba(255,255,255,0.35);
+      --dot-on: rgba(255,255,255,0.90);
+      --blur: 18px;
     }
 
-    html, body {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      background: transparent;
-      overflow: hidden;
-    }
+    html, body { height: 100%; margin: 0; background: transparent; }
+    body { overflow: hidden; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
 
-    /* Full-bleed. No internal padding. */
-    #app {
-      position: fixed;
-      inset: 0;
+    /* Edge-to-edge in skybox */
+    .stage{
+      position: relative;
       width: 100%;
       height: 100%;
-      border-radius: var(--radius);
+      border-radius: var(--r);
       overflow: hidden;
-      background: var(--bg);
+      background: rgba(0,0,0,0.08);
     }
 
-    /* Background blur layer */
-    .bg {
-      position: absolute;
-      inset: 0;
-      overflow: hidden;
-      background: rgba(0,0,0,0.10);
+    /* Blurred background layer */
+    .bg{
+      position:absolute;
+      inset:-16px; /* expand to avoid blur edges */
+      background-position:center;
+      background-size:cover;
+      filter: blur(var(--blur));
+      transform: scale(1.08);
+      opacity: 0.85;
     }
-    .bg img {
-      position: absolute;
-      inset: -8%;
-      width: 116%;
-      height: 116%;
-      object-fit: cover;
-      filter: blur(var(--blurPx)) saturate(1.05);
-      transform: scale(var(--bgScale));
-      opacity: 0;
-      transition: opacity 520ms var(--easeXfade);
-      will-change: opacity, transform, filter;
+    .bg::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background: radial-gradient(ellipse at center, rgba(0,0,0,0.10), rgba(0,0,0,0.35));
     }
-    .bg img.show { opacity: 1; }
 
-    /* Foreground image layer */
-    .fg {
-      position: absolute;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      pointer-events: none;
+    /* Foreground image layers */
+    .imgLayer{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
     }
-    .fg img {
-      position: absolute;
-      inset: 0;
+    .imgLayer img{
       width: 100%;
       height: 100%;
-      object-fit: var(--fitMode, contain);
+      object-fit: contain; /* default; can switch to cover */
       opacity: 0;
-      transition: opacity 520ms var(--easeXfade);
+      transition: opacity 900ms cubic-bezier(.2,.9,.2,1);
       will-change: opacity;
-      transform: translateZ(0);
+      user-select:none;
+      -webkit-user-drag:none;
     }
-    .fg img.show { opacity: 1; }
-
-    /* Subtle vignette to help with contrast */
-    .vignette {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      background:
-        radial-gradient(ellipse at center, rgba(0,0,0,0.00) 45%, rgba(0,0,0,0.22) 100%);
-      opacity: 0.65;
-      transition: opacity 240ms ease;
-    }
+    .imgLayer img.show{ opacity: 1; }
 
     /* Tiny classy preload bar */
-    .preloadWrap {
-      position: absolute;
-      left: 12px;
-      right: 12px;
+    .preloadWrap{
+      position:absolute;
+      left: 10px;
+      right: 10px;
       top: 10px;
-      height: 8px;
-      display: none;
-      pointer-events: none;
-      z-index: 5;
-    }
-    .preloadWrap.on { display: block; }
-    .preloadBar {
-      height: 100%;
+      height: 4px;
       border-radius: 999px;
-      background: rgba(255,255,255,0.14);
-      border: 1px solid rgba(255,255,255,0.10);
-      overflow: hidden;
-      box-shadow: 0 8px 18px rgba(0,0,0,0.20);
+      background: rgba(255,255,255,0.18);
+      overflow:hidden;
+      opacity: 0;
+      transition: opacity 300ms ease;
+      pointer-events:none;
     }
-    .preloadFill {
+    .preloadWrap.on{ opacity: 1; }
+    .preloadBar{
       height: 100%;
       width: 0%;
+      background: rgba(255,255,255,0.75);
       border-radius: 999px;
-      background: rgba(255,255,255,0.70);
       transition: width 180ms ease;
     }
 
-    /* Minimal HUD: small, transparent, auto-fades */
-    .hud {
-      position: absolute;
+    /* HUD: created once; fades away */
+    .hud{
+      position:absolute;
       left: 10px;
       bottom: 10px;
       padding: 6px 10px;
       border-radius: 999px;
-      background: rgba(0,0,0,0.34);
-      color: var(--fgText);
-      font: 600 11px/1.1 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      letter-spacing: 0.2px;
-      border: 1px solid rgba(255,255,255,0.10);
-      backdrop-filter: blur(6px);
-      box-shadow: var(--shadow);
+      background: var(--hud-bg);
+      color: var(--hud-fg);
+      font-size: 11px;
+      line-height: 1;
+      backdrop-filter: blur(8px);
+      max-width: calc(100% - 20px);
+      box-sizing:border-box;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 350ms ease, transform 350ms ease;
+      pointer-events:none;
+    }
+    .hud.show{
+      opacity: 1;
+      transform: translateY(0px);
+    }
+    .hud .dim{ color: var(--hud-fg-dim); }
+
+    /* Dots */
+    .dots{
+      position:absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 10px;
+      display:flex;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.22);
+      backdrop-filter: blur(8px);
+      opacity: 0;
+      transition: opacity 250ms ease;
+      pointer-events:none;
+    }
+    .dots.show{ opacity: 1; }
+    .dot{
+      width: 6px; height: 6px;
+      border-radius: 999px;
+      background: var(--dot-off);
+    }
+    .dot.on{ background: var(--dot-on); }
+
+    /* Controls appear on hover */
+    .controls{
+      position:absolute;
+      right: 10px;
+      bottom: 10px;
+      display:flex;
+      gap: 8px;
       opacity: 0;
       transform: translateY(6px);
       transition: opacity 220ms ease, transform 220ms ease;
-      pointer-events: none;
-      z-index: 6;
-      max-width: calc(100% - 20px);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      pointer-events:none; /* enabled on hover */
     }
-    .hud.show {
+    .stage:hover .controls{
       opacity: 1;
       transform: translateY(0);
+      pointer-events:auto;
     }
-
-    /* Controls: only on hover, small, responsive */
-    .controls {
-      position: absolute;
-      left: 50%;
-      bottom: 10px;
-      transform: translateX(-50%) translateY(8px);
-      display: flex;
-      align-items: center;
-      gap: clamp(8px, 1.2vw, 14px);
-      padding: clamp(6px, 1.0vw, 10px) clamp(8px, 1.5vw, 14px);
+    .btn{
+      border: none;
+      background: var(--btn-bg);
+      color: var(--btn-fg);
       border-radius: 999px;
-      background: rgba(0,0,0,0.30);
-      border: 1px solid rgba(255,255,255,0.10);
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      padding: 0;
+      width: clamp(22px, 3.8vw, 34px);
+      height: clamp(22px, 3.8vw, 34px);
       backdrop-filter: blur(8px);
-      box-shadow: var(--shadow);
-      opacity: 0;
-      transition: opacity 220ms ease, transform 220ms ease;
-      z-index: 7;
+      transition: background 160ms ease, opacity 160ms ease, transform 160ms ease;
     }
-    #app:hover .controls,
-    .controls.forceShow {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
-
-    .btn {
-      width: clamp(26px, 2.6vw, 34px);
-      height: clamp(26px, 2.6vw, 34px);
-      display: grid;
-      place-items: center;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.10);
-      border: 1px solid rgba(255,255,255,0.12);
-      cursor: pointer;
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
-      transition: transform 120ms ease, background 120ms ease, opacity 160ms ease, border-color 160ms ease;
-    }
-    .btn:hover { transform: scale(1.05); background: rgba(255,255,255,0.14); }
-    .btn:active { transform: scale(0.98); }
-
-    .btn[aria-disabled="true"]{
-      opacity: 0.38;
+    .btn:hover{ background: var(--btn-bg-hover); transform: translateY(-1px); }
+    .btn:active{ transform: translateY(0px); }
+    .btn:disabled{
+      opacity: 0.35;
       cursor: default;
       transform: none;
     }
-    .btn svg{
-      width: clamp(14px, 1.35vw, 18px);
-      height: clamp(14px, 1.35vw, 18px);
-      fill: rgba(255,255,255,0.90);
+    .icon{
+      width: clamp(12px, 2.2vw, 16px);
+      height: clamp(12px, 2.2vw, 16px);
+      display:block;
     }
 
-    /* Empty / error state */
-    .empty {
-      position: absolute;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      background: rgba(0,0,0,0.18);
-      color: rgba(255,255,255,0.92);
-      text-align: center;
+    /* Empty state */
+    .empty{
+      position:absolute; inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
       padding: 16px;
-      box-sizing: border-box;
-      z-index: 10;
+      box-sizing:border-box;
+      color: rgba(255,255,255,0.92);
+      background: rgba(0,0,0,0.30);
     }
-    .emptyCard {
-      max-width: min(520px, 92vw);
-      padding: 14px 16px;
-      border-radius: 16px;
+    .empty .card{
+      max-width: 360px;
       background: rgba(0,0,0,0.28);
-      border: 1px solid rgba(255,255,255,0.10);
-      backdrop-filter: blur(8px);
-      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      border-radius: 14px;
+      padding: 14px 14px;
+      box-sizing:border-box;
     }
-    .emptyTitle {
-      font: 800 14px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      letter-spacing: 0.2px;
-    }
-    .emptySub {
-      margin-top: 6px;
-      font: 600 12px/1.35 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      opacity: 0.86;
-    }
-    .emptyErr {
-      margin-top: 10px;
-      font: 500 11px/1.35 ui-monospace, Menlo, Consolas, monospace;
-      opacity: 0.78;
-      white-space: pre-wrap;
-      word-break: break-word;
-      text-align: left;
-      background: rgba(0,0,0,0.18);
-      padding: 10px 10px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.08);
-    }
+    .empty .title{ font-weight: 700; font-size: 14px; }
+    .empty .sub{ margin-top: 8px; font-size: 12px; color: rgba(255,255,255,0.75); line-height: 1.35; }
+    .empty .tiny{ margin-top: 10px; font-size: 11px; color: rgba(255,255,255,0.65); line-height: 1.35; }
+    .empty a{ color: rgba(255,255,255,0.9); }
+
   </style>
 </head>
-
 <body>
-  <div id="app" aria-label="Photo reel">
+  <div class="stage" id="stage">
     <div class="bg" id="bg"></div>
-    <div class="fg" id="fg"></div>
-    <div class="vignette"></div>
 
-    <div class="preloadWrap" id="preloadWrap">
-      <div class="preloadBar"><div class="preloadFill" id="preloadFill"></div></div>
-    </div>
+    <div class="preloadWrap" id="preloadWrap"><div class="preloadBar" id="preloadBar"></div></div>
+
+    <div class="imgLayer" id="layerA"><img id="imgA" alt=""></div>
+    <div class="imgLayer" id="layerB"><img id="imgB" alt=""></div>
 
     <div class="hud" id="hud"></div>
+    <div class="dots" id="dots"></div>
 
-    <div class="controls" id="controls" aria-label="Controls">
-      <div class="btn" id="btnPrev" title="Previous" aria-disabled="false">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.6 18.2 9.4 12l6.2-6.2L14.2 4.4 6.6 12l7.6 7.6z"/></svg>
-      </div>
-      <div class="btn" id="btnPlay" title="Pause" aria-disabled="false">
-        <svg id="iconPlay" viewBox="0 0 24 24" aria-hidden="true" style="display:none"><path d="M8 5v14l11-7z"/></svg>
-        <svg id="iconPause" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h5v14H6zm7 0h5v14h-5z"/></svg>
-      </div>
-      <div class="btn" id="btnNext" title="Next" aria-disabled="false">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.4 5.8 14.6 12l-6.2 6.2L9.8 19.6 17.4 12 9.8 4.4z"/></svg>
-      </div>
-    </div>
-
-    <div class="empty" id="empty" style="display:none;">
-      <div class="emptyCard">
-        <div class="emptyTitle" id="emptyTitle">No photos</div>
-        <div class="emptySub" id="emptySub"></div>
-        <div class="emptyErr" id="emptyErr" style="display:none;"></div>
-      </div>
+    <div class="controls" id="controls">
+      <button class="btn" id="btnPrev" title="Previous" aria-label="Previous">
+        <svg class="icon" viewBox="0 0 24 24" fill="none">
+          <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <button class="btn" id="btnPlay" title="Pause" aria-label="Pause">
+        <svg class="icon" id="iconPause" viewBox="0 0 24 24" fill="none">
+          <path d="M9 7v10M15 7v10" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+        <svg class="icon" id="iconPlay" viewBox="0 0 24 24" fill="none" style="display:none;">
+          <path d="M10 8l8 4-8 4V8z" fill="currentColor"/>
+        </svg>
+      </button>
+      <button class="btn" id="btnNext" title="Next" aria-label="Next">
+        <svg class="icon" viewBox="0 0 24 24" fill="none">
+          <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
     </div>
   </div>
 
-  <script>
-    (function(){
-      "use strict";
+<script>
+(function(){
+  const qs = new URLSearchParams(location.search);
 
-      // -----------------------------
-      // Query params
-      // -----------------------------
-      const qs = new URLSearchParams(location.search);
+  const api = qs.get('api') || '';
+  const bot = qs.get('bot') || 'winston';
+  const date = qs.get('date') || '';
+  const fit = (qs.get('fit') || 'contain').toLowerCase() === 'cover' ? 'cover' : 'contain';
 
-      const api = (qs.get("api") || "").trim();
-      const bot = (qs.get("bot") || "").trim();
-      const dateKey = (qs.get("date") || "").trim();
+  const intervalMs = clampInt(qs.get('interval_ms'), 2200, 500, 60000);
+  const fadeMs = clampInt(qs.get('fade_ms'), 1000, 150, 8000);
+  const preloadN = clampInt(qs.get('preload'), 2, 0, 24);
+  const cacheS = clampInt(qs.get('cache_s'), 600, 0, 86400);
+  const shuffle = (qs.get('shuffle') || '0') === '1' || (qs.get('shuffle') || '').toLowerCase() === 'true';
 
-      const fit = (qs.get("fit") || "contain").toLowerCase().trim(); // contain | cover
-      const fitMode = (fit === "cover") ? "cover" : "contain";
-      document.documentElement.style.setProperty("--fitMode", fitMode);
+  const stage = document.getElementById('stage');
+  const bg = document.getElementById('bg');
 
-      const w = toInt(qs.get("w"), 1200, 200, 4096);
-      const cache_s = toInt(qs.get("cache_s"), 600, 0, 86400);
-      const preloadN = toInt(qs.get("preload"), 2, 0, 12);
+  const preloadWrap = document.getElementById('preloadWrap');
+  const preloadBar = document.getElementById('preloadBar');
 
-      const interval_ms = toInt(qs.get("interval_ms"), 2600, 500, 30000);
-      const fade_ms = toInt(qs.get("fade_ms"), 700, 150, 6000);
+  const imgA = document.getElementById('imgA');
+  const imgB = document.getElementById('imgB');
 
-      const shuffle = (qs.get("shuffle") || "0").trim() === "1";
+  const hud = document.getElementById('hud');
+  const dots = document.getElementById('dots');
 
-      // "Fade controls sooner while playing, longer when paused"
-      const controlsHidePlayingMs = 1400;
-      const controlsHidePausedMs  = 4200;
+  const btnPrev = document.getElementById('btnPrev');
+  const btnPlay = document.getElementById('btnPlay');
+  const btnNext = document.getElementById('btnNext');
+  const iconPause = document.getElementById('iconPause');
+  const iconPlay = document.getElementById('iconPlay');
 
-      // Apply fade duration
-      const fg = document.getElementById("fg");
-      const bg = document.getElementById("bg");
-      const hud = document.getElementById("hud");
-      const controls = document.getElementById("controls");
+  // Apply fit + fade duration
+  imgA.style.objectFit = fit;
+  imgB.style.objectFit = fit;
+  imgA.style.transitionDuration = fadeMs + 'ms';
+  imgB.style.transitionDuration = fadeMs + 'ms';
 
-      // update CSS transition durations dynamically
-      const fadeDur = Math.max(0, fade_ms|0);
-      injectFadeDurations(fadeDur);
+  function clampInt(v, def, min, max){
+    const n = Number(v);
+    if (!isFinite(n)) return def;
+    return Math.max(min, Math.min(max, Math.round(n)));
+  }
 
-      // Preload UI
-      const preloadWrap = document.getElementById("preloadWrap");
-      const preloadFill = document.getElementById("preloadFill");
+  function showHud(text, mode){
+    // mode: "playing" (short) or "paused" (long)
+    hud.textContent = text;
+    hud.classList.add('show');
+    const ttl = (mode === 'paused') ? 3500 : 1300;
+    clearTimeout(showHud._t);
+    showHud._t = setTimeout(()=>hud.classList.remove('show'), ttl);
+  }
 
-      // Empty state
-      const empty = document.getElementById("empty");
-      const emptyTitle = document.getElementById("emptyTitle");
-      const emptySub = document.getElementById("emptySub");
-      const emptyErr = document.getElementById("emptyErr");
+  function setProgress(p){
+    const pct = Math.max(0, Math.min(100, Math.round(p * 100)));
+    preloadBar.style.width = pct + '%';
+  }
 
-      // Controls
-      const btnPrev = document.getElementById("btnPrev");
-      const btnNext = document.getElementById("btnNext");
-      const btnPlay = document.getElementById("btnPlay");
-      const iconPlay = document.getElementById("iconPlay");
-      const iconPause = document.getElementById("iconPause");
+  function setPreloadVisible(on){
+    preloadWrap.classList.toggle('on', !!on);
+  }
 
-      let photos = [];
-      let order = [];            // indices in display order
-      let orderPos = 0;
-      let isPaused = false;
-      let timer = null;
+  function escapeHtml(s){
+    return String(s||'')
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
 
-      // Two-layer crossfade (bg+fg)
-      const fgImgs = [mkImg(), mkImg()];
-      const bgImgs = [mkBgImg(), mkBgImg()];
-      let slot = 0; // 0 or 1, which slot is currently "next"
+  function renderEmpty(title, sub, tiny){
+    stage.innerHTML = `
+      <div class="empty">
+        <div class="card">
+          <div class="title">${escapeHtml(title)}</div>
+          <div class="sub">${escapeHtml(sub || '')}</div>
+          ${tiny ? `<div class="tiny">${tiny}</div>` : ``}
+        </div>
+      </div>`;
+  }
 
-      fg.appendChild(fgImgs[0]);
-      fg.appendChild(fgImgs[1]);
-      bg.appendChild(bgImgs[0]);
-      bg.appendChild(bgImgs[1]);
+  // Build API URL
+  function buildApiUrl(){
+    if (!api) return '';
+    const u = new URL(api);
+    u.searchParams.set('bot', bot);
+    if (date) u.searchParams.set('date', date);
+    u.searchParams.set('format', 'json');
+    if (cacheS > 0) u.searchParams.set('cache_s', String(cacheS));
+    // cache buster to avoid GitHub cache sticking during dev; keep stable when cache_s>0
+    if (cacheS === 0) u.searchParams.set('_t', String(Date.now()));
+    return u.toString();
+  }
 
-      // Minimal HUD text that fades away
-      function showHud(text, ms=2200){
-        if (!text) return;
-        hud.textContent = text;
-        hud.classList.add("show");
-        window.clearTimeout(showHud._t);
-        showHud._t = window.setTimeout(() => hud.classList.remove("show"), ms);
+  // PRELOAD helpers
+  function preloadOne(url){
+    return new Promise((resolve) => {
+      const im = new Image();
+      im.decoding = 'async';
+      im.onload = () => resolve(true);
+      im.onerror = () => resolve(false);
+      im.src = url;
+    });
+  }
+
+  // Shuffle without repeats until all shown (cycle bag)
+  function makeCycleOrder(n){
+    const arr = Array.from({length:n}, (_,i)=>i);
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  let photos = [];
+  let order = [];
+  let orderPos = 0;
+  let idx = 0;
+
+  let usingA = true;
+  let playing = true;
+  let timer = null;
+
+  function updateDots(activeIndex){
+    if (photos.length <= 1){
+      dots.classList.remove('show');
+      dots.innerHTML = '';
+      return;
+    }
+    dots.classList.add('show');
+    if (!dots._built){
+      dots.innerHTML = '';
+      for (let i=0;i<photos.length;i++){
+        const d = document.createElement('div');
+        d.className = 'dot';
+        dots.appendChild(d);
       }
+      dots._built = true;
+    }
+    const kids = dots.children;
+    for (let i=0;i<kids.length;i++){
+      kids[i].classList.toggle('on', i === activeIndex);
+    }
+  }
 
-      // Controls show/hide helper
-      function showControls(forceMs){
-        controls.classList.add("forceShow");
-        window.clearTimeout(showControls._t);
-        const hideAfter = isPaused ? controlsHidePausedMs : controlsHidePlayingMs;
-        const ms = (typeof forceMs === "number") ? forceMs : hideAfter;
-        showControls._t = window.setTimeout(() => controls.classList.remove("forceShow"), ms);
-      }
+  function setControlsDisabled(){
+    const one = photos.length <= 1;
+    btnPrev.disabled = one;
+    btnNext.disabled = one;
+  }
 
-      // Hover already shows, but we also show briefly on interaction
-      ["mousemove","touchstart","pointerdown"].forEach(evt=>{
-        document.getElementById("app").addEventListener(evt, ()=>{
-          showControls();
-        }, {passive:true});
-      });
+  function setPlayIcon(){
+    if (playing){
+      iconPause.style.display = '';
+      iconPlay.style.display = 'none';
+      btnPlay.title = 'Pause';
+      btnPlay.setAttribute('aria-label', 'Pause');
+    } else {
+      iconPause.style.display = 'none';
+      iconPlay.style.display = '';
+      btnPlay.title = 'Play';
+      btnPlay.setAttribute('aria-label', 'Play');
+    }
+  }
 
-      btnPrev.addEventListener("click", () => {
-        if (btnPrev.getAttribute("aria-disabled") === "true") return;
-        prev();
-        showControls();
-      });
+  function bgFor(url){
+    bg.style.backgroundImage = `url("${url}")`;
+  }
 
-      btnNext.addEventListener("click", () => {
-        if (btnNext.getAttribute("aria-disabled") === "true") return;
-        next(true);
-        showControls();
-      });
+  function crossfadeTo(url, nextIdx){
+    const show = usingA ? imgB : imgA;
+    const hide = usingA ? imgA : imgB;
 
-      btnPlay.addEventListener("click", () => {
-        if (photos.length <= 1) return;
-        togglePause();
-        showControls(isPaused ? controlsHidePausedMs : controlsHidePlayingMs);
-      });
+    // Prepare new image in hidden layer, then fade
+    show.classList.remove('show');
+    show.src = url;
+    show.alt = `photo ${nextIdx + 1}`;
 
-      function setBtnDisabled(btn, disabled){
-        btn.setAttribute("aria-disabled", disabled ? "true" : "false");
-      }
+    // Ensure it has a frame to apply opacity transition
+    requestAnimationFrame(() => {
+      // Fade in new, fade out old
+      hide.classList.remove('show');
+      show.classList.add('show');
+      usingA = !usingA;
+    });
 
-      function setPlayIcon(paused){
-        if (paused){
-          iconPlay.style.display = "";
-          iconPause.style.display = "none";
-          btnPlay.title = "Play";
-        } else {
-          iconPlay.style.display = "none";
-          iconPause.style.display = "";
-          btnPlay.title = "Pause";
+    // Update blurred background immediately (looks smoother)
+    bgFor(url);
+
+    updateDots(nextIdx);
+  }
+
+  function nextIndex(){
+    if (photos.length <= 1) return 0;
+
+    if (shuffle){
+      if (!order.length || orderPos >= order.length){
+        order = makeCycleOrder(photos.length);
+        // Avoid repeating the same image across cycle boundary if possible
+        if (order.length > 1 && order[0] === idx){
+          const swapWith = 1 + Math.floor(Math.random() * (order.length - 1));
+          [order[0], order[swapWith]] = [order[swapWith], order[0]];
         }
-      }
-
-      function togglePause(){
-        isPaused = !isPaused;
-        setPlayIcon(isPaused);
-        if (isPaused){
-          stopTimer();
-        } else {
-          startTimer();
-        }
-      }
-
-      function startTimer(){
-        stopTimer();
-        if (photos.length <= 1) return;
-        timer = window.setInterval(() => {
-          if (!isPaused) next(false);
-        }, interval_ms);
-      }
-
-      function stopTimer(){
-        if (timer){
-          window.clearInterval(timer);
-          timer = null;
-        }
-      }
-
-      // Non-repeating shuffle: show all once before any repeat
-      function buildOrder(){
-        const n = photos.length;
-        const base = Array.from({length:n}, (_,i)=>i);
-        if (!shuffle) return base;
-
-        // Fisher-Yates
-        for (let i = base.length - 1; i > 0; i--){
-          const j = (Math.random() * (i + 1)) | 0;
-          const t = base[i]; base[i] = base[j]; base[j] = t;
-        }
-        return base;
-      }
-
-      function advanceOrder(dir){
-        const n = order.length;
-        if (n === 0) return;
-
-        // If shuffle: cycle through order and reshuffle only after completing a full cycle.
-        if (shuffle){
-          orderPos += dir;
-          if (orderPos < 0){
-            // Going backwards: wrap within current order
-            orderPos = n - 1;
-          } else if (orderPos >= n){
-            // Completed a full pass, reshuffle and continue from start
-            order = buildOrder();
-            orderPos = 0;
-          }
-        } else {
-          orderPos = (orderPos + dir + n) % n;
-        }
-      }
-
-      function currentIndex(){
-        if (!order.length) return 0;
-        return order[orderPos] || 0;
-      }
-
-      function next(userInitiated){
-        if (photos.length <= 1) return;
-        advanceOrder(+1);
-        renderToCurrent();
-        if (userInitiated && !isPaused){
-          // small UX: reset timer so it doesn't immediately auto-advance after a click
-          startTimer();
-        }
-      }
-
-      function prev(){
-        if (photos.length <= 1) return;
-        advanceOrder(-1);
-        renderToCurrent();
-        if (!isPaused) startTimer();
-      }
-
-      function renderToCurrent(){
-        const idx = currentIndex();
-        const src = photos[idx];
-
-        // Swap slot and crossfade
-        const nextSlot = slot ^ 1;
-
-        // bg uses same image, always cover, blurred
-        bgImgs[nextSlot].src = src;
-        fgImgs[nextSlot].src = src;
-
-        // force reflow so transition is consistent
-        void bgImgs[nextSlot].offsetWidth;
-        void fgImgs[nextSlot].offsetWidth;
-
-        bgImgs[slot].classList.remove("show");
-        fgImgs[slot].classList.remove("show");
-        bgImgs[nextSlot].classList.add("show");
-        fgImgs[nextSlot].classList.add("show");
-
-        slot = nextSlot;
-
-        // Tiny HUD: date + bot only, no photo count
-        showHud(`${dateKey} • ${bot}`, 1800);
-
-        updateDisabledButtons();
-      }
-
-      function updateDisabledButtons(){
-        const one = photos.length <= 1;
-        setBtnDisabled(btnPrev, one);
-        setBtnDisabled(btnNext, one);
-        setBtnDisabled(btnPlay, one);
-      }
-
-      function mkImg(){
-        const im = document.createElement("img");
-        im.alt = "photo";
-        im.decoding = "async";
-        im.loading = "eager";
-        return im;
-      }
-      function mkBgImg(){
-        const im = document.createElement("img");
-        im.alt = "";
-        im.decoding = "async";
-        im.loading = "eager";
-        return im;
-      }
-
-      function injectFadeDurations(ms){
-        // Set transitions by updating a stylesheet rule to keep things simple.
-        const css = document.createElement("style");
-        css.textContent = `
-          .fg img { transition-duration: ${ms}ms; }
-          .bg img { transition-duration: ${Math.max(260, Math.round(ms*0.85))}ms; }
-        `;
-        document.head.appendChild(css);
-      }
-
-      function toInt(v, def, min, max){
-        const n = Number(v);
-        if (!isFinite(n)) return def;
-        const r = Math.round(n);
-        return Math.max(min, Math.min(max, r));
-      }
-
-      // -----------------------------
-      // Loading: JSONP (CORS-safe)
-      // -----------------------------
-      function showEmpty(title, sub, errText){
-        emptyTitle.textContent = title || "No photos";
-        emptySub.textContent = sub || "";
-        if (errText){
-          emptyErr.style.display = "";
-          emptyErr.textContent = String(errText);
-        } else {
-          emptyErr.style.display = "none";
-          emptyErr.textContent = "";
-        }
-        empty.style.display = "";
-      }
-
-      function hideEmpty(){
-        empty.style.display = "none";
-      }
-
-      function setPreloadProgress(pct){
-        const p = Math.max(0, Math.min(100, pct));
-        preloadFill.style.width = p.toFixed(0) + "%";
-      }
-
-      function withCacheBuster(url){
-        // cache_s is for API-side caching, not for image URLs.
-        // Still, some images can be aggressively cached; we avoid adding busters to not break caching.
-        return url;
-      }
-
-      function preloadSome(urls, count){
-        return new Promise((resolve) => {
-          if (!count || count <= 0){
-            preloadWrap.classList.remove("on");
-            resolve();
-            return;
-          }
-          const n = Math.min(count, urls.length);
-          if (n <= 0){
-            preloadWrap.classList.remove("on");
-            resolve();
-            return;
-          }
-
-          preloadWrap.classList.add("on");
-          setPreloadProgress(0);
-
-          let done = 0;
-          function tick(){
-            done++;
-            setPreloadProgress((done / n) * 100);
-            if (done >= n){
-              // Let bar linger briefly
-              window.setTimeout(() => {
-                preloadWrap.classList.remove("on");
-                resolve();
-              }, 220);
-            }
-          }
-
-          for (let i = 0; i < n; i++){
-            const img = new Image();
-            img.onload = tick;
-            img.onerror = tick;
-            img.src = withCacheBuster(urls[i]);
-          }
-        });
-      }
-
-      function jsonp(url, timeoutMs=12000){
-        return new Promise((resolve, reject) => {
-          const cbName = "__reelCb_" + Math.random().toString(36).slice(2);
-          const u = new URL(url);
-
-          // Add jsonp params
-          u.searchParams.set("format", "jsonp");
-          u.searchParams.set("callback", cbName);
-
-          const s = document.createElement("script");
-          s.async = true;
-          s.src = u.toString();
-
-          let timer = null;
-
-          window[cbName] = (data) => {
-            cleanup();
-            resolve(data);
-          };
-
-          function cleanup(){
-            if (timer) window.clearTimeout(timer);
-            try { delete window[cbName]; } catch(_) { window[cbName] = undefined; }
-            if (s && s.parentNode) s.parentNode.removeChild(s);
-          }
-
-          s.onerror = () => {
-            cleanup();
-            reject(new Error("Failed to load API (script error)."));
-          };
-
-          timer = window.setTimeout(() => {
-            cleanup();
-            reject(new Error("API timeout."));
-          }, timeoutMs);
-
-          document.head.appendChild(s);
-        });
-      }
-
-      function buildApiUrl(){
-        if (!api) return "";
-
-        // api is expected to be something like:
-        // https://script.google.com/macros/s/.../exec?r=api_photo_reel
-        // We append bot/date/w/cache_s here.
-        const u = new URL(api);
-
-        if (bot) u.searchParams.set("bot", bot);
-        if (dateKey) u.searchParams.set("date", dateKey);
-
-        // Optional: server may use w for thumb sizing
-        u.searchParams.set("w", String(w));
-
-        // Optional: cache hint (server-side)
-        u.searchParams.set("cache_s", String(cache_s));
-
-        return u.toString();
-      }
-
-      async function init(){
-        setPlayIcon(false);
-
-        if (!bot || !dateKey){
-          showEmpty(
-            "Missing params",
-            "Need bot and date",
-            "Example: ?bot=winston&date=2025-12-20"
-          );
-          updateDisabledButtons();
-          return;
-        }
-
-        if (!api){
-          showEmpty(
-            "Missing api",
-            "Pass api=your api_photo_reel url in the query string.",
-            "Example: ?api=https%3A%2F%2Fscript.google.com%2Fmacros%2Fs%2F...%2Fexec%3Fr%3Dapi_photo_reel&bot=winston&date=2025-12-20"
-          );
-          updateDisabledButtons();
-          return;
-        }
-
-        hideEmpty();
-
-        const apiUrl = buildApiUrl();
-        let data;
-        try{
-          data = await jsonp(apiUrl, 15000);
-        }catch(err){
-          showEmpty("No photos", `${dateKey} • ${bot}`, String(err && err.message ? err.message : err));
-          updateDisabledButtons();
-          return;
-        }
-
-        // Expect shape: { ok, dateKey, bot, photos:[...], error? }
-        const ok = !!(data && (data.ok === true || data.ok === "true"));
-        const arr = (data && (data.photos || data.photoUrls || data.urls)) || [];
-        const errMsg = data && (data.error || data.err || "");
-
-        photos = Array.isArray(arr) ? arr.map(x => String(x||"").trim()).filter(Boolean) : [];
-        if (!ok && !photos.length){
-          showEmpty("No photos", `${dateKey} • ${bot}`, errMsg ? String(errMsg) : "API returned ok=false");
-          updateDisabledButtons();
-          return;
-        }
-        if (!photos.length){
-          showEmpty("No photos", `${dateKey} • ${bot}`, errMsg ? String(errMsg) : "");
-          updateDisabledButtons();
-          return;
-        }
-
-        // Build non-repeating order
-        order = buildOrder();
         orderPos = 0;
-
-        // Preload first N in display order
-        const preloadUrls = order.slice(0, Math.min(preloadN, order.length)).map(i => photos[i]);
-        await preloadSome(preloadUrls, preloadN);
-
-        // Initial render
-        renderToCurrent();
-
-        // If only one photo, pause state and disable controls accordingly
-        updateDisabledButtons();
-        if (photos.length <= 1){
-          isPaused = true;
-          setPlayIcon(true);
-        } else {
-          isPaused = false;
-          setPlayIcon(false);
-          startTimer();
-        }
-
-        // Controls are hover-only, but give a brief hint on load
-        showControls(1600);
       }
+      const ni = order[orderPos++];
+      return ni;
+    }
 
-      init();
-    })();
-  </script>
+    return (idx + 1) % photos.length;
+  }
+
+  function prevIndex(){
+    if (photos.length <= 1) return 0;
+    if (shuffle){
+      // In shuffle mode, "prev" goes to last shown by tracking a small history
+      if (prevIndex._hist && prevIndex._hist.length >= 2){
+        // Current idx is last element; go to prior
+        prevIndex._hist.pop();
+        const p = prevIndex._hist[prevIndex._hist.length - 1];
+        return (typeof p === 'number') ? p : idx;
+      }
+      return idx;
+    }
+    return (idx - 1 + photos.length) % photos.length;
+  }
+
+  function rememberHistory(i){
+    if (!shuffle) return;
+    if (!prevIndex._hist) prevIndex._hist = [];
+    const h = prevIndex._hist;
+    if (!h.length || h[h.length - 1] !== i) h.push(i);
+    if (h.length > 200) h.splice(0, h.length - 200);
+  }
+
+  function stepTo(i, reason){
+    if (!photos[i]) return;
+
+    idx = i;
+    rememberHistory(i);
+
+    // Crossfade
+    crossfadeTo(photos[i], i);
+
+    // Quiet HUD: show once on start, and on user actions
+    if (reason === 'init'){
+      showHud(`${date || ''}  \u2022  ${bot}  \u2022  ${photos.length} photos`, 'playing');
+    } else if (reason === 'user'){
+      showHud(`${idx + 1} <span class="dim">/</span> ${photos.length}`, playing ? 'playing' : 'paused');
+    }
+  }
+
+  function startTimer(){
+    stopTimer();
+    if (!playing) return;
+    if (photos.length <= 1) return;
+
+    timer = setInterval(() => {
+      const ni = nextIndex();
+      stepTo(ni, 'auto');
+    }, intervalMs);
+  }
+
+  function stopTimer(){
+    if (timer){ clearInterval(timer); timer = null; }
+  }
+
+  // User controls
+  btnNext.addEventListener('click', () => {
+    if (photos.length <= 1) return;
+    const ni = nextIndex();
+    stepTo(ni, 'user');
+    startTimer();
+  });
+
+  btnPrev.addEventListener('click', () => {
+    if (photos.length <= 1) return;
+    const pi = prevIndex();
+    stepTo(pi, 'user');
+    startTimer();
+  });
+
+  btnPlay.addEventListener('click', () => {
+    playing = !playing;
+    setPlayIcon();
+    if (playing){
+      showHud(`${idx + 1} / ${photos.length}`, 'playing');
+      startTimer();
+    } else {
+      stopTimer();
+      showHud(`${idx + 1} / ${photos.length}`, 'paused');
+    }
+  });
+
+  // Load + init
+  (async function init(){
+    if (!api){
+      renderEmpty('Missing api', 'Pass api=your api_photo_reel url in the query string.', '');
+      return;
+    }
+
+    const url = buildApiUrl();
+    let json = null;
+
+    try{
+      const res = await fetch(url, { cache: 'no-store' });
+      json = await res.json();
+    }catch(e){
+      renderEmpty('Could not load', 'API fetch failed', 'Check that api_photo_reel returns JSON and is publicly accessible.');
+      return;
+    }
+
+    if (!json || !json.ok){
+      renderEmpty('No photos', `${date || ''} • ${bot}`, (json && json.error) ? String(json.error) : 'API returned an error.');
+      return;
+    }
+
+    photos = Array.isArray(json.photos) ? json.photos.filter(Boolean) : [];
+    if (!photos.length){
+      renderEmpty('No photos', `${json.dateKey || date || ''} • ${bot}`, '');
+      return;
+    }
+
+    // Preload first + next N (tiny progress bar)
+    setPreloadVisible(preloadN > 0);
+    const toPreload = [0];
+    for (let i=1; i<=preloadN; i++){
+      if (i < photos.length) toPreload.push(i);
+    }
+
+    let done = 0;
+    const total = toPreload.length;
+    for (const k of toPreload){
+      await preloadOne(photos[k]);
+      done++;
+      setProgress(done / total);
+    }
+    setTimeout(() => setPreloadVisible(false), 450);
+
+    // Init first frame
+    // Put first photo into A, show it, B hidden
+    imgA.src = photos[0];
+    imgA.alt = 'photo 1';
+    imgB.src = '';
+    imgA.classList.add('show');
+    imgB.classList.remove('show');
+    usingA = true;
+
+    bgFor(photos[0]);
+
+    // Dots + controls
+    dots._built = false;
+    updateDots(0);
+    setControlsDisabled();
+
+    // Shuffle cycle init: ensure we don't repeat immediately
+    if (shuffle){
+      order = makeCycleOrder(photos.length);
+      if (order.length > 1 && order[0] === 0){
+        [order[0], order[1]] = [order[1], order[0]];
+      }
+      orderPos = 0;
+      prevIndex._hist = [0];
+    }
+
+    playing = true;
+    setPlayIcon();
+    stepTo(0, 'init');
+    startTimer();
+
+  })();
+
+})();
+</script>
 </body>
 </html>
