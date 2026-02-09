@@ -2,448 +2,456 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>LifeLog Photo Reel</title>
   <style>
     :root{
-      --radius: 14px;
-      --hud-bg: rgba(0,0,0,0.40);
-      --hud-fg: rgba(255,255,255,0.92);
-      --panel: rgba(0,0,0,0.12);
-      --panel-strong: rgba(0,0,0,0.20);
-      --accent: rgba(255,255,255,0.85);
-      --accent-dim: rgba(255,255,255,0.45);
-
-      --fade-ms: 450ms;
-      --ease: cubic-bezier(.22,.95,.25,1);
+      --bg: rgba(0,0,0,0.10);
+      --ink: rgba(255,255,255,0.90);
+      --ink-dim: rgba(255,255,255,0.72);
+      --card: rgba(0,0,0,0.34);
+      --stroke: rgba(255,255,255,0.18);
+      --shadow: 0 10px 30px rgba(0,0,0,0.25);
     }
-
-    html, body { height: 100%; margin: 0; background: transparent; }
-    body { overflow: hidden; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    html, body { height:100%; margin:0; background:transparent; }
+    body{
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      overflow:hidden;
+    }
 
     .wrap{
-      position: relative;
-      width: 100%;
-      height: 100%;
-      border-radius: var(--radius);
-      overflow: hidden;
-      background: var(--panel);
+      position:relative;
+      width:100%;
+      height:100%;
+      border-radius:12px;
+      overflow:hidden;
+      background: var(--bg);
     }
 
-    /* Subtle textured background, looks nice when no photos or while loading */
-    .wrap::before{
-      content:"";
-      position:absolute; inset:0;
-      background:
-        radial-gradient(1200px 700px at 15% 25%, rgba(255,255,255,0.16), transparent 65%),
-        radial-gradient(900px 600px at 85% 80%, rgba(255,255,255,0.10), transparent 62%),
-        linear-gradient(135deg, rgba(0,0,0,0.18), rgba(0,0,0,0.06));
+    /* blurred backdrop (for portrait shots) */
+    .backdrop{
+      position:absolute;
+      inset:-18px;
+      background-size: cover;
+      background-position: center;
+      filter: blur(18px) saturate(1.05);
+      transform: scale(1.12);
+      opacity: 0;
+      transition: opacity 520ms ease;
+    }
+    .backdrop.show{ opacity: 0.70; }
+
+    /* subtle vignette */
+    .vignette{
+      position:absolute;
+      inset:0;
+      background: radial-gradient(120% 90% at 50% 55%, rgba(0,0,0,0.08), rgba(0,0,0,0.22));
       pointer-events:none;
     }
 
-    /* Slide layers */
-    .slide{
-      position:absolute; inset:0;
-      opacity: 0;
-      transform: scale(1.01);
-      transition: opacity var(--fade-ms) var(--ease), transform var(--fade-ms) var(--ease);
-      will-change: opacity, transform;
-    }
-    .slide.show{
-      opacity: 1;
-      transform: scale(1.00);
-    }
-
-    /* Blurred background image for portrait/contain mode */
-    .bg{
-      position:absolute; inset:0;
-      background-position:center;
-      background-size: cover;
-      filter: blur(18px);
-      transform: scale(1.12);
-      opacity: 0.85;
-    }
-    /* Adds a mild dark wash for contrast */
-    .bg::after{
-      content:"";
-      position:absolute; inset:0;
-      background: linear-gradient(180deg, rgba(0,0,0,0.20), rgba(0,0,0,0.34));
-    }
-
-    /* Foreground image */
-    img.fg{
-      position:absolute; inset:0;
+    .img{
+      position:absolute;
+      inset:0;
       width:100%;
       height:100%;
-      object-fit: contain; /* default; switched by JS if fit=cover */
-      image-rendering: auto;
-      opacity: 0.98;
-      transform: translateZ(0);
+      object-fit: cover;
+      opacity:0;
+      transition: opacity 520ms cubic-bezier(.2,.8,.2,1);
+      will-change: opacity;
     }
+    .img.show{ opacity:1; }
 
-    /* HUD */
+    /* tiny classy progress bar */
+    .progress{
+      position:absolute;
+      left:14px;
+      right:14px;
+      top:12px;
+      height:3px;
+      border-radius:99px;
+      background: rgba(255,255,255,0.10);
+      overflow:hidden;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
+    }
+    .progress > i{
+      display:block;
+      height:100%;
+      width:0%;
+      background: rgba(255,255,255,0.55);
+      border-radius:99px;
+      transition: width 220ms ease;
+    }
+    .progress.hide{ opacity:0; transition: opacity 250ms ease; }
+
     .hud{
       position:absolute;
-      left: 10px;
-      bottom: 10px;
-      padding: 6px 10px;
-      border-radius: 10px;
-      background: var(--hud-bg);
-      color: var(--hud-fg);
+      left:10px;
+      bottom:10px;
+      padding:6px 10px;
+      border-radius:10px;
+      background: rgba(0,0,0,0.42);
+      color: #fff;
       font-size: 12px;
       backdrop-filter: blur(6px);
       max-width: calc(100% - 20px);
       box-sizing: border-box;
       white-space: nowrap;
-      overflow: hidden;
+      overflow:hidden;
       text-overflow: ellipsis;
-      pointer-events: none;
+      pointer-events:none;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,255,255,0.10);
     }
 
-    /* Preload bar (tiny, classy) */
-    .preload{
-      position:absolute;
-      left: 10px;
-      right: 10px;
-      top: 10px;
-      height: 8px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.12);
-      overflow: hidden;
-      backdrop-filter: blur(6px);
-      box-shadow: 0 0 0 1px rgba(255,255,255,0.12) inset;
-    }
-    .preload .bar{
-      height: 100%;
-      width: 0%;
-      background: rgba(255,255,255,0.70);
-      border-radius: 999px;
-      transition: width 260ms var(--ease);
-    }
-    .preload.hide{ display:none; }
-
-    /* No-photos / error state */
+    /* graceful “no photos” state */
     .empty{
-      position:absolute; inset:0;
+      position:absolute;
+      inset:0;
       display:flex;
       align-items:center;
       justify-content:center;
-      padding: 18px;
+      padding:18px;
       box-sizing:border-box;
       text-align:center;
-      color: rgba(255,255,255,0.92);
+      color: var(--ink);
     }
-    .card{
+    .emptyCard{
       width:min(520px, 92%);
-      border-radius: 16px;
-      background: rgba(0,0,0,0.30);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.18);
-      border: 1px solid rgba(255,255,255,0.12);
-      padding: 16px 16px 14px 16px;
-      backdrop-filter: blur(10px);
+      border-radius:16px;
+      background: linear-gradient(180deg, rgba(0,0,0,0.40), rgba(0,0,0,0.26));
+      border: 1px solid rgba(255,255,255,0.14);
+      box-shadow: var(--shadow);
+      padding:16px 16px 14px;
     }
-    .title{
-      font-size: 14px;
-      font-weight: 750;
-      letter-spacing: 0.2px;
-    }
-    .sub{
-      margin-top: 6px;
-      font-size: 12px;
-      opacity: 0.86;
-      line-height: 1.35;
-    }
-    .hint{
-      margin-top: 10px;
-      font-size: 12px;
-      opacity: 0.70;
-      line-height: 1.35;
-    }
-    .chiprow{
-      margin-top: 12px;
-      display:flex;
-      justify-content:center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .chip{
-      font-size: 11px;
-      padding: 5px 9px;
-      border-radius: 999px;
+    .emptyTitle{ font-weight:750; font-size:14px; letter-spacing:0.2px; }
+    .emptySub{ margin-top:6px; color: var(--ink-dim); font-size:12px; line-height:1.35; }
+    .emptyHint{
+      margin-top:10px;
+      display:inline-block;
+      padding:6px 10px;
+      border-radius:999px;
       background: rgba(255,255,255,0.10);
       border: 1px solid rgba(255,255,255,0.12);
-      color: rgba(255,255,255,0.86);
+      color: rgba(255,255,255,0.82);
+      font-size:11px;
+    }
+    .emptyErr{
+      margin-top:10px;
+      color: rgba(255,255,255,0.70);
+      font-size:11px;
+      white-space: pre-wrap;
+      text-align:left;
+      border-top: 1px solid rgba(255,255,255,0.10);
+      padding-top:10px;
     }
   </style>
 </head>
-
 <body>
   <div class="wrap" id="wrap">
-    <div class="preload" id="preload"><div class="bar" id="preloadBar"></div></div>
+    <div class="backdrop" id="backdrop"></div>
+    <div class="vignette"></div>
+    <div class="progress" id="progress"><i id="pbar"></i></div>
   </div>
 
   <script>
     // ----------------------------
-    // Query params
+    // Config
     // ----------------------------
-    const qs = new URLSearchParams(location.search);
+    const DEFAULT_API_BASE =
+      "https://script.google.com/macros/s/AKfycbyHPnSrEOdYJwoIQpRk4SajFg9cgpSeXsH0ilg9-c2EglqzeSIubVhgy7WogI-Idsu8/exec";
 
-    const bot = (qs.get('bot') || '').trim();
-    const dateKey = (qs.get('date') || '').trim();
+    // ----------------------------
+    // Helpers
+    // ----------------------------
+    function qs() {
+      const u = new URL(window.location.href);
+      const p = u.searchParams;
 
-    // Display controls
-    const fit = ((qs.get('fit') || 'contain').trim().toLowerCase() === 'cover') ? 'cover' : 'contain';
-    const w = clampInt(qs.get('w'), 1200, 320, 2400);
-    const preloadN = clampInt(qs.get('preload'), 2, 0, 12);
-    const cacheS = clampInt(qs.get('cache_s'), 600, 0, 86400);
-    const intervalMs = clampInt(qs.get('interval_ms'), 2200, 800, 15000);
-    const fadeMs = clampInt(qs.get('fade_ms'), 450, 150, 4000);
+      // accept snake_case and camelCase
+      const getAny = (...keys) => {
+        for (const k of keys) {
+          const v = p.get(k);
+          if (v !== null && String(v).trim() !== "") return String(v).trim();
+        }
+        return "";
+      };
 
-    // Randomization
-    const shuffle = (qs.get('shuffle') === '0' || qs.get('shuffle') === 'false') ? false : true;
+      const num = (raw, def, min, max) => {
+        const n = Number(raw);
+        if (!isFinite(n)) return def;
+        return Math.max(min, Math.min(max, Math.round(n)));
+      };
 
-    // Apps Script API endpoint for JSON
-    // Your webapp exec, with route r=api_photo_reel
-    const API_BASE = "https://script.google.com/macros/s/AKfycbyHPnSrEOdYJwoIQpRk4SajFg9cgpSeXsH0ilg9-c2EglqzeSIubVhgy7WogI-Idsu8/exec";
+      const bot = getAny("bot") || "winston";
+      const date = getAny("date", "dateKey"); // support both
+      const fitRaw = (getAny("fit") || "contain").toLowerCase();
+      const fit = (fitRaw === "cover") ? "cover" : "contain";
 
-    const wrap = document.getElementById('wrap');
-    const preloadEl = document.getElementById('preload');
-    const preloadBar = document.getElementById('preloadBar');
+      const intervalMs = num(getAny("interval_ms","intervalMs"), 2200, 800, 15000);
+      const fadeMs = num(getAny("fade_ms","fadeMs"), 450, 150, 4000);
 
-    document.documentElement.style.setProperty('--fade-ms', fadeMs + 'ms');
+      const w = num(getAny("w","width"), 1200, 320, 4096);
+      const cacheS = num(getAny("cache_s","cacheS"), 600, 0, 86400);
 
-    if (!bot || !dateKey) {
-      showEmpty({
-        title: "Missing params",
-        sub: "Need bot and date",
-        hint: "Example: ?bot=winston&date=2025-12-20",
-        chips: ["bot", "date", "fit", "shuffle"]
-      });
-    } else {
-      load();
+      const preload = num(getAny("preload"), 1, 0, 12);
+
+      const shuffleRaw = (getAny("shuffle","randomize") || "1").toLowerCase();
+      const shuffle = !(shuffleRaw === "0" || shuffleRaw === "false" || shuffleRaw === "no");
+
+      const apiBase = getAny("api") || DEFAULT_API_BASE;
+
+      return { bot, date, fit, intervalMs, fadeMs, w, cacheS, preload, shuffle, apiBase };
+    }
+
+    function buildApiUrl(state){
+      const u = new URL(state.apiBase);
+      u.searchParams.set("r", "api_photo_reel");
+      u.searchParams.set("bot", state.bot);
+      u.searchParams.set("date", state.date);
+      u.searchParams.set("w", String(state.w));
+      u.searchParams.set("cache_s", String(state.cacheS));
+      // JSONP avoids any CORS surprises if you ever swap hosting contexts
+      u.searchParams.set("format", "jsonp");
+      u.searchParams.set("callback", "__pr_cb");
+      return u.toString();
+    }
+
+    function shuffleInPlace(arr){
+      for (let i = arr.length - 1; i > 0; i--){
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function setProgress(done, total){
+      const pct = total <= 0 ? 0 : Math.max(0, Math.min(100, Math.round((done/total)*100)));
+      pbar.style.width = pct + "%";
+      if (pct >= 100) progress.classList.add("hide");
+    }
+
+    function showEmpty(state, msg, err){
+      progress.classList.add("hide");
+      wrap.querySelectorAll("img.img").forEach(n => n.remove());
+      const existing = wrap.querySelector(".empty");
+      if (existing) existing.remove();
+
+      const d = document.createElement("div");
+      d.className = "empty";
+      d.innerHTML =
+        `<div class="emptyCard">
+          <div class="emptyTitle">No photos</div>
+          <div class="emptySub">${escapeHtml(state.date)} • ${escapeHtml(state.bot)}</div>
+          <div class="emptyHint">Tip: add Drive links (one per line) in PhotoReels!Photos</div>
+          ${msg ? `<div class="emptySub" style="margin-top:10px">${escapeHtml(msg)}</div>` : ""}
+          ${err ? `<div class="emptyErr">${escapeHtml(String(err))}</div>` : ""}
+        </div>`;
+      wrap.appendChild(d);
+    }
+
+    function escapeHtml(s){
+      return String(s ?? "")
+        .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
     }
 
     // ----------------------------
     // Main
     // ----------------------------
-    async function load() {
-      try {
-        // Cache-bust by cache_s, but allow short-lived caching
-        const cacheBuster = cacheS ? String(Math.floor(Date.now() / (cacheS * 1000))) : String(Date.now());
+    const wrap = document.getElementById("wrap");
+    const backdrop = document.getElementById("backdrop");
+    const progress = document.getElementById("progress");
+    const pbar = document.getElementById("pbar");
 
-        const apiUrl = API_BASE
-          + "?r=api_photo_reel"
-          + "&bot=" + encodeURIComponent(bot)
-          + "&date=" + encodeURIComponent(dateKey)
-          + "&w=" + encodeURIComponent(w)
-          + "&cache_s=" + encodeURIComponent(cacheS)
-          + "&_=" + encodeURIComponent(cacheBuster);
+    const state = qs();
+    document.title = `LifeLog Photo Reel ${state.date || ""}`.trim();
 
-        const res = await fetch(apiUrl, { method: "GET", cache: "no-store" });
-        if (!res.ok) throw new Error("API HTTP " + res.status);
+    // Always show a useful empty state if date missing
+    if (!state.bot || !state.date){
+      showEmpty(state, "Missing required params. Example:", "?bot=winston&date=2025-12-20");
+      throw new Error("Missing bot or date");
+    }
 
-        const data = await res.json();
-        if (!data || !data.ok) throw new Error((data && data.error) ? data.error : "API returned ok=false");
+    // apply fit + fade duration
+    const fadeMs = state.fadeMs;
+    const fit = state.fit;
 
-        let photos = Array.isArray(data.photos) ? data.photos.slice() : [];
-        photos = photos.filter(Boolean);
+    // JSONP fetch
+    let jsonpTimer = null;
+    function fetchJsonp(url, timeoutMs=12000){
+      return new Promise((resolve, reject) => {
+        const s = document.createElement("script");
+        s.src = url;
+        s.async = true;
 
-        if (!photos.length) {
-          showEmpty({
-            title: "No photos",
-            sub: dateKey + " • " + bot,
-            hint: "If you expected photos, confirm the PhotoReels sheet has links for this date.",
-            chips: ["PhotoReels", "DateKey", "Photos"]
-          });
+        jsonpTimer = setTimeout(() => {
+          cleanup();
+          reject(new Error("api timeout"));
+        }, timeoutMs);
+
+        function cleanup(){
+          if (jsonpTimer) clearTimeout(jsonpTimer);
+          jsonpTimer = null;
+          s.remove();
+          try { delete window.__pr_cb; } catch(e){}
+        }
+
+        window.__pr_cb = (payload) => {
+          cleanup();
+          resolve(payload);
+        };
+
+        s.onerror = () => {
+          cleanup();
+          reject(new Error("jsonp load failed"));
+        };
+
+        document.head.appendChild(s);
+      });
+    }
+
+    (async function(){
+      try{
+        // keep progress visible during API call
+        setProgress(0, 1);
+
+        const apiUrl = buildApiUrl(state);
+        const payload = await fetchJsonp(apiUrl, 15000);
+
+        if (!payload || payload.ok !== true){
+          showEmpty(state, "API returned error", payload && payload.error ? payload.error : "unknown error");
           return;
         }
 
-        // Randomize (default on)
-        if (shuffle && photos.length > 1) {
-          photos = shuffleArray(photos);
+        let photos = Array.isArray(payload.photos) ? payload.photos.slice() : [];
+        photos = photos.map(x => String(x||"").trim()).filter(Boolean);
+
+        if (!photos.length){
+          showEmpty(state, "", payload && payload.note ? payload.note : "");
+          return;
         }
 
-        // Preload first N
-        await preloadSome(photos, preloadN);
+        if (state.shuffle) shuffleInPlace(photos);
 
-        // Render
-        renderReel(photos);
-      } catch (err) {
-        showEmpty({
-          title: "Reel load error",
-          sub: dateKey + " • " + bot,
-          hint: String(err && err.message ? err.message : err),
-          chips: ["api_photo_reel", "exec", "permissions"]
+        // preload behavior:
+        // - we do NOT stall forever if a file fails
+        // - we begin showing as soon as at least 1 image loads (unless preload=0)
+        const desiredPreload = Math.min(state.preload, photos.length);
+        const requiredToStart = (desiredPreload <= 0) ? 1 : desiredPreload;
+
+        let loaded = 0;
+        let settled = 0;
+
+        const imgs = photos.map((src, i) => {
+          const im = new Image();
+          im.className = "img";
+          im.alt = "photo " + (i + 1);
+          im.decoding = "async";
+          im.loading = (i === 0) ? "eager" : "lazy";
+          im.style.objectFit = fit;
+          im.style.transitionDuration = fadeMs + "ms";
+          im.src = src;
+
+          // attach later, after we know we have something to show
+          im.addEventListener("load", () => {
+            loaded++;
+            settled++;
+            setProgress(settled, photos.length);
+            maybeStart();
+          }, { once:true });
+
+          im.addEventListener("error", () => {
+            // treat as settled so we don't stall on broken links
+            settled++;
+            setProgress(settled, photos.length);
+            maybeStart();
+          }, { once:true });
+
+          return im;
         });
-      } finally {
-        preloadEl.classList.add('hide');
+
+        // fail-safe start even if preload never reaches target (slow Drive day)
+        let started = false;
+        const failsafe = setTimeout(() => {
+          if (!started){
+            // start with whatever managed to load
+            const anyLoaded = imgs.findIndex(im => im.complete && im.naturalWidth > 0);
+            if (anyLoaded >= 0){
+              startReel(imgs, anyLoaded);
+            } else {
+              showEmpty(state, "Images failed to load. (Drive may be throttling)", "");
+            }
+          }
+        }, 3500);
+
+        function maybeStart(){
+          if (started) return;
+          // count only successful loads toward requiredToStart
+          if (loaded >= requiredToStart){
+            const firstOk = imgs.findIndex(im => im.complete && im.naturalWidth > 0);
+            if (firstOk >= 0){
+              startReel(imgs, firstOk);
+            }
+          }
+        }
+
+        function startReel(imgs, startIndex){
+          if (started) return;
+          started = true;
+          clearTimeout(failsafe);
+
+          // mount imgs
+          imgs.forEach(im => wrap.appendChild(im));
+
+          // HUD
+          const hud = document.createElement("div");
+          hud.className = "hud";
+          hud.textContent = `${state.date} • ${state.bot} • ${photos.length} photos`;
+          wrap.appendChild(hud);
+
+          // show first
+          let idx = startIndex;
+          imgs[idx].classList.add("show");
+          // set blurred backdrop to current
+          backdrop.style.backgroundImage = `url("${imgs[idx].src}")`;
+          backdrop.classList.add("show");
+
+          // hide progress once first shown (still updates as remaining settle)
+          setTimeout(() => progress.classList.add("hide"), 600);
+
+          // rotate through only images that successfully loaded
+          const okIndexes = imgs
+            .map((im, i) => ({ im, i }))
+            .filter(x => x.im.complete && x.im.naturalWidth > 0)
+            .map(x => x.i);
+
+          // if only one loaded, just sit
+          if (okIndexes.length <= 1) return;
+
+          const interval = Math.max(600, Number(state.intervalMs) || 2200);
+
+          setInterval(() => {
+            const pos = okIndexes.indexOf(idx);
+            const nextIdx = okIndexes[(pos + 1) % okIndexes.length];
+
+            // crossfade
+            imgs[idx].classList.remove("show");
+            imgs[nextIdx].classList.add("show");
+
+            // backdrop swap slightly after to look smooth
+            setTimeout(() => {
+              backdrop.style.backgroundImage = `url("${imgs[nextIdx].src}")`;
+              backdrop.classList.add("show");
+            }, Math.min(240, Math.round(fadeMs * 0.35)));
+
+            idx = nextIdx;
+          }, interval);
+        }
+
+      } catch (e){
+        showEmpty(state, "Runtime error", e && e.message ? e.message : String(e));
       }
-    }
-
-    // ----------------------------
-    // Reel rendering
-    // ----------------------------
-    function renderReel(photos) {
-      // Clear existing slides (keep preload bar node if present)
-      const nodes = Array.from(wrap.children);
-      for (const n of nodes) {
-        if (n.id === 'preload') continue;
-        wrap.removeChild(n);
-      }
-
-      const slides = photos.map((src, i) => {
-        const slide = document.createElement('div');
-        slide.className = 'slide';
-
-        // Background blur layer (always present; looks best for contain/portrait)
-        const bg = document.createElement('div');
-        bg.className = 'bg';
-        bg.style.backgroundImage = `url("${cssEscapeUrl(src)}")`;
-
-        // Foreground image
-        const img = document.createElement('img');
-        img.className = 'fg';
-        img.alt = 'photo ' + (i + 1);
-        img.loading = (i === 0) ? 'eager' : 'lazy';
-        img.decoding = 'async';
-        img.src = src;
-        img.style.objectFit = fit;
-
-        slide.appendChild(bg);
-        slide.appendChild(img);
-        wrap.appendChild(slide);
-        return slide;
-      });
-
-      // HUD
-      const hud = document.createElement('div');
-      hud.className = 'hud';
-      hud.textContent = `${dateKey} • ${bot} • ${photos.length} photos${shuffle ? " • shuffled" : ""}`;
-      wrap.appendChild(hud);
-
-      // Show first, then rotate
-      let idx = 0;
-      slides[0].classList.add('show');
-
-      // If only one photo, stop here
-      if (slides.length <= 1) return;
-
-      setInterval(() => {
-        const prev = idx;
-        idx = (idx + 1) % slides.length;
-        slides[prev].classList.remove('show');
-        slides[idx].classList.add('show');
-      }, Math.max(300, intervalMs));
-    }
-
-    // ----------------------------
-    // No-photos / error UI
-    // ----------------------------
-    function showEmpty({ title, sub, hint, chips }) {
-      preloadEl.classList.add('hide');
-
-      const nodes = Array.from(wrap.children);
-      for (const n of nodes) {
-        if (n.id === 'preload') continue;
-        wrap.removeChild(n);
-      }
-
-      const outer = document.createElement('div');
-      outer.className = 'empty';
-
-      const card = document.createElement('div');
-      card.className = 'card';
-
-      const t = document.createElement('div');
-      t.className = 'title';
-      t.textContent = title || "No photos";
-
-      const s = document.createElement('div');
-      s.className = 'sub';
-      s.textContent = sub || "";
-
-      const h = document.createElement('div');
-      h.className = 'hint';
-      h.textContent = hint || "";
-
-      const row = document.createElement('div');
-      row.className = 'chiprow';
-      (chips || []).forEach(c => {
-        const chip = document.createElement('div');
-        chip.className = 'chip';
-        chip.textContent = c;
-        row.appendChild(chip);
-      });
-
-      card.appendChild(t);
-      if (sub) card.appendChild(s);
-      if (hint) card.appendChild(h);
-      if (chips && chips.length) card.appendChild(row);
-
-      outer.appendChild(card);
-      wrap.appendChild(outer);
-    }
-
-    // ----------------------------
-    // Preload helper with progress bar
-    // ----------------------------
-    async function preloadSome(urls, n) {
-      const count = Math.min(Math.max(0, n), urls.length);
-      if (!count) {
-        setPreloadPct(100);
-        return;
-      }
-
-      preloadEl.classList.remove('hide');
-      setPreloadPct(0);
-
-      let done = 0;
-
-      // preload sequentially to make progress feel smooth
-      for (let i = 0; i < count; i++) {
-        await preloadImage(urls[i]).catch(() => null);
-        done++;
-        setPreloadPct(Math.round((done / count) * 100));
-      }
-    }
-
-    function preloadImage(src) {
-      return new Promise((resolve, reject) => {
-        const im = new Image();
-        im.onload = () => resolve(true);
-        im.onerror = () => reject(new Error("image load failed"));
-        im.src = src;
-      });
-    }
-
-    function setPreloadPct(pct) {
-      const v = Math.max(0, Math.min(100, Number(pct) || 0));
-      preloadBar.style.width = v + "%";
-    }
-
-    // ----------------------------
-    // Utilities
-    // ----------------------------
-    function clampInt(v, def, min, max) {
-      const n = Number(v);
-      if (!isFinite(n)) return def;
-      return Math.max(min, Math.min(max, Math.round(n)));
-    }
-
-    // Fisher–Yates
-    function shuffleArray(arr) {
-      const a = arr.slice();
-      for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [a[i], a[j]] = [a[j], a[i]];
-      }
-      return a;
-    }
-
-    // Safe for background-image usage
-    function cssEscapeUrl(u) {
-      return String(u || "").replace(/"/g, '\\"');
-    }
+    })();
   </script>
 </body>
 </html>
