@@ -1,40 +1,28 @@
+
+<!doctype html>
 <!--
 reel.html
 LifeLog Photo Reel (GitHub Pages)
 
-Behavior (current):
-  ✅ Loads photos from your Apps Script API: r=api_photo_reel
-  ✅ Shows FIRST image as soon as it loads (no waiting for all)
-  ✅ Continues preloading in the background while slideshow can run
+Behavior updates in this version:
+  ✅ Default UI hidden (controls + dots + tag hidden until hover/tap)
+  ✅ When there are NO photos, the entire frame stays transparent so the Garden sky shows through,
+     with a small centered badge: "No photos for the day"
   ✅ Non-repeating shuffle (no repeats until all shown)
-  ✅ Background blur layer (portrait shots look framed)
-  ✅ Smooth, non-jarring crossfade (two-layer crossfade)
-  ✅ Graceful "no photos" art state
-  ✅ Tiny classy preload bar (only while first image is loading / initial preloads)
-  ✅ Controls only appear on hover/move (DEFAULT: UI hidden)
-  ✅ Dots optional, Tag optional (DEFAULT: hidden)
+  ✅ Controls appear on hover/move/tap, then auto-hide (faster while playing, longer when paused)
+  ✅ Disable Prev/Next when only 1 photo
+  ✅ Classy preload progress bar
+  ✅ Subtle crossfade easing
+  ✅ Background blur layer (helps portrait shots feel framed)
 
-URL params (example):
-  reel.html?
-    api=<ENCODED_API_URL_WITH_r=api_photo_reel>
-    &bot=winston
-    &date=2025-12-20
-    &fit=contain            (contain|cover)
-    &w=1200                 (optional pass-through to API)
-    &cache_s=600            (optional pass-through to API)
-    &preload=2              (# of images to preload ASAP after first)
-    &interval_ms=2200
-    &fade_ms=450
-    &shuffle=1              (1=on, 0=off)
-    &tag=0                  (0=hide, 1=show)
-    &dots=0                 (0=hide, 1=show)
+Expected URL params (examples):
+  reel.html?api=<ENCODED_API_URL>&bot=winston&date=2025-12-20&fit=contain&w=1200&preload=2&cache_s=600&interval_ms=2200&fade_ms=450&shuffle=1
 
 Notes:
 - Keyboard support intentionally NOT included.
-- Prev/Next disabled if only 1 image.
+- The api should return JSON like: { ok:true, dateKey:"YYYY-MM-DD", photos:["https://...","https://..."] }
 -->
 
-<!doctype html>
 <html>
 <head>
   <meta charset="utf-8" />
@@ -42,20 +30,17 @@ Notes:
   <title>LifeLog Photo Reel</title>
   <style>
     :root{
-      --radius: 14px;
-      --pad: 10px;
-
       --text: rgba(255,255,255,0.92);
       --muted: rgba(255,255,255,0.68);
 
-      --ctrlBg: rgba(0,0,0,0.34);
-      --ctrlRing: rgba(255,255,255,0.18);
+      --radius: 14px;
+      --hudPad: 10px;
+
+      --ctrlBg: rgba(0,0,0,0.38);
+      --ctrlRing: rgba(255,255,255,0.22);
 
       --barBg: rgba(255,255,255,0.14);
-      --barFg: rgba(255,255,255,0.70);
-
-      --fadeMs: 450ms;
-      --fit: contain;
+      --barFg: rgba(255,255,255,0.72);
     }
 
     html, body { height:100%; margin:0; background: transparent; }
@@ -70,106 +55,94 @@ Notes:
       height:100%;
       border-radius: var(--radius);
       overflow:hidden;
-      background: linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.36));
-      user-select:none;
-      -webkit-user-select:none;
-      touch-action: manipulation;
+      background: transparent;
     }
 
-    /* Background blur layer */
     .bg{
       position:absolute;
       inset:0;
-      background: #0b0f16;
       background-size: cover;
       background-position: center;
-      filter: blur(22px) saturate(1.05);
+      filter: blur(24px) saturate(1.05);
       transform: scale(1.12);
       opacity: 0;
       transition: opacity 420ms ease;
+      pointer-events:none;
     }
     .bg.on{ opacity: 1; }
 
     .vignette{
       position:absolute;
       inset:0;
-      background: radial-gradient(ellipse at center, rgba(0,0,0,0.08), rgba(0,0,0,0.55));
+      opacity: 0;
+      transition: opacity 300ms ease;
+      background: radial-gradient(ellipse at center, rgba(0,0,0,0.08), rgba(0,0,0,0.45));
       pointer-events:none;
     }
+    .vignette.on{ opacity: 1; }
 
-    /* Two-layer crossfade (prevents jarring swaps) */
-    .imgLayer{
+    .img{
       position:absolute;
       inset:0;
       width:100%;
       height:100%;
-      object-fit: var(--fit);
-      opacity: 0;
-      transition: opacity var(--fadeMs) cubic-bezier(.22,.61,.36,1);
+      opacity:0;
+      transition: opacity var(--fadeMs, 450ms) cubic-bezier(.22,.61,.36,1);
       will-change: opacity;
-      background: transparent;
+      object-fit: var(--fit, contain);
+      pointer-events:none;
     }
-    .imgLayer.on{ opacity: 1; }
+    .img.on{ opacity: 1; }
 
-    /* Top-left tag (optional, default hidden via JS) */
     .tag{
       position:absolute;
-      top: var(--pad);
-      left: var(--pad);
-      z-index: 9;
+      top: var(--hudPad);
+      left: var(--hudPad);
+      z-index: 10;
       font-size: 11px;
       color: var(--text);
       padding: 5px 9px;
       border-radius: 999px;
-      background: rgba(0,0,0,0.28);
+      background: rgba(0,0,0,0.34);
       backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,0.10);
-      max-width: calc(100% - 2*var(--pad));
+      border: 1px solid rgba(255,255,255,0.12);
+      max-width: calc(100% - 2*var(--hudPad));
       white-space: nowrap;
       overflow:hidden;
       text-overflow: ellipsis;
       pointer-events:none;
-
       opacity: 0;
       transition: opacity 220ms ease;
     }
-    .tag.on{ opacity: 1; }
 
-    /* Dots (optional, default hidden via JS) */
     .dots{
       position:absolute;
       left:50%;
-      bottom: calc(var(--pad) + 44px);
+      bottom: calc(var(--hudPad) + 58px);
       transform: translateX(-50%);
-      z-index: 9;
       display:flex;
       gap: 6px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: rgba(0,0,0,0.20);
-      border: 1px solid rgba(255,255,255,0.08);
-      backdrop-filter: blur(10px);
-
+      z-index: 10;
+      pointer-events:none;
       opacity: 0;
       transition: opacity 220ms ease;
-      pointer-events:none;
     }
-    .dots.on{ opacity: 1; }
     .dot{
-      width: 5px; height: 5px;
+      width: 6px;
+      height: 6px;
       border-radius: 999px;
-      background: rgba(255,255,255,0.28);
+      background: rgba(255,255,255,0.32);
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.10);
     }
-    .dot.on{ background: rgba(255,255,255,0.82); }
+    .dot.on{ background: rgba(255,255,255,0.78); }
 
-    /* Preload progress (tiny, classy) */
     .progress{
       position:absolute;
       left: 50%;
       top: 50%;
       transform: translate(-50%,-50%);
       width: min(220px, 62vw);
-      z-index: 10;
+      z-index: 11;
       opacity: 0;
       transition: opacity 220ms ease;
       pointer-events:none;
@@ -181,6 +154,7 @@ Notes:
       text-align:center;
       margin-bottom: 8px;
       letter-spacing: 0.2px;
+      text-shadow: 0 1px 8px rgba(0,0,0,0.35);
     }
     .progress .bar{
       height: 6px;
@@ -188,6 +162,7 @@ Notes:
       background: var(--barBg);
       overflow:hidden;
       border: 1px solid rgba(255,255,255,0.10);
+      backdrop-filter: blur(10px);
     }
     .progress .fill{
       height: 100%;
@@ -197,56 +172,49 @@ Notes:
       transition: width 180ms ease;
     }
 
-    /* Empty / no photos state */
     .empty{
       position:absolute;
       inset:0;
       display:flex;
       align-items:center;
       justify-content:center;
-      text-align:center;
-      padding: 18px;
-      box-sizing:border-box;
-      color: var(--text);
-      z-index: 11;
-      background: linear-gradient(180deg, rgba(0,0,0,0.26), rgba(0,0,0,0.48));
+      z-index: 12;
+      background: transparent;
+      pointer-events:none;
     }
-    .empty .card{
-      width: min(320px, 80vw);
-      border-radius: 16px;
+    .empty .badge{
+      font-size: 12px;
+      color: rgba(255,255,255,0.88);
+      padding: 10px 12px;
+      border-radius: 12px;
       background: rgba(0,0,0,0.28);
-      border: 1px solid rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.12);
       backdrop-filter: blur(12px);
-      padding: 16px 14px;
-    }
-    .empty .title{
-      font-weight: 800;
-      font-size: 14px;
-      margin-bottom: 6px;
-      letter-spacing: 0.2px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.20);
+      max-width: min(240px, 78vw);
+      text-align:center;
+      line-height: 1.25;
     }
     .empty .sub{
-      font-size: 12px;
-      color: var(--muted);
-      line-height: 1.35;
+      margin-top: 6px;
+      font-size: 11px;
+      color: rgba(255,255,255,0.62);
     }
 
-    /* Controls */
     .controls{
       position:absolute;
       left:50%;
-      bottom: var(--pad);
+      bottom: calc(var(--hudPad) + 12px);
       transform: translateX(-50%);
       display:flex;
       align-items:center;
-      gap: clamp(10px, 2.6vw, 16px);
+      gap: clamp(8px, 2.2vw, 14px);
       padding: clamp(6px, 1.6vw, 10px);
       border-radius: 999px;
       background: var(--ctrlBg);
       backdrop-filter: blur(10px);
       border: 1px solid rgba(255,255,255,0.10);
-      z-index: 9;
-
+      z-index: 10;
       opacity: 0;
       transition: opacity 220ms ease;
       pointer-events: none;
@@ -256,10 +224,9 @@ Notes:
       pointer-events: auto;
     }
 
-    /* Smaller, responsive buttons (skybox friendly) */
     .btn{
-      width: clamp(22px, 5.2vw, 38px);
-      height: clamp(22px, 5.2vw, 38px);
+      width: clamp(26px, 6vw, 38px);
+      height: clamp(26px, 6vw, 38px);
       border-radius: 999px;
       border: 1px solid var(--ctrlRing);
       background: rgba(255,255,255,0.06);
@@ -267,14 +234,16 @@ Notes:
       align-items:center;
       justify-content:center;
       cursor:pointer;
+      user-select:none;
+      touch-action: manipulation;
       transition: transform 120ms ease, background 120ms ease, border-color 120ms ease, opacity 120ms ease;
     }
     .btn:hover{ background: rgba(255,255,255,0.10); }
     .btn:active{ transform: scale(0.96); }
 
     .btn svg{
-      width: clamp(11px, 2.8vw, 18px);
-      height: clamp(11px, 2.8vw, 18px);
+      width: clamp(12px, 3.2vw, 18px);
+      height: clamp(12px, 3.2vw, 18px);
       fill: none;
       stroke: rgba(255,255,255,0.86);
       stroke-width: 2.2;
@@ -283,44 +252,45 @@ Notes:
     }
 
     .btn.main{
-      width: clamp(26px, 6.2vw, 42px);
-      height: clamp(26px, 6.2vw, 42px);
+      width: clamp(30px, 7vw, 42px);
+      height: clamp(30px, 7vw, 42px);
       background: rgba(255,255,255,0.10);
-      border-color: rgba(255,255,255,0.24);
+      border-color: rgba(255,255,255,0.26);
     }
+    .btn.main svg{
+      width: clamp(14px, 3.6vw, 20px);
+      height: clamp(14px, 3.6vw, 20px);
+    }
+
     .btn.disabled{
-      opacity: 0.28;
+      opacity: 0.35;
       cursor: default;
       pointer-events: none;
     }
 
-    /* Hover surface */
     .hotzone{
       position:absolute;
       inset:0;
-      z-index: 8;
+      z-index: 7;
       background: transparent;
     }
+
+    .uiOn .tag,
+    .uiOn .dots{ opacity: 1; }
   </style>
 </head>
 
 <body>
   <div class="frame" id="frame">
     <div class="bg" id="bg"></div>
-    <div class="vignette"></div>
-
-    <!-- Two fade layers -->
-    <img class="imgLayer" id="imgA" alt="photo a" />
-    <img class="imgLayer" id="imgB" alt="photo b" />
-
+    <div class="vignette" id="vignette"></div>
     <div class="hotzone" id="hotzone"></div>
 
     <div class="tag" id="tag" style="display:none;"></div>
-
     <div class="dots" id="dots" style="display:none;"></div>
 
     <div class="progress" id="progress" style="display:none;">
-      <div class="label" id="progressLabel">loading photo…</div>
+      <div class="label" id="progressLabel">loading photos…</div>
       <div class="bar"><div class="fill" id="progressFill"></div></div>
     </div>
 
@@ -343,11 +313,7 @@ Notes:
   </div>
 
   <script>
-    // -----------------------------
-    // Params
-    // -----------------------------
     const qs = new URLSearchParams(location.search);
-
     const apiBase = qs.get('api') || '';
     const bot = qs.get('bot') || 'winston';
     const date = qs.get('date') || '';
@@ -355,35 +321,21 @@ Notes:
     const fit = (qs.get('fit') || 'contain').toLowerCase() === 'cover' ? 'cover' : 'contain';
     const fadeMs = clampInt(qs.get('fade_ms'), 450, 150, 2500);
     const intervalMs = clampInt(qs.get('interval_ms'), 2200, 700, 20000);
-    const preloadN = clampInt(qs.get('preload'), 2, 0, 20);
+    const preloadN = clampInt(qs.get('preload'), 2, 0, 12);
     const cacheS = clampInt(qs.get('cache_s'), 600, 0, 86400);
     const shuffle = (qs.get('shuffle') || '1') !== '0';
     const wParam = qs.get('w');
 
-    // DEFAULTS: UI hidden
-    const showTag = (qs.get('tag') || '0') !== '0';     // default OFF
-    const showDots = (qs.get('dots') || '0') !== '0';   // default OFF
+    const HIDE_MS_PLAYING = 1200;
+    const HIDE_MS_PAUSED  = 3600;
 
-    // Controls auto-hide timing
-    const HIDE_MS_PLAYING = 1100; // fade sooner while playing
-    const HIDE_MS_PAUSED  = 3800; // longer when paused
-
-    // Apply CSS variables
     document.documentElement.style.setProperty('--fit', fit);
     document.documentElement.style.setProperty('--fadeMs', fadeMs + 'ms');
 
-    // -----------------------------
-    // DOM
-    // -----------------------------
     const frame = document.getElementById('frame');
     const bg = document.getElementById('bg');
-
-    const imgA = document.getElementById('imgA');
-    const imgB = document.getElementById('imgB');
-    let front = imgA;
-    let back = imgB;
-
-    const tagEl = document.getElementById('tag');
+    const vignette = document.getElementById('vignette');
+    const tag = document.getElementById('tag');
     const dotsEl = document.getElementById('dots');
 
     const progress = document.getElementById('progress');
@@ -399,27 +351,19 @@ Notes:
     const iconPlay = document.getElementById('iconPlay');
     const iconPause = document.getElementById('iconPause');
 
-    // -----------------------------
-    // State
-    // -----------------------------
-    let allUrls = [];         // from API
-    let okUrls = [];          // successfully loaded
-    let loadedMap = new Map();// url -> boolean ok
-    let idx = 0;
+    let photos = [];
+    let ok = [];
+    let imgs = [];
+    let started = false;
 
-    let timer = null;
-    let isPlaying = true;
-
-    // non-repeating shuffle deck
     let deck = [];
     let deckPos = 0;
 
-    // controls hide timer
+    let idx = 0;
+    let timer = null;
+    let isPlaying = true;
     let hideT = null;
 
-    // -----------------------------
-    // Helpers
-    // -----------------------------
     function clampInt(v, def, min, max){
       const n = Number(v);
       if (!Number.isFinite(n)) return def;
@@ -430,13 +374,13 @@ Notes:
       return String(s || '').replace(/[<>]/g,'');
     }
 
-    function showEmpty(titleText, subText){
+    function showEmptyTransparent(message, sub){
       const d = document.createElement('div');
       d.className = 'empty';
       d.innerHTML =
-        '<div class="card">' +
-          '<div class="title">' + safeText(titleText) + '</div>' +
-          '<div class="sub">' + safeText(subText) + '</div>' +
+        '<div class="badge">' +
+          safeText(message || 'No photos for the day') +
+          (sub ? ('<div class="sub">' + safeText(sub) + '</div>') : '') +
         '</div>';
       frame.appendChild(d);
     }
@@ -457,6 +401,27 @@ Notes:
       progressFill.style.width = p + '%';
     }
 
+    function setUiVisible(on){
+      if (on){
+        controls.classList.add('on');
+        frame.classList.add('uiOn');
+      } else {
+        controls.classList.remove('on');
+        frame.classList.remove('uiOn');
+      }
+    }
+
+    function showControls(){
+      setUiVisible(true);
+      scheduleHideControls();
+    }
+
+    function scheduleHideControls(){
+      if (hideT) clearTimeout(hideT);
+      const ms = isPlaying ? HIDE_MS_PLAYING : HIDE_MS_PAUSED;
+      hideT = setTimeout(() => setUiVisible(false), ms);
+    }
+
     function syncPlayIcon(){
       if (isPlaying){
         iconPlay.style.display = 'none';
@@ -468,7 +433,7 @@ Notes:
     }
 
     function disablePrevNextIfNeeded(){
-      const one = (okUrls.length <= 1);
+      const one = (ok.length <= 1);
       if (one){
         btnPrev.classList.add('disabled');
         btnNext.classList.add('disabled');
@@ -478,25 +443,33 @@ Notes:
       }
     }
 
-    function showControls(){
-      controls.classList.add('on');
-      if (showTag) tagEl.classList.add('on');
-      if (showDots) dotsEl.classList.add('on');
-      scheduleHideControls();
+    function setTag(text){
+      tag.textContent = text;
+      tag.style.display = '';
     }
 
-    function hideControlsNow(){
-      controls.classList.remove('on');
-      tagEl.classList.remove('on');
-      dotsEl.classList.remove('on');
+    function buildDots(count){
+      if (!count || count <= 1){
+        dotsEl.style.display = 'none';
+        dotsEl.innerHTML = '';
+        return;
+      }
+      dotsEl.style.display = '';
+      dotsEl.innerHTML = '';
+      for (let i = 0; i < count; i++){
+        const d = document.createElement('div');
+        d.className = 'dot' + (i === idx ? ' on' : '');
+        dotsEl.appendChild(d);
+      }
     }
 
-    function scheduleHideControls(){
-      if (hideT) clearTimeout(hideT);
-      const ms = isPlaying ? HIDE_MS_PLAYING : HIDE_MS_PAUSED;
-      hideT = setTimeout(() => {
-        hideControlsNow();
-      }, ms);
+    function updateDots(){
+      const dots = dotsEl.querySelectorAll('.dot');
+      if (!dots || !dots.length) return;
+      dots.forEach((d, i) => {
+        if (i === idx) d.classList.add('on');
+        else d.classList.remove('on');
+      });
     }
 
     function buildApiUrl(){
@@ -525,96 +498,53 @@ Notes:
     }
 
     function resetDeck(currentIndex){
-      const indices = okUrls.map((_, i) => i);
-      let ordered = shuffle ? shuffleArray(indices) : indices;
-
-      // avoid immediate repeat
-      if (shuffle && okUrls.length > 1 && ordered[0] === currentIndex){
-        const swapWith = 1 + Math.floor(Math.random() * (ordered.length - 1));
-        [ordered[0], ordered[swapWith]] = [ordered[swapWith], ordered[0]];
+      const indices = ok.map((_, i) => i);
+      let shuffled = shuffle ? shuffleArray(indices) : indices;
+      if (shuffle && ok.length > 1 && shuffled[0] === currentIndex){
+        const swapWith = 1 + Math.floor(Math.random() * (shuffled.length - 1));
+        [shuffled[0], shuffled[swapWith]] = [shuffled[swapWith], shuffled[0]];
       }
-      deck = ordered;
+      deck = shuffled;
       deckPos = 0;
     }
 
     function nextFromDeck(){
-      if (okUrls.length <= 1) return 0;
+      if (ok.length <= 1) return 0;
       if (!deck.length || deckPos >= deck.length){
         resetDeck(idx);
       }
-      if (okUrls.length > 1 && deck[deckPos] === idx){
+      if (ok.length > 1 && deck[deckPos] === idx){
         deckPos++;
-        if (deckPos >= deck.length) resetDeck(idx);
+        if (deckPos >= deck.length){
+          resetDeck(idx);
+        }
       }
       const ni = deck[deckPos];
       deckPos++;
       return ni;
     }
 
-    // A simple prev behavior: go to previous index in current deck history is complex;
-    // for UX it’s fine to just wrap backward.
     function prevIndexSimple(){
-      if (okUrls.length <= 1) return 0;
-      return (idx - 1 + okUrls.length) % okUrls.length;
+      if (ok.length <= 1) return 0;
+      return (idx - 1 + ok.length) % ok.length;
     }
 
     function setBgFor(src){
-      bg.style.backgroundImage = `url("${src}")`;
+      bg.style.backgroundImage = 'url("' + src + '")';
       bg.classList.add('on');
+      vignette.classList.add('on');
     }
 
-    function updateDots(){
-      if (!showDots) return;
-      const n = okUrls.length;
-      dotsEl.innerHTML = '';
-      const maxDots = 10; // keep classy in small skyboxes
-      if (n <= 1){
-        dotsEl.style.display = 'none';
-        return;
-      }
-      dotsEl.style.display = '';
-      const use = Math.min(n, maxDots);
-      for (let i = 0; i < use; i++){
-        const d = document.createElement('div');
-        d.className = 'dot' + (i === (idx % use) ? ' on' : '');
-        dotsEl.appendChild(d);
-      }
-    }
+    function showIndex(i){
+      if (!imgs.length) return;
+      const prev = idx;
+      idx = i;
 
-    function setTagText(dateKey, count){
-      if (!showTag) return;
-      tagEl.textContent = `${dateKey || date || ''} • ${bot}${count ? (' • ' + count) : ''}`;
-      tagEl.style.display = '';
-    }
+      if (imgs[prev]) imgs[prev].classList.remove('on');
+      if (imgs[idx]) imgs[idx].classList.add('on');
 
-    function swapLayers(){
-      const tmp = front;
-      front = back;
-      back = tmp;
-    }
-
-    function showIndex(newIndex){
-      if (!okUrls.length) return;
-      const src = okUrls[newIndex];
-      if (!src) return;
-
-      // Prepare back layer
-      back.src = src;
-      back.classList.add('on');
-      front.classList.remove('on');
-
-      // swap references after the fade completes
-      setTimeout(() => {
-        swapLayers();
-        // ensure back (now behind) is off for next time
-        back.classList.remove('on');
-        idx = newIndex;
-        setBgFor(okUrls[idx]);
-        updateDots();
-      }, fadeMs);
-
-      // bg updates immediately (feels responsive)
-      setBgFor(src);
+      setBgFor(ok[idx]);
+      updateDots();
     }
 
     function stopTimer(){
@@ -625,25 +555,25 @@ Notes:
     function startTimer(){
       stopTimer();
       if (!isPlaying) return;
-      if (okUrls.length <= 1) return;
+      if (ok.length <= 1) return;
       timer = setInterval(() => {
         const ni = nextFromDeck();
         showIndex(ni);
-      }, Math.max(350, intervalMs));
+      }, Math.max(300, intervalMs));
     }
 
     function wireControls(){
-      // show controls only on hover/move/tap (DEFAULT hidden)
-      const bump = () => showControls();
+      setUiVisible(false);
 
-      frame.addEventListener('pointermove', bump, { passive: true });
-      frame.addEventListener('mouseenter', bump, { passive: true });
-      hotzone.addEventListener('click', bump);
+      hotzone.addEventListener('click', () => showControls());
+      frame.addEventListener('pointermove', () => showControls(), { passive: true });
+      frame.addEventListener('pointerenter', () => showControls(), { passive: true });
 
       btnPlay.addEventListener('click', (ev) => {
         ev.preventDefault();
         ev.stopPropagation();
-        bump();
+        showControls();
+
         isPlaying = !isPlaying;
         syncPlayIcon();
         startTimer();
@@ -652,19 +582,17 @@ Notes:
       btnNext.addEventListener('click', (ev) => {
         ev.preventDefault();
         ev.stopPropagation();
-        bump();
-        if (okUrls.length <= 1) return;
-        const ni = nextFromDeck();
-        showIndex(ni);
+        showControls();
+        if (!started || ok.length <= 1) return;
+        showIndex(nextFromDeck());
       });
 
       btnPrev.addEventListener('click', (ev) => {
         ev.preventDefault();
         ev.stopPropagation();
-        bump();
-        if (okUrls.length <= 1) return;
-        const pi = prevIndexSimple();
-        showIndex(pi);
+        showControls();
+        if (!started || ok.length <= 1) return;
+        showIndex(prevIndexSimple());
       });
     }
 
@@ -679,150 +607,116 @@ Notes:
       });
     }
 
-    async function loadFirstThenBackground(){
-      // Show progress while we get the very first image
-      showProgress(true, 'loading photo…');
-      setProgress(10);
+    async function primeFirstThenBackground(){
+      const total = photos.length;
+      ok = [];
 
-      // Try to load images in order until we get the first successful one
-      let firstOk = null;
-      for (let i = 0; i < allUrls.length; i++){
-        const url = allUrls[i];
-        const r = await preloadImage(url);
-        loadedMap.set(url, r.ok);
-        setProgress(Math.round(((i+1) / Math.max(1, allUrls.length)) * 40)); // early stage progress
-        if (r.ok && !firstOk){
-          firstOk = url;
-          break;
-        }
+      if (preloadN > 0){
+        showProgress(true, 'loading photos…');
+        setProgress(0);
       }
 
-      if (!firstOk){
-        showProgress(false);
-        return false;
+      const first = await preloadImage(photos[0]);
+      if (first.ok) ok.push(first.src);
+
+      if (preloadN > 0){
+        setProgress(Math.round((1 / total) * 100));
       }
 
-      // Start okUrls with firstOk
-      okUrls = [firstOk];
-
-      // Render immediately
-      front.src = firstOk;
-      front.classList.add('on');
-      setBgFor(firstOk);
-
-      // Hide progress quickly once we have first image
-      setTimeout(() => showProgress(false), 180);
-
-      // Background preload: first do preloadN quickly, then the rest
-      const remaining = allUrls.filter(u => u !== firstOk);
-
-      let loadedCount = 1;
-      const total = allUrls.length;
-
-      // show a subtle progress bar only while doing the "preloadN" burst
-      if (preloadN > 0 && remaining.length){
-        showProgress(true, 'loading more…');
-        setProgress(Math.round((loadedCount / total) * 100));
-      }
-
-      // Burst preload
-      for (let i = 0; i < Math.min(preloadN, remaining.length); i++){
-        const url = remaining[i];
-        const r = await preloadImage(url);
-        loadedMap.set(url, r.ok);
-        if (r.ok) okUrls.push(url);
-        loadedCount++;
-        if (preloadN > 0){
-          setProgress(Math.round((loadedCount / total) * 100));
-        }
+      let loaded = 1;
+      const tasks = [];
+      for (let i = 1; i < total; i++){
+        tasks.push((async () => {
+          const r = await preloadImage(photos[i]);
+          loaded++;
+          if (preloadN > 0){
+            setProgress(Math.round((loaded / total) * 100));
+          }
+          if (r.ok) ok.push(r.src);
+        })());
       }
 
       if (preloadN > 0){
-        setTimeout(() => showProgress(false), 220);
+        const need = Math.min(total, Math.max(1, preloadN));
+        await Promise.race([
+          Promise.allSettled(tasks.slice(0, Math.max(0, need - 1))),
+          new Promise(res => setTimeout(res, 2000))
+        ]);
+        showProgress(false);
       }
 
-      // Continue the rest in the background (no UI blocking)
-      (async () => {
-        for (let i = preloadN; i < remaining.length; i++){
-          const url = remaining[i];
-          const r = await preloadImage(url);
-          loadedMap.set(url, r.ok);
-          if (r.ok) okUrls.push(url);
-        }
+      Promise.allSettled(tasks).then(() => {
+        // ok[] may grow, but we keep it simple and don't add DOM layers late.
+        // If you want late-added photos to be eligible for shuffle immediately,
+        // we can switch to a 2-image swapper architecture later.
+      });
+    }
 
-        // After background finishes, rebuild deck to include all okUrls
-        if (okUrls.length > 1){
-          resetDeck(idx);
-          disablePrevNextIfNeeded();
-          updateDots();
-        }
-      })();
+    function buildLayers(){
+      imgs = ok.map((src, i) => {
+        const im = document.createElement('img');
+        im.className = 'img';
+        im.alt = 'photo ' + (i + 1);
+        im.decoding = 'async';
+        im.loading = (i === 0) ? 'eager' : 'lazy';
+        im.src = src;
+        frame.appendChild(im);
+        return im;
+      });
 
-      return true;
+      resetDeck(0);
+
+      idx = 0;
+      if (imgs[0]) imgs[0].classList.add('on');
+      setBgFor(ok[0]);
+
+      buildDots(ok.length);
+
+      started = true;
+      disablePrevNextIfNeeded();
+      syncPlayIcon();
+      startTimer();
     }
 
     async function main(){
       wireControls();
 
-      // DEFAULT: UI hidden (no initial showControls call)
-      hideControlsNow();
-      if (showTag){
-        tagEl.style.display = '';
-        tagEl.classList.remove('on'); // still hidden until hover/move
-      }
-      if (showDots){
-        dotsEl.style.display = '';
-        dotsEl.classList.remove('on'); // still hidden until hover/move
-      }
-
       const apiUrl = buildApiUrl();
       if (!apiUrl){
-        showEmpty('Missing api', 'Pass api=<your api_photo_reel url> in the query string.');
+        showEmptyTransparent('Missing api', 'pass api=... in the url');
         return;
       }
 
       try{
         const data = await fetchJson(apiUrl);
-
         if (!data || !data.ok){
           const err = (data && data.error) ? String(data.error) : 'API returned not ok';
-          showEmpty('No photos', err);
+          showEmptyTransparent('No photos for the day', err);
           return;
         }
 
         const dateKey = data.dateKey || date || '';
-        const list = Array.isArray(data.photos) ? data.photos.slice() : [];
-        if (!list.length){
-          showEmpty('No photos', (dateKey ? dateKey : '') + (bot ? (' • ' + bot) : ''));
+        const count = Array.isArray(data.photos) ? data.photos.length : 0;
+
+        setTag((dateKey ? dateKey : 'date') + ' • ' + bot);
+
+        if (!count){
+          showEmptyTransparent('No photos for the day', (dateKey ? dateKey : '') + (bot ? (' • ' + bot) : ''));
           return;
         }
 
-        allUrls = list;
+        photos = data.photos.slice();
+        await primeFirstThenBackground();
 
-        // optional tag text, but still hidden by default until hover/move
-        setTagText(dateKey, list.length ? (list.length + ' photos') : '');
-        if (showTag) tagEl.style.display = '';
-
-        // Dots container exists but will be updated after okUrls has more than 1
-        if (showDots) dotsEl.style.display = '';
-
-        // Load first photo ASAP, then background
-        const ok = await loadFirstThenBackground();
-        if (!ok || !okUrls.length){
-          showEmpty('No photos', 'All photos failed to load (permissions or invalid URLs).');
+        if (!ok.length){
+          showEmptyTransparent('No photos for the day', 'photos exist but could not be loaded (permissions or invalid urls).');
           return;
         }
 
-        // Now that we have at least 1 ok image:
-        idx = 0;
-        disablePrevNextIfNeeded();
-        syncPlayIcon();
-        updateDots();
-        resetDeck(idx);
-        startTimer();
+        buildLayers();
 
       } catch (e){
-        showEmpty('No photos', 'Failed to load: ' + String(e && e.message ? e.message : e));
+        showEmptyTransparent('No photos for the day', 'failed to load: ' + String(e && e.message ? e.message : e));
       }
     }
 
