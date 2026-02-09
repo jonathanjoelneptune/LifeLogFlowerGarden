@@ -2,231 +2,340 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>LifeLog Photo Reel</title>
   <style>
     :root{
-      --bg: rgba(0,0,0,0.10);
-      --ink: rgba(255,255,255,0.90);
-      --ink-dim: rgba(255,255,255,0.72);
-      --shadow: 0 10px 30px rgba(0,0,0,0.25);
+      --radius: 16px;
+      --hudPad: 10px;
+      --hudFont: 12px;
+      --hudBg: rgba(0,0,0,0.42);
+      --hudFg: rgba(255,255,255,0.92);
+      --barBg: rgba(255,255,255,0.16);
+      --barFg: rgba(255,255,255,0.78);
+      --glass: rgba(0,0,0,0.10);
     }
-    html, body { height:100%; margin:0; background:transparent; }
-    body{
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: transparent;
+      overflow: hidden;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      overflow:hidden;
     }
 
     .wrap{
-      position:relative;
-      width:100%;
-      height:100%;
-      border-radius:12px;
-      overflow:hidden;
-      background: var(--bg);
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: rgba(0,0,0,0.12);
     }
 
-    .backdrop{
+    /* Soft vignette */
+    .wrap:before{
+      content:"";
       position:absolute;
-      inset:-18px;
+      inset:0;
+      pointer-events:none;
+      background:
+        radial-gradient(120% 90% at 50% 50%, rgba(0,0,0,0) 0%, rgba(0,0,0,0.16) 72%, rgba(0,0,0,0.30) 100%);
+      z-index: 4;
+    }
+
+    /* Background blur layer for portrait shots */
+    .bg {
+      position:absolute;
+      inset:0;
+      background-position:center;
       background-size: cover;
-      background-position: center;
-      filter: blur(18px) saturate(1.05);
+      filter: blur(28px);
       transform: scale(1.12);
       opacity: 0;
-      transition: opacity 520ms ease;
-      pointer-events:none;
+      transition: opacity 420ms cubic-bezier(.2,.8,.2,1);
+      z-index: 1;
     }
-    .backdrop.show{ opacity: 0.70; }
+    .bg.on { opacity: 0.92; }
 
-    .vignette{
+    /* Dim glass overlay for background */
+    .bgShade{
       position:absolute;
       inset:0;
-      background: radial-gradient(120% 90% at 50% 55%, rgba(0,0,0,0.08), rgba(0,0,0,0.22));
-      pointer-events:none;
+      background: rgba(0,0,0,0.20);
+      opacity: 0;
+      transition: opacity 420ms cubic-bezier(.2,.8,.2,1);
+      z-index: 2;
     }
+    .bgShade.on{ opacity: 1; }
 
-    .img{
+    /* Two-layer crossfade */
+    .frame{
       position:absolute;
       inset:0;
-      width:100%;
-      height:100%;
-      object-fit: contain;
-      opacity:0;
-      transition: opacity 520ms cubic-bezier(.2,.8,.2,1);
-      will-change: opacity;
+      z-index: 3;
+      display:flex;
+      align-items:center;
+      justify-content:center;
     }
-    .img.show{ opacity:1; }
-
-    .progress{
-      position:absolute;
-      left:14px;
-      right:14px;
-      top:12px;
-      height:3px;
-      border-radius:99px;
-      background: rgba(255,255,255,0.10);
-      overflow:hidden;
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
-    }
-    .progress > i{
-      display:block;
-      height:100%;
-      width:0%;
-      background: rgba(255,255,255,0.55);
-      border-radius:99px;
-      transition: width 220ms ease;
-    }
-    .progress.hide{ opacity:0; transition: opacity 250ms ease; }
-
-    .hud{
-      position:absolute;
-      left:10px;
-      bottom:10px;
-      padding:6px 10px;
-      border-radius:10px;
-      background: rgba(0,0,0,0.42);
-      color: #fff;
-      font-size: 12px;
-      backdrop-filter: blur(6px);
-      max-width: calc(100% - 20px);
-      box-sizing: border-box;
-      white-space: nowrap;
-      overflow:hidden;
-      text-overflow: ellipsis;
-      pointer-events:none;
-      box-shadow: var(--shadow);
-      border: 1px solid rgba(255,255,255,0.10);
-    }
-
-    .corner{
-      position:absolute;
-      right:10px;
-      bottom:10px;
-      padding:6px 10px;
-      border-radius:10px;
-      background: rgba(0,0,0,0.28);
-      color: rgba(255,255,255,0.82);
-      font-size: 11px;
-      backdrop-filter: blur(6px);
-      box-shadow: var(--shadow);
-      border: 1px solid rgba(255,255,255,0.10);
-      pointer-events:none;
-      display:none;
-    }
-    .corner.show{ display:block; }
-
-    .empty{
+    .layer{
       position:absolute;
       inset:0;
       display:flex;
       align-items:center;
       justify-content:center;
-      padding:18px;
-      box-sizing:border-box;
-      text-align:center;
-      color: var(--ink);
+      opacity: 0;
+      transition: opacity 520ms cubic-bezier(.22,.61,.36,1);
+      will-change: opacity;
     }
-    .emptyCard{
-      width:min(560px, 92%);
-      border-radius:16px;
-      background: linear-gradient(180deg, rgba(0,0,0,0.40), remember is updated);
-      border: 1px solid rgba(255,255,255,0.14);
-      box-shadow: var(--shadow);
-      padding:16px 16px 14px;
+    .layer.show{ opacity: 1; }
+
+    img.photo{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scale(1.01);
+      will-change: transform;
     }
-    .emptyTitle{ font-weight:750; font-size:14px; letter-spacing:0.2px; }
-    .emptySub{ margin-top:6px; color: var(--ink-dim); font-size:12px; line-height:1.35; }
-    .emptyHint{
-      margin-top:10px;
-      display:inline-block;
-      padding:6px 10px;
-      border-radius:999px;
-      background: rgba(255,255,255,0.10);
-      border: 1px solid rgba(255,255,255,0.12);
-      color: rgba(255,255,255,0.82);
-      font-size:11px;
+
+    .hud{
+      position:absolute;
+      left: var(--hudPad);
+      bottom: var(--hudPad);
+      padding: 7px 10px;
+      border-radius: 12px;
+      background: var(--hudBg);
+      color: var(--hudFg);
+      font-size: var(--hudFont);
+      backdrop-filter: blur(8px);
+      max-width: calc(100% - (var(--hudPad) * 2));
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+      z-index: 5;
+      pointer-events:none;
     }
-    .emptyErr{
-      margin-top:10px;
-      color: rgba(255,255,255,0.70);
-      font-size:11px;
+
+    .barWrap{
+      position:absolute;
+      left: var(--hudPad);
+      right: var(--hudPad);
+      bottom: calc(var(--hudPad) + 40px);
+      height: 4px;
+      border-radius: 99px;
+      background: var(--barBg);
+      overflow:hidden;
+      z-index: 5;
+      opacity: 0;
+      transition: opacity 240ms ease;
+      pointer-events:none;
+    }
+    .barWrap.on{ opacity: 1; }
+    .bar{
+      height: 100%;
+      width: 0%;
+      background: var(--barFg);
+      border-radius: 99px;
+      transition: width 180ms ease;
+    }
+
+    /* “No photos” state */
+    .empty{
+      position:absolute;
+      inset:0;
+      z-index: 6;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 18px;
+      box-sizing: border-box;
+      background:
+        radial-gradient(120% 90% at 50% 45%, rgba(255,255,255,0.09) 0%, rgba(255,255,255,0.05) 55%, rgba(0,0,0,0.10) 100%),
+        linear-gradient(180deg, rgba(0,0,0,0.10), rgba(0,0,0,0.16));
+    }
+    .card{
+      width:min(520px, 92vw);
+      border-radius: 18px;
+      padding: 18px 18px 16px;
+      background: rgba(0,0,0,0.28);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.22);
+      color: rgba(255,255,255,0.92);
+    }
+    .title{
+      font-size: 14px;
+      font-weight: 750;
+      letter-spacing: 0.2px;
+      margin: 0 0 6px 0;
+    }
+    .sub{
+      font-size: 12px;
+      line-height: 1.35;
+      opacity: 0.92;
+    }
+    .hint{
+      margin-top: 10px;
+      font-size: 11px;
+      line-height: 1.35;
+      opacity: 0.72;
+    }
+    .err{
+      margin-top: 10px;
+      font-family: ui-monospace, Menlo, Consolas, monospace;
+      font-size: 10.5px;
+      line-height: 1.35;
+      opacity: 0.70;
       white-space: pre-wrap;
-      text-align:left;
-      border-top: 1px solid rgba(255,255,255,0.10);
-      padding-top:10px;
+      word-break: break-word;
     }
   </style>
 </head>
+
 <body>
   <div class="wrap" id="wrap">
-    <div class="backdrop" id="backdrop"></div>
-    <div class="vignette"></div>
-    <div class="progress" id="progress"><i id="pbar"></i></div>
+    <div class="bg" id="bg"></div>
+    <div class="bgShade" id="bgShade"></div>
+
+    <div class="frame" id="frame">
+      <div class="layer" id="layerA"><img class="photo" id="imgA" alt="photo A"></div>
+      <div class="layer" id="layerB"><img class="photo" id="imgB" alt="photo B"></div>
+    </div>
+
+    <div class="barWrap" id="barWrap"><div class="bar" id="bar"></div></div>
+    <div class="hud" id="hud">loading…</div>
   </div>
 
   <script>
-    const DEFAULT_API_BASE =
-      "https://script.google.com/macros/s/AKfycbyHPnSrEOdYJwoIQpRk4SajFg9cgpSeXsH0ilg9-c2EglqzeSIubVhgy7WogI-Idsu8/exec";
+    // ---------------------------
+    // Params + defaults
+    // ---------------------------
+    const QS = new URLSearchParams(location.search);
+
+    const bot = (QS.get("bot") || "").trim().toLowerCase();
+    const dateKey = (QS.get("date") || "").trim();
+
+    const fit = ((QS.get("fit") || "cover") + "").toLowerCase() === "contain" ? "contain" : "cover";
+    const w = clampInt(QS.get("w"), 1200, 320, 4096);
+
+    const preloadCount = clampInt(QS.get("preload"), 2, 0, 20);
+    const cacheS = clampInt(QS.get("cache_s"), 600, 0, 86400);
+
+    const intervalMs = clampInt(QS.get("interval_ms"), 2200, 600, 30000);
+    const fadeMs = clampInt(QS.get("fade_ms"), 450, 150, 4000);
+
+    const shuffleFlag = (QS.get("shuffle") || "0").trim() === "1";
+
+    // Apps Script WebApp exec base (no trailing slash)
+    const apiBase = (QS.get("api") || "https://script.google.com/macros/s/AKfycbyHPnSrEOdYJwoIQpRk4SajFg9cgpSeXsH0ilg9-c2EglqzeSIubVhgy7WogI-Idsu8/exec").trim();
+
+    // ---------------------------
+    // DOM
+    // ---------------------------
+    const wrap = document.getElementById("wrap");
+    const bg = document.getElementById("bg");
+    const bgShade = document.getElementById("bgShade");
+
+    const layerA = document.getElementById("layerA");
+    const layerB = document.getElementById("layerB");
+    const imgA = document.getElementById("imgA");
+    const imgB = document.getElementById("imgB");
+
+    const hud = document.getElementById("hud");
+    const barWrap = document.getElementById("barWrap");
+    const bar = document.getElementById("bar");
+
+    // Apply fit
+    imgA.style.objectFit = fit;
+    imgB.style.objectFit = fit;
+
+    // Crossfade timing
+    layerA.style.transitionDuration = `${fadeMs}ms`;
+    layerB.style.transitionDuration = `${fadeMs}ms`;
+    bg.style.transitionDuration = `${Math.max(220, Math.min(900, fadeMs + 120))}ms`;
+    bgShade.style.transitionDuration = `${Math.max(220, Math.min(900, fadeMs + 120))}ms`;
+
+    // ---------------------------
+    // JSONP loader (CORS-safe)
+    // ---------------------------
+    function fetchJsonp(url, timeoutMs = 12000){
+      return new Promise((resolve, reject) => {
+        const cbName = "__llReelCb_" + Math.random().toString(36).slice(2);
+        const script = document.createElement("script");
+        const timer = setTimeout(() => {
+          cleanup();
+          reject(new Error("jsonp timeout"));
+        }, timeoutMs);
+
+        function cleanup(){
+          clearTimeout(timer);
+          try { delete window[cbName]; } catch(e) { window[cbName] = undefined; }
+          if (script && script.parentNode) script.parentNode.removeChild(script);
+        }
+
+        window[cbName] = (data) => {
+          cleanup();
+          resolve(data);
+        };
+
+        script.onerror = () => {
+          cleanup();
+          reject(new Error("jsonp load error"));
+        };
+
+        const u = new URL(url);
+        u.searchParams.set("format", "jsonp");
+        u.searchParams.set("callback", cbName);
+
+        script.src = u.toString();
+        document.head.appendChild(script);
+      });
+    }
+
+    // ---------------------------
+    // Caching
+    // ---------------------------
+    function cacheKey(){
+      return `ll_photoreel_v1:${bot}:${dateKey}:w${w}`;
+    }
+
+    function readCache(){
+      if (!cacheS) return null;
+      try{
+        const raw = localStorage.getItem(cacheKey());
+        if (!raw) return null;
+        const obj = JSON.parse(raw);
+        if (!obj || !obj.t || !Array.isArray(obj.photos)) return null;
+        const ageMs = Date.now() - obj.t;
+        if (ageMs > cacheS * 1000) return null;
+        return obj;
+      } catch(e){
+        return null;
+      }
+    }
+
+    function writeCache(photos){
+      if (!cacheS) return;
+      try{
+        localStorage.setItem(cacheKey(), JSON.stringify({ t: Date.now(), photos }));
+      } catch(e){}
+    }
+
+    // ---------------------------
+    // Utils
+    // ---------------------------
+    function clampInt(v, def, min, max){
+      const n = Number(v);
+      if (!isFinite(n)) return def;
+      return Math.max(min, Math.min(max, Math.round(n)));
+    }
 
     function escapeHtml(s){
-      return String(s ?? "")
-        .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
-        .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
-    }
-
-    function qs() {
-      const u = new URL(window.location.href);
-      const p = u.searchParams;
-
-      const getAny = (...keys) => {
-        for (const k of keys) {
-          const v = p.get(k);
-          if (v !== null && String(v).trim() !== "") return String(v).trim();
-        }
-        return "";
-      };
-
-      const num = (raw, def, min, max) => {
-        const n = Number(raw);
-        if (!isFinite(n)) return def;
-        return Math.max(min, Math.min(max, Math.round(n)));
-      };
-
-      const bot = getAny("bot") || "winston";
-      const date = getAny("date", "dateKey");
-      const fitRaw = (getAny("fit") || "contain").toLowerCase();
-      const fit = (fitRaw === "cover") ? "cover" : "contain";
-
-      const intervalMs = num(getAny("interval_ms","intervalMs"), 2200, 800, 15000);
-      const fadeMs = num(getAny("fade_ms","fadeMs"), 450, 150, 4000);
-
-      const w = num(getAny("w","width"), 1200, 320, 4096);
-      const cacheS = num(getAny("cache_s","cacheS"), 600, 0, 86400);
-
-      const preload = num(getAny("preload"), 2, 0, 12);
-
-      const shuffleRaw = (getAny("shuffle","randomize") || "1").toLowerCase();
-      const shuffle = !(shuffleRaw === "0" || shuffleRaw === "false" || shuffleRaw === "no");
-
-      const debugRaw = (getAny("debug") || "0").toLowerCase();
-      const debug = (debugRaw === "1" || debugRaw === "true" || debugRaw === "yes");
-
-      const apiBase = getAny("api") || DEFAULT_API_BASE;
-
-      return { bot, date, fit, intervalMs, fadeMs, w, cacheS, preload, shuffle, debug, apiBase };
-    }
-
-    function buildApiUrl(state){
-      const u = new URL(state.apiBase);
-      u.searchParams.set("r", "api_photo_reel");
-      u.searchParams.set("bot", state.bot);
-      u.searchParams.set("date", state.date);
-      u.searchParams.set("w", String(state.w));
-      u.searchParams.set("cache_s", String(state.cacheS));
-      u.searchParams.set("format", "jsonp");
-      u.searchParams.set("callback", "__pr_cb");
-      return u.toString();
+      return String(s || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
     }
 
     function shuffleInPlace(arr){
@@ -237,249 +346,299 @@
       return arr;
     }
 
-    function setProgress(done, total){
-      const pct = total <= 0 ? 0 : Math.max(0, Math.min(100, Math.round((done/total)*100)));
-      pbar.style.width = pct + "%";
-      if (pct >= 100) progress.classList.add("hide");
+    function setHud(text){
+      hud.textContent = text;
     }
 
-    function showEmpty(state, msg, err){
-      progress.classList.add("hide");
-      wrap.querySelectorAll("img.img").forEach(n => n.remove());
-      const existing = wrap.querySelector(".empty");
-      if (existing) existing.remove();
+    function setProgress(p01){
+      const p = Math.max(0, Math.min(1, Number(p01) || 0));
+      bar.style.width = `${Math.round(p * 100)}%`;
+    }
 
-      const d = document.createElement("div");
-      d.className = "empty";
-      d.innerHTML =
-        `<div class="emptyCard">
-          <div class="emptyTitle">No photos</div>
-          <div class="emptySub">${escapeHtml(state.date)} • ${escapeHtml(state.bot)}</div>
-          <div class="emptyHint">Tip: PhotoReels sheet: DateKey + Photos (one link per line)</div>
-          ${msg ? `<div class="emptySub" style="margin-top:10px">${escapeHtml(msg)}</div>` : ""}
-          ${err ? `<div class="emptyErr">${escapeHtml(String(err))}</div>` : ""}
+    function showEmpty({ title, sub, hint, err }){
+      const div = document.createElement("div");
+      div.className = "empty";
+      div.innerHTML = `
+        <div class="card">
+          <div class="title">${escapeHtml(title || "No photos")}</div>
+          <div class="sub">${escapeHtml(sub || "")}</div>
+          ${hint ? `<div class="hint">${escapeHtml(hint)}</div>` : ``}
+          ${err ? `<div class="err">${escapeHtml(err)}</div>` : ``}
         </div>`;
-      wrap.appendChild(d);
+      wrap.appendChild(div);
     }
 
-    let jsonpTimer = null;
-    function fetchJsonp(url, timeoutMs=12000){
-      return new Promise((resolve, reject) => {
-        const s = document.createElement("script");
-        s.src = url;
-        s.async = true;
+    // ---------------------------
+    // Rotation with no repeats
+    // ---------------------------
+    let photos = [];          // final list of direct URLs
+    let ok = [];              // indexes that have loaded at least once
+    let failed = new Set();   // indexes that failed
+    let started = false;
 
-        jsonpTimer = setTimeout(() => {
-          cleanup();
-          reject(new Error("api timeout"));
-        }, timeoutMs);
+    let showingLayerA = true;
+    let idxCurrent = -1;
 
-        function cleanup(){
-          if (jsonpTimer) clearTimeout(jsonpTimer);
-          jsonpTimer = null;
-          s.remove();
-          try { delete window.__pr_cb; } catch(e){}
+    let deck = [];
+    let deckPos = 0;
+
+    function rebuildDeck(avoidFirstIdx){
+      deck = ok.slice();
+      if (shuffleFlag) shuffleInPlace(deck);
+      if (deck.length > 1 && avoidFirstIdx >= 0 && deck[0] === avoidFirstIdx){
+        const k = deck.findIndex(x => x !== avoidFirstIdx);
+        if (k > 0) [deck[0], deck[k]] = [deck[k], deck[0]];
+      }
+      deckPos = 0;
+    }
+
+    function nextIndex(){
+      if (ok.length <= 1) return idxCurrent;
+
+      const okSet = new Set(ok);
+      const deckValid = deck.length === ok.length && deck.every(x => okSet.has(x));
+
+      if (!deckValid || deckPos >= deck.length){
+        rebuildDeck(idxCurrent);
+      }
+
+      let next = deck[deckPos++];
+      if (ok.length > 1 && next === idxCurrent){
+        if (deckPos < deck.length) next = deck[deckPos++];
+        else {
+          rebuildDeck(idxCurrent);
+          next = deck[deckPos++];
         }
+      }
+      return next;
+    }
 
-        window.__pr_cb = (payload) => {
-          cleanup();
-          resolve(payload);
-        };
-
-        s.onerror = () => {
-          cleanup();
-          reject(new Error("jsonp load failed"));
-        };
-
-        document.head.appendChild(s);
+    // ---------------------------
+    // Image loading
+    // ---------------------------
+    function preloadOne(src){
+      return new Promise((resolve) => {
+        const im = new Image();
+        im.decoding = "async";
+        im.loading = "eager";
+        im.onload = () => resolve({ ok:true, w: im.naturalWidth || 0, h: im.naturalHeight || 0 });
+        im.onerror = () => resolve({ ok:false, w:0, h:0 });
+        im.src = src;
       });
     }
 
-    const wrap = document.getElementById("wrap");
-    const backdrop = document.getElementById("backdrop");
-    const progress = document.getElementById("progress");
-    const pbar = document.getElementById("pbar");
-
-    const state = qs();
-    document.title = `LifeLog Photo Reel ${state.date || ""}`.trim();
-
-    if (!state.bot || !state.date){
-      showEmpty(state, "Missing required params. Example:", "?bot=winston&date=2025-12-20");
-      throw new Error("Missing bot or date");
-    }
-
-    // Optional small corner debug/status
-    const corner = document.createElement("div");
-    corner.className = "corner";
-    wrap.appendChild(corner);
-    if (state.debug) corner.classList.add("show");
-
-    function setCorner(text){
-      if (!state.debug) return;
-      corner.textContent = text;
-    }
-
-    (async function(){
-      try{
-        setProgress(0, 1);
-
-        const apiUrl = buildApiUrl(state);
-        const payload = await fetchJsonp(apiUrl, 15000);
-
-        if (!payload || payload.ok !== true){
-          showEmpty(state, "API returned error", payload && payload.error ? payload.error : "unknown error");
-          return;
-        }
-
-        let photos = Array.isArray(payload.photos) ? payload.photos.slice() : [];
-        photos = photos.map(x => String(x||"").trim()).filter(Boolean);
-
-        if (!photos.length){
-          showEmpty(state, "", payload && payload.note ? payload.note : "");
-          return;
-        }
-
-        if (state.shuffle) shuffleInPlace(photos);
-
-        const fadeMs = Math.max(150, Number(state.fadeMs) || 450);
-        const fit = state.fit;
-
-        const total = photos.length;
-        let okCount = 0;
-        let errCount = 0;
-        let settled = 0;
-
-        // Track which indexes are actually loadable
-        const okSet = new Set();
-
-        // IMPORTANT CHANGE:
-        // append images immediately (hidden) so browser actually requests them.
-        const imgs = photos.map((src, i) => {
-          const im = document.createElement("img");
-          im.className = "img";
-          im.alt = "photo " + (i + 1);
-          im.decoding = "async";
-          im.loading = (i === 0) ? "eager" : "lazy";
-          im.style.objectFit = fit;
-          im.style.transitionDuration = fadeMs + "ms";
-
-          // small cache buster helps with some Drive edge cases
-          const bust = (src.includes("?") ? "&" : "?") + "r=" + Date.now() + "_" + i;
-          im.src = src + bust;
-
-          im.addEventListener("load", () => {
-            okCount++;
-            settled++;
-            okSet.add(i);
-            setProgress(settled, total);
-            setCorner(`loaded ${okCount}/${total} • failed ${errCount}`);
-          }, { once:true });
-
-          im.addEventListener("error", () => {
-            errCount++;
-            settled++;
-            setProgress(settled, total);
-            setCorner(`loaded ${okCount}/${total} • failed ${errCount}`);
-          }, { once:true });
-
-          wrap.appendChild(im); // <-- force request by putting it in DOM
-          return im;
-        });
-
-        // HUD
-        const hud = document.createElement("div");
-        hud.className = "hud";
-        hud.textContent = `${state.date} • ${state.bot} • ${total} photos`;
-        wrap.appendChild(hud);
-
-        // Preload target (how many successful loads before we start rotating)
-        const desiredPreload = Math.min(state.preload, total);
-        const requiredToStart = (desiredPreload <= 0) ? 1 : desiredPreload;
-
-        let started = false;
-        let idx = -1;
-
-        function firstOkIndex(){
-          if (okSet.size) return Math.min(...okSet.values());
-          for (let i = 0; i < imgs.length; i++){
-            if (imgs[i].complete && imgs[i].naturalWidth > 0) {
-              okSet.add(i);
-              return i;
-            }
-          }
-          return -1;
-        }
-
-        function getOkList(){
-          const list = [];
-          for (let i = 0; i < imgs.length; i++){
-            if (okSet.has(i)) list.push(i);
-            else if (imgs[i].complete && imgs[i].naturalWidth > 0) {
-              okSet.add(i);
-              list.push(i);
-            }
-          }
-          return list;
-        }
-
-        function showIndex(i){
-          if (idx >= 0) imgs[idx].classList.remove("show");
-          idx = i;
-          imgs[idx].classList.add("show");
-          backdrop.style.backgroundImage = `url("${imgs[idx].src}")`;
-          backdrop.classList.add("show");
-        }
-
-        // Start loop once we have enough loaded
-        const startWatcher = setInterval(() => {
-          if (started) return;
-
-          const okList = getOkList();
-          if (okList.length >= requiredToStart){
-            started = true;
-            progress.classList.add("hide");
-            showIndex(okList[0]);
-            clearInterval(startWatcher);
-          }
-        }, 120);
-
-        // Rotation loop (keeps checking okList live)
-        const interval = Math.max(600, Number(state.intervalMs) || 2200);
-        setInterval(() => {
-          if (!started) return;
-
-          const okList = getOkList();
-          if (okList.length <= 1) {
-            // If we’ve been running for a while and still only 1 loaded, show a gentle hint
-            if (settled > 3 && okList.length === 1 && errCount > 0) {
-              setCorner(`only 1 loaded • failed ${errCount}/${total}`);
-            }
-            return;
-          }
-
-          const pos = okList.indexOf(idx);
-          const nextIdx = okList[(pos + 1 + okList.length) % okList.length];
-
-          if (nextIdx === idx) return;
-          showIndex(nextIdx);
-        }, interval);
-
-        // After a few seconds, if only 1 loaded and many failed, show a graceful explanation
-        setTimeout(() => {
-          const okList = getOkList();
-          if (okList.length === 1 && errCount > 0) {
-            // keep reel running, but tell you what’s happening (in debug corner)
-            setCorner(`Only 1 image loadable. Likely Drive permissions/throttling for others.`);
-            if (state.debug) {
-              console.warn("Photo reel: most images failed to load.", { okCount, errCount, total });
-            }
-          }
-        }, 4500);
-
-      } catch (e){
-        showEmpty(state, "Runtime error", e && e.message ? e.message : String(e));
+    function applyBackdrop(src, isPortrait){
+      bg.style.backgroundImage = `url("${src}")`;
+      if (isPortrait){
+        bg.classList.add("on");
+        bgShade.classList.add("on");
+      } else {
+        bg.classList.remove("on");
+        bgShade.classList.remove("on");
       }
-    })();
+    }
+
+    function showIndex(i){
+      if (i == null || i < 0 || i >= photos.length) return;
+      if (i === idxCurrent) return;
+
+      const src = photos[i];
+
+      const showLayer = showingLayerA ? layerA : layerB;
+      const hideLayer = showingLayerA ? layerB : layerA;
+      const showImg = showingLayerA ? imgA : imgB;
+
+      showImg.src = src;
+
+      // When this layer image finishes loading, update portrait/landscape backdrop
+      showImg.onload = () => {
+        const isPortrait = (showImg.naturalHeight || 0) > (showImg.naturalWidth || 0);
+        applyBackdrop(src, isPortrait);
+      };
+
+      hideLayer.classList.remove("show");
+      showLayer.classList.add("show");
+
+      showingLayerA = !showingLayerA;
+      idxCurrent = i;
+
+      setHud(`${dateKey} • ${bot} • ${photos.length} photos`);
+    }
+
+    // ---------------------------
+    // API
+    // ---------------------------
+    function buildApiUrl(){
+      const u = new URL(apiBase);
+      u.searchParams.set("r", "api_photo_reel");
+      u.searchParams.set("bot", bot);
+      u.searchParams.set("date", dateKey);
+      u.searchParams.set("w", String(w));
+      u.searchParams.set("cache_s", String(cacheS));
+      return u.toString();
+    }
+
+    async function loadPhotos(){
+      if (!bot || !dateKey){
+        showEmpty({
+          title: "Missing params",
+          sub: "Need bot and date",
+          hint: 'Example: ?bot=winston&date=2025-12-20&fit=contain&preload=2&cache_s=600&interval_ms=2200&fade_ms=450&shuffle=1'
+        });
+        setHud("missing params");
+        return;
+      }
+
+      const cached = readCache();
+      if (cached && Array.isArray(cached.photos) && cached.photos.length){
+        photos = cached.photos.slice();
+      } else {
+        const url = buildApiUrl();
+        setHud("loading photos…");
+        let data;
+        try{
+          data = await fetchJsonp(url);
+        } catch(e){
+          showEmpty({
+            title: "Could not load",
+            sub: `${dateKey} • ${bot}`,
+            hint: "Check that your WebApp route r=api_photo_reel is deployed and accessible.",
+            err: String(e && e.message ? e.message : e)
+          });
+          setHud("load error");
+          return;
+        }
+
+        if (!data || !data.ok){
+          showEmpty({
+            title: "No photos",
+            sub: `${dateKey} • ${bot}`,
+            hint: "No photo links found for this day, or the API returned an error.",
+            err: data && data.error ? String(data.error) : ""
+          });
+          setHud(`${dateKey} • ${bot} • 0 photos`);
+          return;
+        }
+
+        photos = (data.photos || []).map(s => String(s || "").trim()).filter(Boolean);
+        if (!photos.length){
+          showEmpty({
+            title: "No photos",
+            sub: `${dateKey} • ${bot}`,
+            hint: "This day has no media links."
+          });
+          setHud(`${dateKey} • ${bot} • 0 photos`);
+          return;
+        }
+
+        // Optional: shuffle the source list for initial order
+        if (shuffleFlag) shuffleInPlace(photos);
+
+        writeCache(photos);
+      }
+
+      // Preload phase
+      if (preloadCount > 0){
+        barWrap.classList.add("on");
+        setProgress(0);
+
+        const toTry = Math.min(preloadCount, photos.length);
+        let done = 0;
+
+        // Preload a handful concurrently, but keep it gentle
+        const concurrency = Math.min(3, toTry);
+        let cursor = 0;
+
+        async function worker(){
+          while (cursor < toTry){
+            const i = cursor++;
+            const res = await preloadOne(photos[i]);
+            done++;
+            setProgress(done / toTry);
+
+            if (res.ok){
+              if (!ok.includes(i)) ok.push(i);
+            } else {
+              failed.add(i);
+            }
+          }
+        }
+
+        const workers = [];
+        for (let k = 0; k < concurrency; k++) workers.push(worker());
+        await Promise.all(workers);
+
+        // Fade bar out
+        setTimeout(() => {
+          barWrap.classList.remove("on");
+        }, 320);
+      }
+
+      // Start showing
+      if (!ok.length){
+        // If preloadCount was 0, we still need at least one to start.
+        const res = await preloadOne(photos[0]);
+        if (res.ok) ok.push(0);
+        else failed.add(0);
+      }
+
+      // Try to opportunistically confirm more in background
+      warmLoadRemaining_();
+
+      // If we have nothing loadable, show graceful state
+      if (!ok.length){
+        showEmpty({
+          title: "No photos",
+          sub: `${dateKey} • ${bot}`,
+          hint: "Photos exist, but none could be loaded. Check file permissions (Anyone with link) and direct URL conversion."
+        });
+        setHud(`${dateKey} • ${bot} • 0 photos`);
+        return;
+      }
+
+      // Build deck and begin
+      rebuildDeck(-1);
+      started = true;
+
+      // Show first
+      const first = deck[deckPos++] ?? ok[0];
+      showIndex(first);
+
+      // Rotate
+      setInterval(() => {
+        if (!started) return;
+        if (ok.length <= 1) return;
+
+        const next = nextIndex();
+        if (next !== idxCurrent) showIndex(next);
+      }, intervalMs);
+    }
+
+    function warmLoadRemaining_(){
+      // Background: slowly attempt loading other images so they enter the ok-deck
+      // Small delay so first paint happens fast.
+      setTimeout(async () => {
+        for (let i = 0; i < photos.length; i++){
+          if (ok.includes(i) || failed.has(i)) continue;
+          const res = await preloadOne(photos[i]);
+          if (res.ok) ok.push(i);
+          else failed.add(i);
+
+          // Gentle pacing to avoid hammering
+          await sleep(80);
+        }
+
+        // If deck was built early with a small ok set, refresh it once we have more
+        if (ok.length > 1 && (deck.length < ok.length)){
+          rebuildDeck(idxCurrent);
+        }
+      }, 150);
+    }
+
+    function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+    // Boot
+    loadPhotos();
   </script>
 </body>
 </html>
