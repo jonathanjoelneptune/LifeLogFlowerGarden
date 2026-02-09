@@ -2,6 +2,7 @@
 
 
 
+
 <!DOCTYPE html>
 <!--
   CHANGELOG
@@ -48,7 +49,7 @@
 // v99.1.0: export usage flag (global)
 var usingExport = false;
 
-// v99.1.97: Back-hill system hard-disabled (keep hill silhouette only).
+// v99.2.1: Back-hill system hard-disabled (keep hill silhouette only).
 // Disables: back hill guides, envelope grid, back hill flowers/PNGs, and all back-hill scroll/overlay logic.
 window.__LL_DISABLE_BACKHILL__ = true;
 
@@ -136,7 +137,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
     }
   };
 
-  // ---------------- Week Nav Buttons (v99.1.97) ----------------
+  // ---------------- Week Nav Buttons (v99.2.1) ----------------
   function clampWeekIndexForNav_(i){
     // Clamp to a sane range based on today and the configured render window.
     try{
@@ -317,7 +318,7 @@ console.log("[v89.6.42] loaded", new Date().toISOString());
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v99.1.97_GardenExport_HaikuReflectionSkyboxes_KeepFocusToday_OptionC_Fix44_SatSunShift10Pct.html</title>
+<title>garden_v99.2.1_GardenExport_HaikuReflectionSkyboxes_KeepFocusToday_OptionC_Fix44_SatSunShift10Pct.html</title>
 <style>
 /* ============================================
    v87.3.63.0: CLEANED + OPTIMIZED CSS
@@ -1234,7 +1235,7 @@ body.wireframeMode .flowerSvg line {
 
   .sbLine{margin:2px 0;}
 
-/* --- UI Week Nav Buttons (v99.1.97) --- */
+/* --- UI Week Nav Buttons (v99.2.1) --- */
 .weekHeader{ display:none !important; } /* remove top-right pink badge */
 #weekNavButtons{
   position: fixed;
@@ -1272,7 +1273,7 @@ body.wireframeMode .flowerSvg line {
 }
 
 
-/* v99.1.97: Back-hill system removed (keep hill silhouette only) */
+/* v99.2.1: Back-hill system removed (keep hill silhouette only) */
 #backPngLayer,
 #backRowsG,
 #backPngG,
@@ -1284,6 +1285,25 @@ body.wireframeMode .flowerSvg line {
   opacity: 0 !important;
   pointer-events: none !important;
 }
+
+    /* Pink top-left version banner (for GitHub Pages propagation clarity) */
+    #llPinkBanner{
+      position: fixed;
+      top: 8px;
+      left: 8px;
+      z-index: 99999;
+      background: rgba(255, 105, 180, 0.92);
+      color: #111;
+      font: 600 12px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      padding: 6px 10px;
+      border-radius: 10px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+      pointer-events: none;
+      max-width: calc(100vw - 16px);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
 </style>
 
 <style id="llUtilNoteStyles">
@@ -1425,7 +1445,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 }
 
 
-/* --- v99.1.97: keep selection silhouette outline visible on the front row (override v80 filter suppression) --- */
+/* --- v99.2.1: keep selection silhouette outline visible on the front row (override v80 filter suppression) --- */
 .weekBand.isFront .llSilSelected svg{
   filter:
     drop-shadow(1px 0px 0px rgba(255,255,255,0.98))
@@ -1751,6 +1771,8 @@ font-weight:800;}
 </style>
 </head>
 <body class="">
+  <div id="llPinkBanner">garden_v99.2.1_PhotoReelSkybox.html • v99.2.1 • Built: 2026-02-09 22:49 PT</div>
+
 
 <script>
 // v89.7.87: Disable legacy backRows preview module (BRX owns back-row rendering now).
@@ -1759,10 +1781,45 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 <!-- VERSION BANNER INJECT -->
 <style>
 #__versionBanner{position:fixed;left:12px;top:12px;z-index:99999;padding:8px 10px;border-radius:10px;background:rgba(255,0,255,0.22);border:2px solid magenta;color:#111;font:600 12px/1.2 system-ui,Segoe UI,Arial;}
+
+/* --- v99.2.1: Photo Reel skybox only — remove ALL internal padding --- */
+/* --- v99.2.1: Photo Reel skybox — make imagery fill the entire card --- */
+.llSkyBox[data-idx="3"]{
+  padding: 0 !important;
+}
+.llSkyBox[data-idx="3"] .sub{
+  display: none !important; /* reclaim header space for the photo */
+}
+.llSkyBox[data-idx="3"] .body{
+  padding: 0 !important;
+  margin: 0 !important;
+  height: 100% !important;
+  max-height: none !important;
+}
+.llSkyBox[data-idx="3"] .llReelWrap{
+  border-radius: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+.llSkyBox[data-idx="3"] .llReelFrame{
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+}
+
+/* Target the Photo Reel card by data idx (3) without touching other skyboxes */
+.llSkyBox[data-idx="3"] .body{
+  padding: 0 !important;
+  margin: 0 !important;
+}
+.llSkyBox[data-idx="3"] .llReelWrap{
+  border-radius: 0 !important;
+}
+
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.1.97_GardenExport_HaikuReflectionSkyboxes_KeepFocusToday_OptionC_Fix51_RemoveBackHillLogic_KeepHillSilhouette.html</span><br>
-Version: <span id="__bannerVersion">v99.1.97</span><br>
+File: <span id="__bannerFileName">garden_v99.2.1_GardenExport_HaikuReflectionSkyboxes_KeepFocusToday_OptionC_Fix51_RemoveBackHillLogic_KeepHillSilhouette.html</span><br>
+Version: <span id="__bannerVersion">v99.2.1</span><br>
 Created: <span id="__bannerCreated">2026-02-07T22:50:16.090Z</span></div>
 <script>
 (function(){
@@ -1778,7 +1835,7 @@ Created: <span id="__bannerCreated">2026-02-07T22:50:16.090Z</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.1.97 loaded", new Date().toISOString());
+  console.log("[VERSION] v99.2.1 loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -5832,7 +5889,7 @@ __llBoxGrid = document.createElement('div');
 __llBoxGrid.className = 'llBoxGrid';
 __llBoxGroup.appendChild(__llBoxGrid);
 
-const titles = ['Daily Statistics','Daily Reflection','Haiku','Word Wall'];
+const titles = ['Daily Statistics','Daily Reflection','Haiku','Photo Reel'];
 __llBoxes = titles.map((t,i)=>{
   const b = document.createElement('div');
   b.className = 'llSkyBox';
@@ -5940,7 +5997,7 @@ function getSkyBoxFitOpts_(boxEl, bodyEl){
     const h = Math.max(1, rect.height || boxEl.clientHeight || 1);
     const w = Math.max(1, rect.width || boxEl.clientWidth || 1);
 
-    // Identify which skybox this is (0=Stats, 1=Reflection, 2=Haiku, 3=Word Wall)
+    // Identify which skybox this is (0=Stats, 1=Reflection, 2=Haiku, 3=Photo Reel)
     const idx = Number((boxEl.dataset && boxEl.dataset.idx) ? boxEl.dataset.idx : (boxEl.getAttribute("data-skybox-idx") || "0"));
 
     // Allow different scaling aggressiveness per box type.
@@ -5949,7 +6006,7 @@ function getSkyBoxFitOpts_(boxEl, bodyEl){
     if (idx === 0) frac = 0.24;        // Daily Statistics
     if (idx === 1) frac = 0.18;        // Daily Reflection (usually longest)
     if (idx === 2) frac = 0.32;        // Haiku (usually shortest)
-    if (idx === 3) frac = 0.22;        // Word Wall
+    if (idx === 3) frac = 0.22;        // Photo Reel
 
     const computedMax = Math.floor(Math.min(72, Math.max(16, h * frac)));
 
@@ -6180,11 +6237,43 @@ function updateSkyBoxesFromDay_(day, weekKey) {
     setSkyBoxBody_(__llBoxes[2], haikuHtml);
 }
 
-  // 3) Word Wall (optional, exported later)
-  const ww = (day && (day.wordWall || day.wordwall || day.wordCloud || day.wordcloud)) ? String(day.wordWall || day.wordwall || day.wordCloud || day.wordcloud) : "";
+  // 3) Photo Reel (replaces Word Wall)
   if (__llBoxes[3]) {
-const wwHtml = safe(ww).replace(/\n/g, "<br>");
-    setSkyBoxBody_(__llBoxes[3], wwHtml || `<div class="sbLine">${safe("Word wall not available")}</div>`);
+    // Build reel URL from selected dateKey.
+    const REEL_BASE = "https://jonathanjoelneptune.github.io/LifeLogFlowerGarden/v94/reel.html";
+    const REEL_API_ENC = "https%3A%2F%2Fscript.google.com%2Fmacros%2Fs%2FAKfycbyHPnSrEOdYJwoIQpRk4SajFg9cgpSeXsH0ilg9-c2EglqzeSIubVhgy7WogI-Idsu8%2Fexec%3Fr%3Dapi_photo_reel";
+
+    let botParam = "winston";
+    try {
+      const qs = new URLSearchParams(window.location.search || "");
+      const qb = qs.get("bot");
+      botParam = (qb || (window.__LIFELOG_BOT__ || "winston"));
+    } catch (e) {}
+    botParam = String(botParam || "winston").toLowerCase();
+
+    const dk = String(dateKey || "").trim();
+    if (!dk) {
+      setSkyBoxBody_(__llBoxes[3], `<div class="sbLine">${safe("No date selected")}</div>`);
+    } else {
+      const src =
+        REEL_BASE +
+        "?api=" + REEL_API_ENC +
+        "&bot=" + encodeURIComponent(botParam) +
+        "&date=" + encodeURIComponent(dk) +
+        "&fit=contain&w=1200&cache_s=600&preload=2&interval_ms=2200&fade_ms=1000&shuffle=1";
+
+      const iframeHtml =
+        `<div class="llReelWrap" style="width:100%;height:100%;border-radius:12px;overflow:hidden;background:transparent;">` +
+          `<iframe class="llReelFrame" ` +
+            `src="${escapeHtml_(src)}" ` +
+            `style="width:100%;height:100%;border:0;display:block;background:transparent;" ` +
+            `loading="lazy" referrerpolicy="no-referrer-when-downgrade" ` +
+            `allow="autoplay; fullscreen" ` +
+          `></iframe>` +
+        `</div>`;
+
+      setSkyBoxBody_(__llBoxes[3], iframeHtml);
+    }
   }
 }
 
@@ -6285,7 +6374,7 @@ function syncSkyBoxesToWrap_(){
   const uiScale = (__llUiScale || 1);
   const pad = 14 * uiScale;
 
-  // v99.1.97: robust clamp using layout-local bounds (offset geometry),
+  // v99.2.1: robust clamp using layout-local bounds (offset geometry),
   // independent of absolute positioning and independent of current group screen position.
   const leftGutter  = 16 * uiScale;
 
@@ -6352,7 +6441,7 @@ function syncSkyBoxesToWrap_(){
   // Default right bound: stage edge minus gutters
   let maxContentX = stageW - pad - rightGutter - gw;
 
-  // v99.1.97: hard UI-column guard.
+  // v99.2.1: hard UI-column guard.
   // Skyboxes must not extend past the LEFT edge of the week nav UI (▲ / This Week / ▼),
   // which is flush to the stage right side.
   try{
@@ -6780,7 +6869,7 @@ function layoutSkyBoxes_(wrap){
   }
 
 
-  // v99.1.97: Sat/Sun bias shift (rudimentary but effective).
+  // v99.2.1: Sat/Sun bias shift (rudimentary but effective).
 // Saturday: subtle 5% left shift
 // Sunday: stronger 10% left shift
 try{
@@ -6797,7 +6886,7 @@ try{
   }
 }catch(e){}
 
-  // v99.1.97: hard right guard at the week-nav UI column (▲ / This Week / ▼).
+  // v99.2.1: hard right guard at the week-nav UI column (▲ / This Week / ▼).
   // Requirement: skyboxes must NOT extend past the left edge of that UI column (0 padding).
   // This clamp is applied in the *layout* pass (the authoritative placer).
   let __llRightGuardX = null;
@@ -7637,7 +7726,7 @@ function syncEnvelopeOverlay_(){
    BACK ROW PNG PLACEHOLDERS (HTML layer, screen/pixel space)
    Phase B Step 4b (PNG placeholders) - robust placement
    ============================================================ */
-const BACKPNG_HTML_ENABLED = false; // v99.1.97 forced OFF (back-hill system removed)
+const BACKPNG_HTML_ENABLED = false; // v99.2.1 forced OFF (back-hill system removed)
 const BACKPNG_SVG_ENABLED = false; // lock OFF old SVG back-png system
 window.__LL_DISABLE_BACKPNG_SVG__ = true;
 const BACKPNG_HTML_SCALE_NEAR = 0.60;  // B1 (front-most back row) ~3x previous 0.20
