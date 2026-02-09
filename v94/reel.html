@@ -1,42 +1,95 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>LifeLog Photo Reel</title>
   <style>
-    html, body { height: 100%; margin: 0; background: transparent; }
-    body {
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      overflow: hidden;
+    :root{
+      --radius: 14px;
+      --hud-bg: rgba(0,0,0,0.40);
+      --hud-fg: rgba(255,255,255,0.92);
+      --panel: rgba(0,0,0,0.12);
+      --panel-strong: rgba(0,0,0,0.20);
+      --accent: rgba(255,255,255,0.85);
+      --accent-dim: rgba(255,255,255,0.45);
+
+      --fade-ms: 450ms;
+      --ease: cubic-bezier(.22,.95,.25,1);
     }
-    .wrap {
+
+    html, body { height: 100%; margin: 0; background: transparent; }
+    body { overflow: hidden; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+
+    .wrap{
       position: relative;
       width: 100%;
       height: 100%;
-      border-radius: 12px;
+      border-radius: var(--radius);
       overflow: hidden;
-      background: rgba(0,0,0,0.08);
+      background: var(--panel);
     }
-    .img {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      opacity: 0;
-      transform: none;
-      will-change: opacity;
-    }
-    .img.show { opacity: 1; }
 
-    .hud {
-      position: absolute;
+    /* Subtle textured background, looks nice when no photos or while loading */
+    .wrap::before{
+      content:"";
+      position:absolute; inset:0;
+      background:
+        radial-gradient(1200px 700px at 15% 25%, rgba(255,255,255,0.16), transparent 65%),
+        radial-gradient(900px 600px at 85% 80%, rgba(255,255,255,0.10), transparent 62%),
+        linear-gradient(135deg, rgba(0,0,0,0.18), rgba(0,0,0,0.06));
+      pointer-events:none;
+    }
+
+    /* Slide layers */
+    .slide{
+      position:absolute; inset:0;
+      opacity: 0;
+      transform: scale(1.01);
+      transition: opacity var(--fade-ms) var(--ease), transform var(--fade-ms) var(--ease);
+      will-change: opacity, transform;
+    }
+    .slide.show{
+      opacity: 1;
+      transform: scale(1.00);
+    }
+
+    /* Blurred background image for portrait/contain mode */
+    .bg{
+      position:absolute; inset:0;
+      background-position:center;
+      background-size: cover;
+      filter: blur(18px);
+      transform: scale(1.12);
+      opacity: 0.85;
+    }
+    /* Adds a mild dark wash for contrast */
+    .bg::after{
+      content:"";
+      position:absolute; inset:0;
+      background: linear-gradient(180deg, rgba(0,0,0,0.20), rgba(0,0,0,0.34));
+    }
+
+    /* Foreground image */
+    img.fg{
+      position:absolute; inset:0;
+      width:100%;
+      height:100%;
+      object-fit: contain; /* default; switched by JS if fit=cover */
+      image-rendering: auto;
+      opacity: 0.98;
+      transform: translateZ(0);
+    }
+
+    /* HUD */
+    .hud{
+      position:absolute;
       left: 10px;
       bottom: 10px;
       padding: 6px 10px;
       border-radius: 10px;
-      background: rgba(0,0,0,0.45);
-      color: #fff;
+      background: var(--hud-bg);
+      color: var(--hud-fg);
       font-size: 12px;
       backdrop-filter: blur(6px);
       max-width: calc(100% - 20px);
@@ -47,192 +100,207 @@
       pointer-events: none;
     }
 
-    .empty {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      color: #fff;
-      background: rgba(0,0,0,0.35);
-      border-radius: 12px;
-      text-align: center;
-      padding: 16px;
-      box-sizing: border-box;
+    /* Preload bar (tiny, classy) */
+    .preload{
+      position:absolute;
+      left: 10px;
+      right: 10px;
+      top: 10px;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.12);
+      overflow: hidden;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.12) inset;
     }
-    .empty .title { font-size: 14px; font-weight: 700; }
-    .empty .sub { margin-top: 6px; opacity: 0.85; font-size: 12px; line-height: 1.35; }
-    .empty .err { margin-top: 10px; opacity: 0.75; font-size: 11px; white-space: pre-wrap; }
+    .preload .bar{
+      height: 100%;
+      width: 0%;
+      background: rgba(255,255,255,0.70);
+      border-radius: 999px;
+      transition: width 260ms var(--ease);
+    }
+    .preload.hide{ display:none; }
+
+    /* No-photos / error state */
+    .empty{
+      position:absolute; inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 18px;
+      box-sizing:border-box;
+      text-align:center;
+      color: rgba(255,255,255,0.92);
+    }
+    .card{
+      width:min(520px, 92%);
+      border-radius: 16px;
+      background: rgba(0,0,0,0.30);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+      border: 1px solid rgba(255,255,255,0.12);
+      padding: 16px 16px 14px 16px;
+      backdrop-filter: blur(10px);
+    }
+    .title{
+      font-size: 14px;
+      font-weight: 750;
+      letter-spacing: 0.2px;
+    }
+    .sub{
+      margin-top: 6px;
+      font-size: 12px;
+      opacity: 0.86;
+      line-height: 1.35;
+    }
+    .hint{
+      margin-top: 10px;
+      font-size: 12px;
+      opacity: 0.70;
+      line-height: 1.35;
+    }
+    .chiprow{
+      margin-top: 12px;
+      display:flex;
+      justify-content:center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .chip{
+      font-size: 11px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.86);
+    }
   </style>
 </head>
+
 <body>
-  <div class="wrap" id="wrap"></div>
+  <div class="wrap" id="wrap">
+    <div class="preload" id="preload"><div class="bar" id="preloadBar"></div></div>
+  </div>
 
   <script>
-    // Set a default exec here so the iframe URL can stay short.
-    // You can still override via ?exec=... in the query string.
-    const DEFAULT_EXEC = "https://script.google.com/macros/s/AKfycbyHPnSrEOdYJwoIQpRk4SajFg9cgpSeXsH0ilg9-c2EglqzeSIubVhgy7WogI-Idsu8/exec";
+    // ----------------------------
+    // Query params
+    // ----------------------------
+    const qs = new URLSearchParams(location.search);
 
-    function qs() {
-      const out = {};
-      const q = (location.search || "").replace(/^\?/, "");
-      if (!q) return out;
-      q.split("&").forEach(p => {
-        const [k, v] = p.split("=");
-        const key = decodeURIComponent(k || "").trim();
-        if (!key) return;
-        out[key] = decodeURIComponent(v || "");
+    const bot = (qs.get('bot') || '').trim();
+    const dateKey = (qs.get('date') || '').trim();
+
+    // Display controls
+    const fit = ((qs.get('fit') || 'contain').trim().toLowerCase() === 'cover') ? 'cover' : 'contain';
+    const w = clampInt(qs.get('w'), 1200, 320, 2400);
+    const preloadN = clampInt(qs.get('preload'), 2, 0, 12);
+    const cacheS = clampInt(qs.get('cache_s'), 600, 0, 86400);
+    const intervalMs = clampInt(qs.get('interval_ms'), 2200, 800, 15000);
+    const fadeMs = clampInt(qs.get('fade_ms'), 450, 150, 4000);
+
+    // Randomization
+    const shuffle = (qs.get('shuffle') === '0' || qs.get('shuffle') === 'false') ? false : true;
+
+    // Apps Script API endpoint for JSON
+    // Your webapp exec, with route r=api_photo_reel
+    const API_BASE = "https://script.google.com/macros/s/AKfycbyHPnSrEOdYJwoIQpRk4SajFg9cgpSeXsH0ilg9-c2EglqzeSIubVhgy7WogI-Idsu8/exec";
+
+    const wrap = document.getElementById('wrap');
+    const preloadEl = document.getElementById('preload');
+    const preloadBar = document.getElementById('preloadBar');
+
+    document.documentElement.style.setProperty('--fade-ms', fadeMs + 'ms');
+
+    if (!bot || !dateKey) {
+      showEmpty({
+        title: "Missing params",
+        sub: "Need bot and date",
+        hint: "Example: ?bot=winston&date=2025-12-20",
+        chips: ["bot", "date", "fit", "shuffle"]
       });
-      return out;
-    }
-
-    function clampInt(v, def, min, max) {
-      const n = Number(v);
-      if (!isFinite(n)) return def;
-      return Math.max(min, Math.min(max, Math.round(n)));
-    }
-
-    function makeHud(text) {
-      const hud = document.createElement("div");
-      hud.className = "hud";
-      hud.textContent = text;
-      return hud;
-    }
-
-    function showEmpty(wrap, title, sub, err) {
-      const d = document.createElement("div");
-      d.className = "empty";
-      d.innerHTML =
-        '<div>' +
-          '<div class="title">' + title + '</div>' +
-          '<div class="sub">' + sub + '</div>' +
-          (err ? '<div class="err">' + String(err) + '</div>' : '') +
-        '</div>';
-      wrap.appendChild(d);
-    }
-
-    function preloadUrl(url) {
-      try {
-        const p = new Image();
-        p.decoding = "async";
-        p.src = url;
-      } catch (e) {}
-    }
-
-    const wrap = document.getElementById("wrap");
-    const p = qs();
-
-    const bot = (p.bot || "winston").trim();
-    const dateKey = (p.date || "").trim();
-
-    const fit = (p.fit || "contain").toLowerCase().trim();  // contain | cover
-    const intervalMs = clampInt(p.interval_ms, 2200, 800, 15000);
-    const fadeMs = clampInt(p.fade_ms, 450, 150, 4000);
-
-    const w = clampInt(p.w, 1200, 300, 3000);
-    const preloadN = clampInt(p.preload, 2, 0, 6);
-    const cacheS = clampInt(p.cache_s, 600, 0, 3600);
-
-    const exec = (p.exec || DEFAULT_EXEC).trim();
-
-    // Apply fit + fade in CSS at runtime
-    const style = document.createElement("style");
-    style.textContent = `
-      .img { object-fit: ${fit === "cover" ? "cover" : "contain"}; transition: opacity ${fadeMs}ms ease; }
-    `;
-    document.head.appendChild(style);
-
-    // Build JSONP call to Apps Script
-    const cbName = "__llPhotoReelCb_" + Math.random().toString(16).slice(2);
-    window[cbName] = function (payload) {
-      try {
-        if (!payload || !payload.ok) {
-          showEmpty(
-            wrap,
-            "No photos",
-            (dateKey || payload?.dateKey || "") + " • " + bot,
-            payload?.error || "api error"
-          );
-          cleanup();
-          return;
-        }
-
-        const photos = Array.isArray(payload.photos) ? payload.photos : [];
-        if (!photos.length) {
-          showEmpty(wrap, "No photos", payload.dateKey + " • " + payload.bot, "");
-          cleanup();
-          return;
-        }
-
-        const hud = makeHud(payload.dateKey + " • " + payload.bot + " • " + photos.length + " photos");
-        wrap.appendChild(hud);
-
-        const imgs = photos.map((src, i) => {
-          const im = document.createElement("img");
-          im.className = "img";
-          im.alt = "photo " + (i + 1);
-          im.loading = (i === 0) ? "eager" : "lazy";
-          im.decoding = "async";
-          try { im.fetchPriority = (i === 0) ? "high" : "low"; } catch (e) {}
-          im.src = src;
-          wrap.appendChild(im);
-          return im;
-        });
-
-        let idx = 0;
-        imgs[0].classList.add("show");
-
-        function preloadAround(i) {
-          if (preloadN <= 0) return;
-          for (let k = 1; k <= preloadN; k++) {
-            const j = (i + k) % imgs.length;
-            const im = imgs[j];
-            if (im && !im.dataset.preloaded) {
-              preloadUrl(im.src);
-              im.dataset.preloaded = "1";
-            }
-          }
-        }
-
-        preloadAround(0);
-
-        setInterval(() => {
-          const prev = idx;
-          idx = (idx + 1) % imgs.length;
-          imgs[prev].classList.remove("show");
-          imgs[idx].classList.add("show");
-          preloadAround(idx);
-        }, Math.max(300, intervalMs));
-      } finally {
-        cleanup();
-      }
-    };
-
-    function cleanup() {
-      try { delete window[cbName]; } catch (e) { window[cbName] = undefined; }
-      if (jsonpScript && jsonpScript.parentNode) jsonpScript.parentNode.removeChild(jsonpScript);
-    }
-
-    if (!exec || !bot || !dateKey) {
-      showEmpty(wrap, "Missing params", "Need bot and date", "Example: ?bot=winston&date=2025-12-20");
     } else {
-      const apiUrl =
-        exec +
-        "?r=api_photo_reel" +
-        "&bot=" + encodeURIComponent(bot) +
-        "&date=" + encodeURIComponent(dateKey) +
-        "&w=" + encodeURIComponent(String(w)) +
-        "&cache_s=" + encodeURIComponent(String(cacheS)) +
-        "&format=jsonp" +
-        "&callback=" + encodeURIComponent(cbName);
-
-      var jsonpScript = document.createElement("script");
-      jsonpScript.src = apiUrl;
-      jsonpScript.onerror = function () {
-        showEmpty(wrap, "No photos", dateKey + " • " + bot, "Failed to load API JSONP script");
-        cleanup();
-      };
-      document.head.appendChild(jsonpScript);
+      load();
     }
-  </script>
-</body>
-</html>
+
+    // ----------------------------
+    // Main
+    // ----------------------------
+    async function load() {
+      try {
+        // Cache-bust by cache_s, but allow short-lived caching
+        const cacheBuster = cacheS ? String(Math.floor(Date.now() / (cacheS * 1000))) : String(Date.now());
+
+        const apiUrl = API_BASE
+          + "?r=api_photo_reel"
+          + "&bot=" + encodeURIComponent(bot)
+          + "&date=" + encodeURIComponent(dateKey)
+          + "&w=" + encodeURIComponent(w)
+          + "&cache_s=" + encodeURIComponent(cacheS)
+          + "&_=" + encodeURIComponent(cacheBuster);
+
+        const res = await fetch(apiUrl, { method: "GET", cache: "no-store" });
+        if (!res.ok) throw new Error("API HTTP " + res.status);
+
+        const data = await res.json();
+        if (!data || !data.ok) throw new Error((data && data.error) ? data.error : "API returned ok=false");
+
+        let photos = Array.isArray(data.photos) ? data.photos.slice() : [];
+        photos = photos.filter(Boolean);
+
+        if (!photos.length) {
+          showEmpty({
+            title: "No photos",
+            sub: dateKey + " • " + bot,
+            hint: "If you expected photos, confirm the PhotoReels sheet has links for this date.",
+            chips: ["PhotoReels", "DateKey", "Photos"]
+          });
+          return;
+        }
+
+        // Randomize (default on)
+        if (shuffle && photos.length > 1) {
+          photos = shuffleArray(photos);
+        }
+
+        // Preload first N
+        await preloadSome(photos, preloadN);
+
+        // Render
+        renderReel(photos);
+      } catch (err) {
+        showEmpty({
+          title: "Reel load error",
+          sub: dateKey + " • " + bot,
+          hint: String(err && err.message ? err.message : err),
+          chips: ["api_photo_reel", "exec", "permissions"]
+        });
+      } finally {
+        preloadEl.classList.add('hide');
+      }
+    }
+
+    // ----------------------------
+    // Reel rendering
+    // ----------------------------
+    function renderReel(photos) {
+      // Clear existing slides (keep preload bar node if present)
+      const nodes = Array.from(wrap.children);
+      for (const n of nodes) {
+        if (n.id === 'preload') continue;
+        wrap.removeChild(n);
+      }
+
+      const slides = photos.map((src, i) => {
+        const slide = document.createElement('div');
+        slide.className = 'slide';
+
+        // Background blur layer (always present; looks best for contain/portrait)
+        const bg = document.createElement('div');
+        bg.className = 'bg';
+        bg.style.backgroundImage = `url("${cssEscapeUrl(src)}")`;
+
+        // Foreground image
+        const img = document.createElement('img');
+        img.className = 'fg';
+        img.alt = 'photo ' + (i + 1
