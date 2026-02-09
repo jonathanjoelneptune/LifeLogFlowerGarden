@@ -35,6 +35,7 @@
       transform: scale(1.12);
       opacity: 0;
       transition: opacity 520ms ease;
+      pointer-events:none;
     }
     .backdrop.show{ opacity: 0.70; }
 
@@ -50,7 +51,7 @@
       inset:0;
       width:100%;
       height:100%;
-      object-fit: cover;
+      object-fit: contain;
       opacity:0;
       transition: opacity 520ms cubic-bezier(.2,.8,.2,1);
       will-change: opacity;
@@ -98,6 +99,23 @@
       border: 1px solid rgba(255,255,255,0.10);
     }
 
+    .corner{
+      position:absolute;
+      right:10px;
+      bottom:10px;
+      padding:6px 10px;
+      border-radius:10px;
+      background: rgba(0,0,0,0.28);
+      color: rgba(255,255,255,0.82);
+      font-size: 11px;
+      backdrop-filter: blur(6px);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,255,255,0.10);
+      pointer-events:none;
+      display:none;
+    }
+    .corner.show{ display:block; }
+
     .empty{
       position:absolute;
       inset:0;
@@ -110,9 +128,9 @@
       color: var(--ink);
     }
     .emptyCard{
-      width:min(520px, 92%);
+      width:min(560px, 92%);
       border-radius:16px;
-      background: linear-gradient(180deg, rgba(0,0,0,0.40), rgba(0,0,0,0.26));
+      background: linear-gradient(180deg, rgba(0,0,0,0.40), remember is updated);
       border: 1px solid rgba(255,255,255,0.14);
       box-shadow: var(--shadow);
       padding:16px 16px 14px;
@@ -186,14 +204,17 @@
       const w = num(getAny("w","width"), 1200, 320, 4096);
       const cacheS = num(getAny("cache_s","cacheS"), 600, 0, 86400);
 
-      const preload = num(getAny("preload"), 1, 0, 12);
+      const preload = num(getAny("preload"), 2, 0, 12);
 
       const shuffleRaw = (getAny("shuffle","randomize") || "1").toLowerCase();
       const shuffle = !(shuffleRaw === "0" || shuffleRaw === "false" || shuffleRaw === "no");
 
+      const debugRaw = (getAny("debug") || "0").toLowerCase();
+      const debug = (debugRaw === "1" || debugRaw === "true" || debugRaw === "yes");
+
       const apiBase = getAny("api") || DEFAULT_API_BASE;
 
-      return { bot, date, fit, intervalMs, fadeMs, w, cacheS, preload, shuffle, apiBase };
+      return { bot, date, fit, intervalMs, fadeMs, w, cacheS, preload, shuffle, debug, apiBase };
     }
 
     function buildApiUrl(state){
@@ -234,7 +255,7 @@
         `<div class="emptyCard">
           <div class="emptyTitle">No photos</div>
           <div class="emptySub">${escapeHtml(state.date)} • ${escapeHtml(state.bot)}</div>
-          <div class="emptyHint">Tip: add Drive links (one per line) in PhotoReels!Photos</div>
+          <div class="emptyHint">Tip: PhotoReels sheet: DateKey + Photos (one link per line)</div>
           ${msg ? `<div class="emptySub" style="margin-top:10px">${escapeHtml(msg)}</div>` : ""}
           ${err ? `<div class="emptyErr">${escapeHtml(String(err))}</div>` : ""}
         </div>`;
@@ -287,6 +308,17 @@
       throw new Error("Missing bot or date");
     }
 
+    // Optional small corner debug/status
+    const corner = document.createElement("div");
+    corner.className = "corner";
+    wrap.appendChild(corner);
+    if (state.debug) corner.classList.add("show");
+
+    function setCorner(text){
+      if (!state.debug) return;
+      corner.textContent = text;
+    }
+
     (async function(){
       try{
         setProgress(0, 1);
@@ -309,80 +341,76 @@
 
         if (state.shuffle) shuffleInPlace(photos);
 
-        const desiredPreload = Math.min(state.preload, photos.length);
-        const requiredToStart = (desiredPreload <= 0) ? 1 : desiredPreload;
-
         const fadeMs = Math.max(150, Number(state.fadeMs) || 450);
         const fit = state.fit;
 
-        // Live set of successfully loaded images
+        const total = photos.length;
+        let okCount = 0;
+        let errCount = 0;
+        let settled = 0;
+
+        // Track which indexes are actually loadable
         const okSet = new Set();
 
-        let started = false;
-        let loaded = 0;   // successful loads
-        let settled = 0;  // load or error
-
+        // IMPORTANT CHANGE:
+        // append images immediately (hidden) so browser actually requests them.
         const imgs = photos.map((src, i) => {
-          const im = new Image();
+          const im = document.createElement("img");
           im.className = "img";
           im.alt = "photo " + (i + 1);
           im.decoding = "async";
           im.loading = (i === 0) ? "eager" : "lazy";
           im.style.objectFit = fit;
           im.style.transitionDuration = fadeMs + "ms";
-          im.src = src;
+
+          // small cache buster helps with some Drive edge cases
+          const bust = (src.includes("?") ? "&" : "?") + "r=" + Date.now() + "_" + i;
+          im.src = src + bust;
 
           im.addEventListener("load", () => {
-            loaded++;
+            okCount++;
             settled++;
             okSet.add(i);
-            setProgress(settled, photos.length);
-
-            // If we already started and this becomes the 2nd+ available photo,
-            // the interval loop will pick it up automatically.
-            maybeStart();
+            setProgress(settled, total);
+            setCorner(`loaded ${okCount}/${total} • failed ${errCount}`);
           }, { once:true });
 
           im.addEventListener("error", () => {
+            errCount++;
             settled++;
-            setProgress(settled, photos.length);
-            maybeStart();
+            setProgress(settled, total);
+            setCorner(`loaded ${okCount}/${total} • failed ${errCount}`);
           }, { once:true });
 
+          wrap.appendChild(im); // <-- force request by putting it in DOM
           return im;
         });
 
-        const failsafe = setTimeout(() => {
-          if (!started){
-            const firstOk = firstOkIndex();
-            if (firstOk >= 0){
-              startReel(firstOk);
-            } else {
-              showEmpty(state, "Images failed to load. (Drive may be throttling)", "");
-            }
-          }
-        }, 3500);
+        // HUD
+        const hud = document.createElement("div");
+        hud.className = "hud";
+        hud.textContent = `${state.date} • ${state.bot} • ${total} photos`;
+        wrap.appendChild(hud);
+
+        // Preload target (how many successful loads before we start rotating)
+        const desiredPreload = Math.min(state.preload, total);
+        const requiredToStart = (desiredPreload <= 0) ? 1 : desiredPreload;
+
+        let started = false;
+        let idx = -1;
 
         function firstOkIndex(){
-          // Prefer something that is actually decoded
           if (okSet.size) return Math.min(...okSet.values());
-          // Fallback if load event did not fire yet but image is complete
           for (let i = 0; i < imgs.length; i++){
-            if (imgs[i].complete && imgs[i].naturalWidth > 0) return i;
+            if (imgs[i].complete && imgs[i].naturalWidth > 0) {
+              okSet.add(i);
+              return i;
+            }
           }
           return -1;
         }
 
-        function maybeStart(){
-          if (started) return;
-          if (loaded >= requiredToStart){
-            const firstOk = firstOkIndex();
-            if (firstOk >= 0) startReel(firstOk);
-          }
-        }
-
         function getOkList(){
-          // Build a stable list of loaded indexes, in current order
           const list = [];
           for (let i = 0; i < imgs.length; i++){
             if (okSet.has(i)) list.push(i);
@@ -394,47 +422,59 @@
           return list;
         }
 
-        function startReel(startIndex){
-          if (started) return;
-          started = true;
-          clearTimeout(failsafe);
-
-          imgs.forEach(im => wrap.appendChild(im));
-
-          const hud = document.createElement("div");
-          hud.className = "hud";
-          hud.textContent = `${state.date} • ${state.bot} • ${photos.length} photos`;
-          wrap.appendChild(hud);
-
-          let idx = startIndex;
+        function showIndex(i){
+          if (idx >= 0) imgs[idx].classList.remove("show");
+          idx = i;
           imgs[idx].classList.add("show");
           backdrop.style.backgroundImage = `url("${imgs[idx].src}")`;
           backdrop.classList.add("show");
-
-          setTimeout(() => progress.classList.add("hide"), 600);
-
-          const interval = Math.max(600, Number(state.intervalMs) || 2200);
-
-          setInterval(() => {
-            const okList = getOkList();
-            if (okList.length <= 1) return; // wait until another image loads
-
-            const pos = okList.indexOf(idx);
-            const nextIdx = okList[(pos + 1) % okList.length];
-
-            if (nextIdx === idx) return;
-
-            imgs[idx].classList.remove("show");
-            imgs[nextIdx].classList.add("show");
-
-            setTimeout(() => {
-              backdrop.style.backgroundImage = `url("${imgs[nextIdx].src}")`;
-              backdrop.classList.add("show");
-            }, Math.min(240, Math.round(fadeMs * 0.35)));
-
-            idx = nextIdx;
-          }, interval);
         }
+
+        // Start loop once we have enough loaded
+        const startWatcher = setInterval(() => {
+          if (started) return;
+
+          const okList = getOkList();
+          if (okList.length >= requiredToStart){
+            started = true;
+            progress.classList.add("hide");
+            showIndex(okList[0]);
+            clearInterval(startWatcher);
+          }
+        }, 120);
+
+        // Rotation loop (keeps checking okList live)
+        const interval = Math.max(600, Number(state.intervalMs) || 2200);
+        setInterval(() => {
+          if (!started) return;
+
+          const okList = getOkList();
+          if (okList.length <= 1) {
+            // If we’ve been running for a while and still only 1 loaded, show a gentle hint
+            if (settled > 3 && okList.length === 1 && errCount > 0) {
+              setCorner(`only 1 loaded • failed ${errCount}/${total}`);
+            }
+            return;
+          }
+
+          const pos = okList.indexOf(idx);
+          const nextIdx = okList[(pos + 1 + okList.length) % okList.length];
+
+          if (nextIdx === idx) return;
+          showIndex(nextIdx);
+        }, interval);
+
+        // After a few seconds, if only 1 loaded and many failed, show a graceful explanation
+        setTimeout(() => {
+          const okList = getOkList();
+          if (okList.length === 1 && errCount > 0) {
+            // keep reel running, but tell you what’s happening (in debug corner)
+            setCorner(`Only 1 image loadable. Likely Drive permissions/throttling for others.`);
+            if (state.debug) {
+              console.warn("Photo reel: most images failed to load.", { okCount, errCount, total });
+            }
+          }
+        }, 4500);
 
       } catch (e){
         showEmpty(state, "Runtime error", e && e.message ? e.message : String(e));
