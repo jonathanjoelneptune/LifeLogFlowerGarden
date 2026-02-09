@@ -9,8 +9,6 @@
       --bg: rgba(0,0,0,0.10);
       --ink: rgba(255,255,255,0.90);
       --ink-dim: rgba(255,255,255,0.72);
-      --card: rgba(0,0,0,0.34);
-      --stroke: rgba(255,255,255,0.18);
       --shadow: 0 10px 30px rgba(0,0,0,0.25);
     }
     html, body { height:100%; margin:0; background:transparent; }
@@ -28,7 +26,6 @@
       background: var(--bg);
     }
 
-    /* blurred backdrop (for portrait shots) */
     .backdrop{
       position:absolute;
       inset:-18px;
@@ -41,7 +38,6 @@
     }
     .backdrop.show{ opacity: 0.70; }
 
-    /* subtle vignette */
     .vignette{
       position:absolute;
       inset:0;
@@ -61,7 +57,6 @@
     }
     .img.show{ opacity:1; }
 
-    /* tiny classy progress bar */
     .progress{
       position:absolute;
       left:14px;
@@ -103,7 +98,6 @@
       border: 1px solid rgba(255,255,255,0.10);
     }
 
-    /* graceful “no photos” state */
     .empty{
       position:absolute;
       inset:0;
@@ -154,20 +148,19 @@
   </div>
 
   <script>
-    // ----------------------------
-    // Config
-    // ----------------------------
     const DEFAULT_API_BASE =
       "https://script.google.com/macros/s/AKfycbyHPnSrEOdYJwoIQpRk4SajFg9cgpSeXsH0ilg9-c2EglqzeSIubVhgy7WogI-Idsu8/exec";
 
-    // ----------------------------
-    // Helpers
-    // ----------------------------
+    function escapeHtml(s){
+      return String(s ?? "")
+        .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+    }
+
     function qs() {
       const u = new URL(window.location.href);
       const p = u.searchParams;
 
-      // accept snake_case and camelCase
       const getAny = (...keys) => {
         for (const k of keys) {
           const v = p.get(k);
@@ -183,7 +176,7 @@
       };
 
       const bot = getAny("bot") || "winston";
-      const date = getAny("date", "dateKey"); // support both
+      const date = getAny("date", "dateKey");
       const fitRaw = (getAny("fit") || "contain").toLowerCase();
       const fit = (fitRaw === "cover") ? "cover" : "contain";
 
@@ -210,7 +203,6 @@
       u.searchParams.set("date", state.date);
       u.searchParams.set("w", String(state.w));
       u.searchParams.set("cache_s", String(state.cacheS));
-      // JSONP avoids any CORS surprises if you ever swap hosting contexts
       u.searchParams.set("format", "jsonp");
       u.searchParams.set("callback", "__pr_cb");
       return u.toString();
@@ -249,34 +241,6 @@
       wrap.appendChild(d);
     }
 
-    function escapeHtml(s){
-      return String(s ?? "")
-        .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
-        .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
-    }
-
-    // ----------------------------
-    // Main
-    // ----------------------------
-    const wrap = document.getElementById("wrap");
-    const backdrop = document.getElementById("backdrop");
-    const progress = document.getElementById("progress");
-    const pbar = document.getElementById("pbar");
-
-    const state = qs();
-    document.title = `LifeLog Photo Reel ${state.date || ""}`.trim();
-
-    // Always show a useful empty state if date missing
-    if (!state.bot || !state.date){
-      showEmpty(state, "Missing required params. Example:", "?bot=winston&date=2025-12-20");
-      throw new Error("Missing bot or date");
-    }
-
-    // apply fit + fade duration
-    const fadeMs = state.fadeMs;
-    const fit = state.fit;
-
-    // JSONP fetch
     let jsonpTimer = null;
     function fetchJsonp(url, timeoutMs=12000){
       return new Promise((resolve, reject) => {
@@ -310,9 +274,21 @@
       });
     }
 
+    const wrap = document.getElementById("wrap");
+    const backdrop = document.getElementById("backdrop");
+    const progress = document.getElementById("progress");
+    const pbar = document.getElementById("pbar");
+
+    const state = qs();
+    document.title = `LifeLog Photo Reel ${state.date || ""}`.trim();
+
+    if (!state.bot || !state.date){
+      showEmpty(state, "Missing required params. Example:", "?bot=winston&date=2025-12-20");
+      throw new Error("Missing bot or date");
+    }
+
     (async function(){
       try{
-        // keep progress visible during API call
         setProgress(0, 1);
 
         const apiUrl = buildApiUrl(state);
@@ -333,14 +309,18 @@
 
         if (state.shuffle) shuffleInPlace(photos);
 
-        // preload behavior:
-        // - we do NOT stall forever if a file fails
-        // - we begin showing as soon as at least 1 image loads (unless preload=0)
         const desiredPreload = Math.min(state.preload, photos.length);
         const requiredToStart = (desiredPreload <= 0) ? 1 : desiredPreload;
 
-        let loaded = 0;
-        let settled = 0;
+        const fadeMs = Math.max(150, Number(state.fadeMs) || 450);
+        const fit = state.fit;
+
+        // Live set of successfully loaded images
+        const okSet = new Set();
+
+        let started = false;
+        let loaded = 0;   // successful loads
+        let settled = 0;  // load or error
 
         const imgs = photos.map((src, i) => {
           const im = new Image();
@@ -352,16 +332,18 @@
           im.style.transitionDuration = fadeMs + "ms";
           im.src = src;
 
-          // attach later, after we know we have something to show
           im.addEventListener("load", () => {
             loaded++;
             settled++;
+            okSet.add(i);
             setProgress(settled, photos.length);
+
+            // If we already started and this becomes the 2nd+ available photo,
+            // the interval loop will pick it up automatically.
             maybeStart();
           }, { once:true });
 
           im.addEventListener("error", () => {
-            // treat as settled so we don't stall on broken links
             settled++;
             setProgress(settled, photos.length);
             maybeStart();
@@ -370,75 +352,81 @@
           return im;
         });
 
-        // fail-safe start even if preload never reaches target (slow Drive day)
-        let started = false;
         const failsafe = setTimeout(() => {
           if (!started){
-            // start with whatever managed to load
-            const anyLoaded = imgs.findIndex(im => im.complete && im.naturalWidth > 0);
-            if (anyLoaded >= 0){
-              startReel(imgs, anyLoaded);
+            const firstOk = firstOkIndex();
+            if (firstOk >= 0){
+              startReel(firstOk);
             } else {
               showEmpty(state, "Images failed to load. (Drive may be throttling)", "");
             }
           }
         }, 3500);
 
+        function firstOkIndex(){
+          // Prefer something that is actually decoded
+          if (okSet.size) return Math.min(...okSet.values());
+          // Fallback if load event did not fire yet but image is complete
+          for (let i = 0; i < imgs.length; i++){
+            if (imgs[i].complete && imgs[i].naturalWidth > 0) return i;
+          }
+          return -1;
+        }
+
         function maybeStart(){
           if (started) return;
-          // count only successful loads toward requiredToStart
           if (loaded >= requiredToStart){
-            const firstOk = imgs.findIndex(im => im.complete && im.naturalWidth > 0);
-            if (firstOk >= 0){
-              startReel(imgs, firstOk);
-            }
+            const firstOk = firstOkIndex();
+            if (firstOk >= 0) startReel(firstOk);
           }
         }
 
-        function startReel(imgs, startIndex){
+        function getOkList(){
+          // Build a stable list of loaded indexes, in current order
+          const list = [];
+          for (let i = 0; i < imgs.length; i++){
+            if (okSet.has(i)) list.push(i);
+            else if (imgs[i].complete && imgs[i].naturalWidth > 0) {
+              okSet.add(i);
+              list.push(i);
+            }
+          }
+          return list;
+        }
+
+        function startReel(startIndex){
           if (started) return;
           started = true;
           clearTimeout(failsafe);
 
-          // mount imgs
           imgs.forEach(im => wrap.appendChild(im));
 
-          // HUD
           const hud = document.createElement("div");
           hud.className = "hud";
           hud.textContent = `${state.date} • ${state.bot} • ${photos.length} photos`;
           wrap.appendChild(hud);
 
-          // show first
           let idx = startIndex;
           imgs[idx].classList.add("show");
-          // set blurred backdrop to current
           backdrop.style.backgroundImage = `url("${imgs[idx].src}")`;
           backdrop.classList.add("show");
 
-          // hide progress once first shown (still updates as remaining settle)
           setTimeout(() => progress.classList.add("hide"), 600);
-
-          // rotate through only images that successfully loaded
-          const okIndexes = imgs
-            .map((im, i) => ({ im, i }))
-            .filter(x => x.im.complete && x.im.naturalWidth > 0)
-            .map(x => x.i);
-
-          // if only one loaded, just sit
-          if (okIndexes.length <= 1) return;
 
           const interval = Math.max(600, Number(state.intervalMs) || 2200);
 
           setInterval(() => {
-            const pos = okIndexes.indexOf(idx);
-            const nextIdx = okIndexes[(pos + 1) % okIndexes.length];
+            const okList = getOkList();
+            if (okList.length <= 1) return; // wait until another image loads
 
-            // crossfade
+            const pos = okList.indexOf(idx);
+            const nextIdx = okList[(pos + 1) % okList.length];
+
+            if (nextIdx === idx) return;
+
             imgs[idx].classList.remove("show");
             imgs[nextIdx].classList.add("show");
 
-            // backdrop swap slightly after to look smooth
             setTimeout(() => {
               backdrop.style.backgroundImage = `url("${imgs[nextIdx].src}")`;
               backdrop.classList.add("show");
