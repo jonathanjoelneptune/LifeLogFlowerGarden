@@ -1843,14 +1843,12 @@ font-weight:800;}
 
 </style>
 <style>
-
 /* v99.3.7: header pill uses fixed width set in layout */
 #llSkyHeader{ display:flex; justify-content:center; align-items:center; }
-
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v99.3.7_HeaderWidth_LifetimeRow_FixBoxScale.html • v99.3.7 • Built: 2026-02-10 07:38 PT</div>
+  <div id="llPinkBanner">garden_v99.3.7_Skyboxes25_HeaderMatch_LifetimeRowFix.html • v99.3.7 • Built: 2026-02-10 07:46 PT</div>
 
 
 <script>
@@ -6360,20 +6358,16 @@ function updateSkyBoxesFromDay_(day, weekKey) {
     const emo = n0(day && day.emotion);
 
     // v99.3.7: Lifetime metrics (from GardenExport columns AF/AG/AH)
-    const streakRaw = (day && day.StreakIndex != null && day.StreakIndex !== "") ? day.StreakIndex :
-                      (day && day.StreakIndex_Daily != null && day.StreakIndex_Daily !== "") ? day.StreakIndex_Daily :
-                      (day && day.streakIndex != null && day.streakIndex !== "") ? day.streakIndex : "";
-    const cumRaw = (day && day.CumulativeScore != null && day.CumulativeScore !== "") ? day.CumulativeScore :
-                   (day && day.cumulativeScore != null && day.cumulativeScore !== "") ? day.cumulativeScore : "";
-    const lifeRaw = (day && day.LifetimeLevel != null && day.LifetimeLevel !== "") ? day.LifetimeLevel :
-                    (day && day.lifetimeLevel != null && day.lifetimeLevel !== "") ? day.lifetimeLevel : "";
+    const streakRaw = (day && day.StreakIndex != null && day.StreakIndex !== "") ? day.StreakIndex : "";
+    const cumRaw = (day && day.CumulativeScore != null && day.CumulativeScore !== "") ? day.CumulativeScore : "";
+    const lifeRaw = (day && day.LifetimeLevel != null && day.LifetimeLevel !== "") ? day.LifetimeLevel : "";
 
     const streakStr = (streakRaw === "" || streakRaw == null) ? "" : String(streakRaw);
     const cumNum = Number(cumRaw);
     const cumStr = (cumRaw === "" || cumRaw == null) ? "" : (isFinite(cumNum) ? Math.round(cumNum).toLocaleString("en-US") : String(cumRaw));
     const lifeStr = (lifeRaw === "" || lifeRaw == null) ? "" : String(lifeRaw);
 
-    const lifetimeLine = `Streak: ${streakStr} | Lifetime Score: ${cumStr} | Level: ${lifeStr}`;
+    const lifetimeLine = `Streak: ${streakStr} | Lifetime Score: ${cumStr} | ${lifeStr}`;
 
     const lines = [
       `Total Entries: ${te} | Total Words: ${tw} | Average Words: ${aw}`,
@@ -6986,7 +6980,7 @@ function layoutSkyBoxes_(wrap){
     const groupH = groupH0For(c) * uiScale;
     if (groupH > availH + 0.5) continue;
 
-    const boxW = Math.round(BOX_W0 * uiScale);
+    const boxW = Math.round(BOX_W0 * uiScale * 1.25);
     const boxH = Math.round(BOX_H0 * uiScale);
 
     // v99.3.7: Header pill width matches a single skybox (same as Daily Statistics width)
