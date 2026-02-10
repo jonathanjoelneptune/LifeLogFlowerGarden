@@ -49,7 +49,7 @@
 // v99.1.0: export usage flag (global)
 var usingExport = false;
 
-// v99.2.6: Back-hill system hard-disabled (keep hill silhouette only).
+// v99.2.8: Back-hill system hard-disabled (keep hill silhouette only).
 // Disables: back hill guides, envelope grid, back hill flowers/PNGs, and all back-hill scroll/overlay logic.
 window.__LL_DISABLE_BACKHILL__ = true;
 
@@ -137,7 +137,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
     }
   };
 
-  // ---------------- Week Nav Buttons (v99.2.6) ----------------
+  // ---------------- Week Nav Buttons (v99.2.8) ----------------
   function clampWeekIndexForNav_(i){
     // Clamp to a sane range based on today and the configured render window.
     try{
@@ -318,7 +318,7 @@ console.log("[v89.6.42] loaded", new Date().toISOString());
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v99.2.6_GardenExport_HaikuReflectionSkyboxes_KeepFocusToday_OptionC_Fix44_SatSunShift10Pct.html</title>
+<title>garden_v99.2.8_GardenExport_HaikuReflectionSkyboxes_KeepFocusToday_OptionC_Fix44_SatSunShift10Pct.html</title>
 <style>
 /* ============================================
    v87.3.63.0: CLEANED + OPTIMIZED CSS
@@ -1235,7 +1235,7 @@ body.wireframeMode .flowerSvg line {
 
   .sbLine{margin:2px 0;}
 
-/* --- UI Week Nav Buttons (v99.2.6) --- */
+/* --- UI Week Nav Buttons (v99.2.8) --- */
 .weekHeader{ display:none !important; } /* remove top-right pink badge */
 #weekNavButtons{
   position: fixed;
@@ -1274,7 +1274,7 @@ body.wireframeMode .flowerSvg line {
 }
 
 
-/* v99.2.6: Back-hill system removed (keep hill silhouette only) */
+/* v99.2.8: Back-hill system removed (keep hill silhouette only) */
 #backPngLayer,
 #backRowsG,
 #backPngG,
@@ -1446,7 +1446,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 }
 
 
-/* --- v99.2.6: keep selection silhouette outline visible on the front row (override v80 filter suppression) --- */
+/* --- v99.2.8: keep selection silhouette outline visible on the front row (override v80 filter suppression) --- */
 .weekBand.isFront .llSilSelected svg{
   filter:
     drop-shadow(1px 0px 0px rgba(255,255,255,0.98))
@@ -1772,7 +1772,7 @@ font-weight:800;}
 </style>
 <style>
 
-/* --- v99.2.6: Photo Reel skybox transparent background --- */
+/* --- v99.2.8: Photo Reel skybox transparent background --- */
 .llSkyBox[data-idx="3"],
 .llSkyBox[data-idx="3"] .card,
 .llSkyBox[data-idx="3"] .body{
@@ -1785,7 +1785,7 @@ font-weight:800;}
 </style>
 <style>
 
-/* --- v99.2.6: Photo Reel — transparent, NO glass gradient, keep subtle outline --- */
+/* --- v99.2.8: Photo Reel — transparent, NO glass gradient, keep subtle outline --- */
 .llSkyBox[data-idx="3"],
 .llSkyBox[data-idx="3"] .card,
 .llSkyBox[data-idx="3"] .body{
@@ -1805,7 +1805,7 @@ font-weight:800;}
 </style>
 <style>
 
-/* --- v99.2.6: Photo Reel — OUTLINE ONLY (nuke all glass, gradients, overlays) --- */
+/* --- v99.2.8: Photo Reel — OUTLINE ONLY (nuke all glass, gradients, overlays) --- */
 
 /* Base containers */
 .llSkyBox[data-idx="3"],
@@ -1835,9 +1835,16 @@ font-weight:800;}
 }
 
 </style>
+<style>
+
+/* --- v99.2.8: Haiku imported lines centered + bold title line --- */
+.llSkyBox[data-idx="2"] .body{ text-align:center !important; }
+.llSkyBox[data-idx="2"] .body .sbLine{ text-align:center !important; }
+
+</style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v99.2.6_PhotoReel_OutlineOnly.html • v99.2.6 • Built: 2026-02-09 23:33 PT</div>
+  <div id="llPinkBanner">garden_v99.2.8_FixHaikuRegex_HeaderStats.html • v99.2.8 • Built: 2026-02-10 06:00 PT</div>
 
 
 <script>
@@ -1848,8 +1855,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 <style>
 #__versionBanner{position:fixed;left:12px;top:12px;z-index:99999;padding:8px 10px;border-radius:10px;background:rgba(255,0,255,0.22);border:2px solid magenta;color:#111;font:600 12px/1.2 system-ui,Segoe UI,Arial;}
 
-/* --- v99.2.6: Photo Reel skybox only — remove ALL internal padding --- */
-/* --- v99.2.6: Photo Reel skybox — make imagery fill the entire card --- */
+/* --- v99.2.8: Photo Reel skybox only — remove ALL internal padding --- */
+/* --- v99.2.8: Photo Reel skybox — make imagery fill the entire card --- */
 .llSkyBox[data-idx="3"]{
   padding: 0 !important;
 }
@@ -1884,8 +1891,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.2.6_GardenExport_HaikuReflectionSkyboxes_KeepFocusToday_OptionC_Fix51_RemoveBackHillLogic_KeepHillSilhouette.html</span><br>
-Version: <span id="__bannerVersion">v99.2.6</span><br>
+File: <span id="__bannerFileName">garden_v99.2.8_GardenExport_HaikuReflectionSkyboxes_KeepFocusToday_OptionC_Fix51_RemoveBackHillLogic_KeepHillSilhouette.html</span><br>
+Version: <span id="__bannerVersion">v99.2.8</span><br>
 Created: <span id="__bannerCreated">2026-02-07T22:50:16.090Z</span></div>
 <script>
 (function(){
@@ -1901,7 +1908,7 @@ Created: <span id="__bannerCreated">2026-02-07T22:50:16.090Z</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.2.6 loaded", new Date().toISOString());
+  console.log("[VERSION] v99.2.8 loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -2636,8 +2643,8 @@ window.__LL_hillTopAtX_fill = function(x, yTopGuess, yBottom){
         ["#487E53", "#346845"],
         ["#43784E", "#316242"],
         ["#3E7249", "#2F5E3E"],
-        ["#3B6D46", "#2E5A3B"],
-      ];
+        ["#3B6D46", "#2E5A3B"]
+     ];
       return { stem: greens[idx][0], leaf: greens[idx][1] };
     };
   }
@@ -5947,7 +5954,7 @@ __llLinkSvg = null; __llLinkPath = null; __llLinkGlow = null;
 // Single-row header (Date | Level | Score)
 __llSkyHeader = document.createElement('div');
 __llSkyHeader.className = 'llSkyBox llSkyHeader';
-__llSkyHeader.innerHTML = '<span class="hTxt mono">MM/DD/YY</span><span class="hSep">|</span><span class="hTxt">Level X</span><span class="hSep">|</span><span class="hTxt mono">Score --</span>';
+__llSkyHeader.innerHTML = '<span class="hTxt mono">MM/DD/YY</span><span class="hSep">|</span><span class="hTxt">Day</span><span class="hSep">|</span><span class="hTxt">Level X</span><span class="hSep">|</span><span class="hTxt mono">Score --</span>';
 __llBoxGroup.appendChild(__llSkyHeader);
 
 // Grid container holds the 4 cards
@@ -6216,6 +6223,17 @@ function setSkyBoxMeta_(boxOrSide, maybeWhich, maybeText){
     const meta = box.querySelector(".sbMeta");
     if (meta) meta.remove();
   }
+
+function dowNameFromDateKey_(dateKey){
+  try{
+    const dk = String(dateKey||"").trim();
+    if(!dk) return "";
+    const d = new Date(dk + "T12:00:00");
+    const names = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+    return names[d.getDay()] || "";
+  }catch(e){ return ""; }
+}
+
 function escapeHtml_(s){
   return (s ?? '').toString()
     .replace(/&/g,'&amp;')
@@ -6249,7 +6267,8 @@ function updateSkyBoxesFromDay_(day, weekKey) {
                    (scoreNum != null && String(scoreNum).trim() !== "") ? String(scoreNum) : "--";
 
   if (__llSkyHeader) {
-    __llSkyHeader.innerHTML = `${safe(mmddyy)} | Level ${safe(levelStr)} | Score ${safe(scoreStr)}`;
+    const dow = dowNameFromDateKey_(dateKey);
+    __llSkyHeader.innerHTML = `${safe(mmddyy)} | ${safe(dow)} | Level ${safe(levelStr)} | Score ${safe(scoreStr)}`;
   }
 
   // 0) Daily Statistics
@@ -6278,10 +6297,9 @@ function updateSkyBoxesFromDay_(day, weekKey) {
     const lines = [
       `Total Entries: ${te} | Total Words: ${tw} | Average Words: ${aw}`,
       `Morning: ${m} | Afternoon: ${a} | Evening: ${e} | Night: ${n}`,
-      `Moments: ${moments} | Achievements: ${ach}`,
-      `Introspections: ${intro} | Inspirations: ${insp}`,
-      `Connections: ${conn} | Emotions: ${emo}`
-    ];
+      `Moments: ${moments} | Achievements: ${ach} | Connections: ${conn}`,
+      `Introspections: ${intro} | Inspirations: ${insp} | Emotions: ${emo}`
+     ];
 
     setSkyBoxBody_(__llBoxes[0], lines.map(l => `<div class="sbLine">${safe(l)}</div>`).join(""));
   }
@@ -6296,12 +6314,18 @@ function updateSkyBoxesFromDay_(day, weekKey) {
   // 2) Haiku
   const haikuRaw = (day && day.haiku) ? String(day.haiku) : "";
   if (__llBoxes[2]) {
-        const haikuLines = haikuRaw.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
-    const haikuHtml = haikuLines.length
-      ? haikuLines.map(line => `<div class="sbLine">${safe(line)}</div>`).join("")
-      : `<div class="sbLine">${safe("No haiku text")}</div>`;
-    setSkyBoxBody_(__llBoxes[2], haikuHtml);
-}
+    const haikuLines = haikuRaw.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+
+    if (!haikuLines.length) {
+      setSkyBoxBody_(__llBoxes[2], `<div class="sbLine">${safe("No haiku text")}</div>`);
+    } else {
+      const title = haikuLines[0];
+      const rest = haikuLines.slice(1, 4); // Line 2-4
+      const titleHtml = `<div class="sbLine sbHaikuTitle"><b>~ ${safe(title)} ~</b></div>`;
+      const restHtml = rest.map(line => `<div class="sbLine sbHaikuLine">${safe(line)}</div>`).join("");
+      setSkyBoxBody_(__llBoxes[2], titleHtml + restHtml);
+    }
+  }
 
   // 3) Photo Reel (replaces Word Wall)
   if (__llBoxes[3]) {
@@ -6440,7 +6464,7 @@ function syncSkyBoxesToWrap_(){
   const uiScale = (__llUiScale || 1);
   const pad = 14 * uiScale;
 
-  // v99.2.6: robust clamp using layout-local bounds (offset geometry),
+  // v99.2.8: robust clamp using layout-local bounds (offset geometry),
   // independent of absolute positioning and independent of current group screen position.
   const leftGutter  = 16 * uiScale;
 
@@ -6507,7 +6531,7 @@ function syncSkyBoxesToWrap_(){
   // Default right bound: stage edge minus gutters
   let maxContentX = stageW - pad - rightGutter - gw;
 
-  // v99.2.6: hard UI-column guard.
+  // v99.2.8: hard UI-column guard.
   // Skyboxes must not extend past the LEFT edge of the week nav UI (▲ / This Week / ▼),
   // which is flush to the stage right side.
   try{
@@ -6709,8 +6733,8 @@ function layoutSkyBoxes_(wrap){
   const candidates = [
     {name:'row',  cols:4, rows:1},
     {name:'grid', cols:2, rows:2},
-    {name:'col',  cols:1, rows:4},
-  ];
+    {name:'col',  cols:1, rows:4}
+     ];
 
   const groupW0For = (c)=> (c.cols*BOX_W0) + ((c.cols-1)*GAP_X0);
   const groupH0For = (c)=> (c.rows*BOX_H0) + ((c.rows-1)*GAP_Y0);
@@ -6892,7 +6916,7 @@ function layoutSkyBoxes_(wrap){
 
     // Prefer being near the anchor horizontally
     const desiredX = Math.max(STAGE_PAD, Math.min(W - STAGE_PAD - groupW, Math.round((W - groupW) / 2)));
-    // v99.2.6: skyboxes are intentionally NOT anchored to the selected flower horizontally.
+    // v99.2.8: skyboxes are intentionally NOT anchored to the selected flower horizontally.
     // Keep scoring purely on readability/body size, independent of flower X.
     const score = bodyPx;
 
@@ -6934,7 +6958,7 @@ function layoutSkyBoxes_(wrap){
   }
 
 
-  // v99.2.6: Sat/Sun bias shift (rudimentary but effective).
+  // v99.2.8: Sat/Sun bias shift (rudimentary but effective).
 // Saturday: subtle 5% left shift
 // Sunday: stronger 10% left shift
 try{
@@ -6951,7 +6975,7 @@ try{
   }
 }catch(e){}
 
-  // v99.2.6: hard right guard at the week-nav UI column (▲ / This Week / ▼).
+  // v99.2.8: hard right guard at the week-nav UI column (▲ / This Week / ▼).
   // Requirement: skyboxes must NOT extend past the left edge of that UI column (0 padding).
   // This clamp is applied in the *layout* pass (the authoritative placer).
   let __llRightGuardX = null;
@@ -6968,7 +6992,7 @@ try{
     const rightLimit = (__llRightGuardX - best.groupW); // 0 padding
     groupX = Math.min(groupX, rightLimit);
   }
-  // Stage clamp (v99.2.6: no right-guard; nav is bottom-right)
+  // Stage clamp (v99.2.8: no right-guard; nav is bottom-right)
   {
     const rightBound = (W - STAGE_PAD - best.groupW);
     groupX = Math.max(STAGE_PAD, Math.min(rightBound, groupX));
@@ -7787,7 +7811,7 @@ function syncEnvelopeOverlay_(){
    BACK ROW PNG PLACEHOLDERS (HTML layer, screen/pixel space)
    Phase B Step 4b (PNG placeholders) - robust placement
    ============================================================ */
-const BACKPNG_HTML_ENABLED = false; // v99.2.6 forced OFF (back-hill system removed)
+const BACKPNG_HTML_ENABLED = false; // v99.2.8 forced OFF (back-hill system removed)
 const BACKPNG_SVG_ENABLED = false; // lock OFF old SVG back-png system
 window.__LL_DISABLE_BACKPNG_SVG__ = true;
 const BACKPNG_HTML_SCALE_NEAR = 0.60;  // B1 (front-most back row) ~3x previous 0.20
