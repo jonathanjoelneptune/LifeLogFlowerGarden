@@ -3,9 +3,12 @@
 
 
 
+
 <!DOCTYPE html>
 <!--
   CHANGELOG
+  garden_v99.3.10_TodayWhitePetalsPre9pm.html
+    + Today (pre-9pm): force primary/secondary to white so petals remain undecided until 9pm
   v92.1.0_PhaseB_Step1_WeekKey_SelectionDebug
     + Add canonical data-week-key on each flowerWrap (alias of weekId)
     + Add ISO weekKey helper (fallback) and richer selection/deselection debug payload (dateKey + weekKey + indices)
@@ -318,7 +321,7 @@ console.log("[v89.6.42] loaded", new Date().toISOString());
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v99.3.9_GardenExport_HaikuReflectionSkyboxes_KeepFocusToday_OptionC_Fix44_SatSunShift10Pct.html</title>
+<title>garden_v99.3.10_TodayWhitePetalsPre9pm.html</title>
 <style>
 /* ============================================
    v87.3.63.0: CLEANED + OPTIMIZED CSS
@@ -1848,7 +1851,7 @@ font-weight:800;}
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v99.3.9_Skyboxes25_LifetimeMetricsPerDay.html • v99.3.9 • Built: 2026-02-10 08:03 PT</div>
+  <div id="llPinkBanner">garden_v99.3.10_TodayWhitePetalsPre9pm.html • v99.3.10 • Built: 2026-02-11 23:05 PT</div>
 
 
 <script>
@@ -3807,6 +3810,10 @@ function weekModelForIndex_(weekIndex){
 
   
     const todayKey = dateKeyFromDate_(new Date());
+
+  // v99.3.10: Before 9pm local time, today\'s flower petals are white (color not decided yet)
+  const __llNow = new Date();
+  const __llTodayPre9pm = (__llNow.getHours() < 21);
 const days = [];
   for (let d=0; d<7; d++){
     const dateObj = new Date(mondayMs + d*86400000);
@@ -3866,7 +3873,14 @@ const days = [];
       if (_isHex(exportRow.PrimaryColor)) primary = String(exportRow.PrimaryColor).trim();
             if (_isHex(exportRow.SecondaryColor)) secondary = String(exportRow.SecondaryColor).trim();
 
-      // Levels (if present)
+      
+
+      // v99.3.10: Override today\'s petals to white until 9pm (colors decided at 9pm)
+      if (dateKey === todayKey && __llTodayPre9pm) {
+        primary = "#FFFFFF";
+        secondary = "#FFFFFF";
+      }
+// Levels (if present)
       const dl = Number(exportRow.DayLevel);
       if (Number.isFinite(dl) && dl > 0) {
         dayLevel = dl;
@@ -3916,7 +3930,13 @@ const days = [];
       if (Number.isFinite(wl2) && wl2 > 0) weekLevel = wl2;
     }
 
-    // Use the same established stem/leaf tint logic
+    // Use the same established stem/leaf tint logic      // v99.3.10: If today and pre-9pm, force undecided white petals even when export data is missing
+      if (dateKey === todayKey && __llTodayPre9pm) {
+        primary = "#FFFFFF";
+        secondary = "#FFFFFF";
+      }
+
+
     
     // Render rules:
     // - Never render future dates (dateKey > todayKey)
