@@ -1534,13 +1534,15 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
   box-sizing:border-box;
   border-radius: 18px;
 
-  /* ~18% frosty glass (refined, whiter) */
-  background: linear-gradient(rgba(255,255,255,0.14), rgba(255,255,255,0.10));
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  /* Night-balanced frosty glass (whiter so it stays bright at night) */
+  background: linear-gradient(rgba(255,255,255,0.32), rgba(255,255,255,0.26));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 
-  border: 1px solid rgba(255,255,255,0.45);
-  box-shadow: 0 10px 26px rgba(0,0,0,0.20);
+  border: 1px solid rgba(255,255,255,0.65);
+  box-shadow:
+    0 14px 30px rgba(0,0,0,0.28),
+    inset 0 1px 0 rgba(255,255,255,0.55);
 
   color: rgba(0,0,0,0.84);
   overflow:hidden;
@@ -1651,20 +1653,28 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
   align-items:center;
   gap: 10px;
   padding: 14px 18px;
-  background: linear-gradient(rgba(255,255,255,0.20), rgba(255,255,255,0.16));
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255,255,255,0.45);
-  box-shadow: 0 10px 26px rgba(0,0,0,0.18);
+
+  /* Match skybox frost, keep header crisp at night */
+  background: linear-gradient(rgba(255,255,255,0.32), rgba(255,255,255,0.26));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.65);
+  box-shadow:
+    0 14px 30px rgba(0,0,0,0.22),
+    inset 0 1px 0 rgba(255,255,255,0.55);
+
   border-radius: 16px;
+
   will-change: backdrop-filter;
   transform: translateZ(0);
   isolation: isolate;
   background-clip: padding-box;
+
   color: rgba(0,0,0,0.80);
   pointer-events:none;
   white-space: nowrap;
-font-weight:800;}
+  font-weight:800;
+}
 
 .llSkyHeader, .llSkyBox .sub{ font-size: var(--llSkyHdrFS, 14px); }
 
@@ -1864,7 +1874,7 @@ font-weight:800;}
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v99.3.17_FrostRefined.html • v99.3.17 • Built: 2026-02-14 15:39 PT</div>
+  <div id="llPinkBanner">garden_v99.3.18_NightFrostWhite.html • v99.3.18 • Built: 2026-02-15 17:59 PT</div>
 
 
 <script>
@@ -1911,9 +1921,9 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.3.17_FrostRefined.html</span><br>
-Version: <span id="__bannerVersion">v99.3.17</span><br>
-Created: P26-02-14T23:40:04.352Z</span></div>
+File: <span id="__bannerFileName">garden_v99.3.18_NightFrostWhite.html</span><br>
+Version: <span id="__bannerVersion">v99.3.18</span><br>
+P26-02-16T01:59:20Z</span></div>
 <script>
 (function(){
   try{
