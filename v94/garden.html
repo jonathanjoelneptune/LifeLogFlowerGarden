@@ -5,16 +5,14 @@
 
 
 
-
-
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v99.3.16_PhaseB_Step1_WeekKey_SelectionDebug
+  v99.3.12_PhaseB_Step1_WeekKey_SelectionDebug
     + Add canonical data-week-key on each flowerWrap (alias of weekId)
     + Add ISO weekKey helper (fallback) and richer selection/deselection debug payload (dateKey + weekKey + indices)
 
-  v99.3.16_PhaseA_UnifiedSlots_BRXDisabled_DebugI
+  v99.3.12_PhaseA_UnifiedSlots_BRXDisabled_DebugI
   + Added WeekID (YYYY-Www) + DateKey (YYYY-MM-DD) + SlotID (weekId:dayIndex) per flower slot
   + Added SLOT_META Map (window.SLOT_META) for stable slot metadata across rerenders
   + Added Inspector hotkey: press 'I' to log slot metadata under cursor
@@ -22,7 +20,7 @@
   = Kept hill background and front-row rendering/interaction intact
 -->
 <!--
-  LifeLog Garden Walk v99.3.16 - BRX mini PNG anchor-aligned
+  LifeLog Garden Walk v99.3.12 - BRX mini PNG anchor-aligned
 
   Optimizations applied:
   1. Removed duplicate :root blocks and orphaned CSS keyframes
@@ -37,7 +35,7 @@
 <html lang="en">
 <head>
 <script>
-// === v99.3.16 patch: safety logging helpers ===
+// === v99.3.12 patch: safety logging helpers ===
 (function(){
   // [SKYFIT] ensure global handle exists before any listeners
   window.scheduleRefitSkyBoxes_ = window.scheduleRefitSkyBoxes_ || function(){};
@@ -50,10 +48,10 @@
   }
 })();
 
-// v99.3.16: export usage flag (global)
+// v99.3.12: export usage flag (global)
 var usingExport = false;
 
-// v99.3.16: Back-hill system hard-disabled (keep hill silhouette only).
+// v99.3.12: Back-hill system hard-disabled (keep hill silhouette only).
 // Disables: back hill guides, envelope grid, back hill flowers/PNGs, and all back-hill scroll/overlay logic.
 window.__LL_DISABLE_BACKHILL__ = true;
 
@@ -113,7 +111,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 // Provide named globals expected by legacy code (safe under strict mode)
 </script>
 
-<!-- BRX PATCH v99.3.16: globals + safe render alias -->
+<!-- BRX PATCH v99.3.12: globals + safe render alias -->
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
@@ -141,7 +139,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
     }
   };
 
-  // ---------------- Week Nav Buttons (v99.3.16) ----------------
+  // ---------------- Week Nav Buttons (v99.3.12) ----------------
   function clampWeekIndexForNav_(i){
     // Clamp to a sane range based on today and the configured render window.
     try{
@@ -239,16 +237,16 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 })();
 </script>
 
-  <!-- v99.3.16: grid rows uniform vertically + hill-footprint span (21 slots) -->
+  <!-- v99.3.12: grid rows uniform vertically + hill-footprint span (21 slots) -->
   <script>
-// v99.3.16: Back rows fully disabled in Phase A (no-op stubs)
+// v99.3.12: Back rows fully disabled in Phase A (no-op stubs)
 function renderBackRows(){ /* disabled */ }
 
 	
 // ---- Global version (single source of truth) ----
 window.APP_VERSION = '92.0.1';
-window.VERSION = 'v99.3.16';
-window.APP_VERSION_STR = 'v99.3.16';
+window.VERSION = 'v99.3.12';
+window.APP_VERSION_STR = 'v99.3.12';
 window.APP_VERSION = '89.7.100';
 window.VERSION = window.VERSION;
 window.APP_VERSION = window.APP_VERSION;
@@ -278,7 +276,7 @@ window.APP_VERSION = window.APP_VERSION;
 	}
 
 
-// [v99.3.16] logStep shim (some branches call logStep(...))
+// [v99.3.12] logStep shim (some branches call logStep(...))
 window.logStep = window.logStep || function(label, payload){
   try{ return dbgStep(label, payload||{}); }catch(e){}
   try{ return window.DBGSTEP('DBGSTEP ' + String(label||''), payload||{}); }catch(e){}
@@ -287,7 +285,7 @@ window.logStep = window.logStep || function(label, payload){
 </script>
 
 <!--
-  v99.3.16 NOTE
+  v99.3.12 NOTE
   Back-rows rewrite (BRX) is installed at the very end of the file so it can:
   - Not be shadowed by earlier backRows code.
   - Capture-toggle the UI checkboxes and stop other listeners.
@@ -311,21 +309,21 @@ window.drawGridAnchors = function(){ /* removed */ };
 
 <script>
     
-// --- v99.3.16: DEBUG SHIMS (safe) ---
+// --- v99.3.12: DEBUG SHIMS (safe) ---
 window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
 window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
 window.NS = window.NS || "http://www.w3.org/2000/svg";
-console.log("[v99.3.16] loaded", new Date().toISOString());
+console.log("[v99.3.12] loaded", new Date().toISOString());
 // Provide a safe global log() early; later scripts may replace this with the project logger.
     window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   </script>
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v99.3.16_GardenExport_HaikuReflectionSkyboxes_KeepFocusToday_OptionC_Fix44_SatSunShift10Pct.html</title>
+<title>garden_v99.3.12_GardenExport_HaikuReflectionSkyboxes_KeepFocusToday_OptionC_Fix44_SatSunShift10Pct.html</title>
 <style>
 /* ============================================
-   v99.3.16.0: CLEANED + OPTIMIZED CSS
+   v99.3.12.0: CLEANED + OPTIMIZED CSS
    - Single :root block (merged duplicates)
    - Removed orphaned keyframe fragments
    - Consolidated will-change
@@ -710,7 +708,7 @@ body {
   bottom: 0;
   height: 700px;
   pointer-events: none;
-  /* v99.3.16.0: Layer promotion without will-change spam */
+  /* v99.3.12.0: Layer promotion without will-change spam */
   transform: translateZ(0);
 }
 
@@ -723,7 +721,7 @@ body {
   pointer-events: auto;
 }
 
-/* v99.3.16: Selected flower highlight (replaces indicator line) */
+/* v99.3.12: Selected flower highlight (replaces indicator line) */
 .weekBand.isFront .flowerWrap.isSelected{
   filter:
     drop-shadow(0 0 2px rgba(255,255,255,0.65))
@@ -740,7 +738,7 @@ body {
   transform: translateX(-50%);
 }
 
-/* v99.3.16.0: Wind animation on inner element only */
+/* v99.3.12.0: Wind animation on inner element only */
 .flowerWrap {
   position: absolute;
   left: 50%;
@@ -764,7 +762,7 @@ body {
   100% { transform: rotateZ(0deg) rotateY(0deg); }
 }
 
-/* v99.3.16.0: OPTIMIZED front-row outline - reduced from 10 passes to 4 */
+/* v99.3.12.0: OPTIMIZED front-row outline - reduced from 10 passes to 4 */
 .weekBand.isFront .flowerWrap {
   filter:
     drop-shadow(0 0 1px rgba(0,0,0,0.9))
@@ -856,7 +854,7 @@ body {
 }
 
 .grassHaze {
-  /* v99.3.16: Disabled horizon haze band (was causing a visible horizontal gradient line across hills/sky). */
+  /* v99.3.12: Disabled horizon haze band (was causing a visible horizontal gradient line across hills/sky). */
   position: absolute;
   left: calc(-1 * var(--grassOverhang, 10vw));
   right: calc(-1 * var(--grassOverhang, 10vw));
@@ -1227,7 +1225,7 @@ body.wireframeMode .flowerSvg line {
 #backPngLayer.isHidden{ display:none !important; }
 
 
-/* v99.3.16: Epoch clamp subtle UX cue */
+/* v99.3.12: Epoch clamp subtle UX cue */
 #stage.llEpochBounce{
   animation: llEpochBounce 260ms ease-out;
 }
@@ -1240,7 +1238,7 @@ body.wireframeMode .flowerSvg line {
 
   .sbLine{margin:2px 0;}
 
-/* --- UI Week Nav Buttons (v99.3.16) --- */
+/* --- UI Week Nav Buttons (v99.3.12) --- */
 .weekHeader{ display:none !important; } /* remove top-right pink badge */
 #weekNavButtons{
   position: fixed;
@@ -1279,7 +1277,7 @@ body.wireframeMode .flowerSvg line {
 }
 
 
-/* v99.3.16: Back-hill system removed (keep hill silhouette only) */
+/* v99.3.12: Back-hill system removed (keep hill silhouette only) */
 #backPngLayer,
 #backRowsG,
 #backPngG,
@@ -1317,7 +1315,7 @@ body.wireframeMode .flowerSvg line {
 </style>
 
 <style id="llOptionASelectionStyles_v87340">
-/* v99.3.16 Option A: selection silhouette + bigger click targets */
+/* v99.3.12 Option A: selection silhouette + bigger click targets */
 
 /* Make hotspot fill clickable even if visually transparent */
 .hsCore{
@@ -1357,7 +1355,7 @@ body.wireframeMode .flowerSvg line {
   mix-blend-mode: screen;
 }
 <style id="llNoCircleSelection_v87356">
-/* v99.3.16.0: Remove circular selection indicators (halo + hotspot strokes).
+/* v99.3.12.0: Remove circular selection indicators (halo + hotspot strokes).
    Keep only the silhouette/outline selection on the actual flower artwork. */
 .llSelHalo{ display:none !important; }
 
@@ -1451,7 +1449,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 }
 
 
-/* --- v99.3.16: keep selection silhouette outline visible on the front row (override v80 filter suppression) --- */
+/* --- v99.3.12: keep selection silhouette outline visible on the front row (override v80 filter suppression) --- */
 .weekBand.isFront .llSilSelected svg{
   filter:
     drop-shadow(1px 0px 0px rgba(255,255,255,0.98))
@@ -1534,29 +1532,18 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 .llSkyBox{
   position:absolute;
   box-sizing:border-box;
-  border-radius: 18px;
-
-  /* Night-balanced frosty glass (whiter so it stays bright at night) */
-  background: linear-gradient(rgba(255,255,255,0.32), rgba(255,255,255,0.26));
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-
-  border: 1px solid rgba(255,255,255,0.65);
-  box-shadow:
-    0 14px 30px rgba(0,0,0,0.28),
-    inset 0 1px 0 rgba(255,255,255,0.55);
-
+  border-radius: 16px;
+  background:
+    55%, rgba(255,255,255,0.14) 100%),
+    linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.10) 100%);
+  border: 1px solid rgba(255,255,255,0.26);
+  box-shadow: 0 14px 34px rgba(0,0,0,0.16);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   color: rgba(0,0,0,0.84);
   overflow:hidden;
   pointer-events:auto; /* allow clicks to not pass through and clear selection */
-
-  /* Glass stability: reduce Chrome backdrop-filter seam / flashing */
-  will-change: backdrop-filter;
-  transform: translateZ(0);
-  isolation: isolate;
-  background-clip: padding-box;
 }
-
   .llSkyBox .body{
     white-space: pre-wrap;
     line-height: 1.35;
@@ -1588,9 +1575,10 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
   position:absolute;
   inset:-1px;
   background:
-     radial-gradient(90% 60% at 30% 0%, rgba(255,255,255,0.22), rgba(255,255,255,0) 60%);
-
-  opacity: 0.18;
+    62%),
+    62%),
+    linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.00) 45%);
+  opacity: 0.95;
   mix-blend-mode: screen;
   pointer-events:none;
 }
@@ -1599,12 +1587,10 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
   position:absolute;
   inset:0;
   background:
-     
     repeating-linear-gradient(135deg, rgba(255,255,255,0.08) 0px, rgba(255,255,255,0.08) 1px, rgba(255,255,255,0.00) 6px, rgba(255,255,255,0.00) 12px),
     repeating-linear-gradient(45deg, rgba(0,0,0,0.05) 0px, rgba(0,0,0,0.05) 1px, rgba(0,0,0,0.00) 7px, rgba(0,0,0,0.00) 13px),
-    radial-gradient(120% 150% at 80% 10%, rgba(255,255,255,0.14), rgba(255,255,255,0) 55%);
-
-  opacity: 0.10;
+    55%);
+  opacity: 0.22;
   mix-blend-mode: overlay;
   pointer-events:none;
 }
@@ -1630,7 +1616,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
   font-variant-numeric: tabular-nums;
   opacity: 0.92;
 }
-/* (v99.3.16) indicator line removed */
+/* (v99.3.12) indicator line removed */
 /* removed line link */
 .llSkyLinkGlow{
   stroke: rgba(255,255,255,0.18);
@@ -1655,28 +1641,10 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
   align-items:center;
   gap: 10px;
   padding: 14px 18px;
-
-  /* Match skybox frost, keep header crisp at night */
-  background: linear-gradient(rgba(255,255,255,0.32), rgba(255,255,255,0.26));
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.65);
-  box-shadow:
-    0 14px 30px rgba(0,0,0,0.22),
-    inset 0 1px 0 rgba(255,255,255,0.55);
-
-  border-radius: 16px;
-
-  will-change: backdrop-filter;
-  transform: translateZ(0);
-  isolation: isolate;
-  background-clip: padding-box;
-
   color: rgba(0,0,0,0.80);
   pointer-events:none;
   white-space: nowrap;
-  font-weight:800;
-}
+font-weight:800;}
 
 .llSkyHeader, .llSkyBox .sub{ font-size: var(--llSkyHdrFS, 14px); }
 
@@ -1807,7 +1775,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 <style>
 
-/* --- v99.3.16: Photo Reel skybox transparent background --- */
+/* --- v99.3.12: Photo Reel skybox transparent background --- */
 .llSkyBox[data-idx="3"],
 .llSkyBox[data-idx="3"] .card,
 .llSkyBox[data-idx="3"] .body{
@@ -1820,7 +1788,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 <style>
 
-/* --- v99.3.16: Photo Reel — transparent, NO glass gradient, keep subtle outline --- */
+/* --- v99.3.12: Photo Reel — transparent, NO glass gradient, keep subtle outline --- */
 .llSkyBox[data-idx="3"],
 .llSkyBox[data-idx="3"] .card,
 .llSkyBox[data-idx="3"] .body{
@@ -1838,57 +1806,64 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 }
 
 </style>
-
 <style>
-/* --- v99.3.16: Photo Reel skybox ONLY — transparent card, keep other skyboxes frosted --- */
+
+/* --- v99.3.12: Photo Reel — OUTLINE ONLY (nuke all glass, gradients, overlays) --- */
+
+/* Base containers */
 .llSkyBox[data-idx="3"],
-.llSkyBox[data-idx="3"] .card,
-.llSkyBox[data-idx="3"] .body{
+.llSkyBox[data-idx="3"] *{
   background: transparent !important;
   background-image: none !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   box-shadow: none !important;
 }
-/* Kill glass pseudo-overlays ONLY for the reel container */
+
+/* Kill any pseudo-element overlays */
 .llSkyBox[data-idx="3"]::before,
-.llSkyBox[data-idx="3"]::after{
+.llSkyBox[data-idx="3"]::after,
+.llSkyBox[data-idx="3"] .card::before,
+.llSkyBox[data-idx="3"] .card::after,
+.llSkyBox[data-idx="3"] .body::before,
+.llSkyBox[data-idx="3"] .body::after{
   content: none !important;
   display: none !important;
 }
-/* Keep a subtle outline */
+
+/* Restore outline only */
 .llSkyBox[data-idx="3"] .card{
-  border: 1px solid rgba(255,255,255,0.70) !important;
+  border: 1px solid rgba(255,255,255,0.7) !important;
   border-radius: 14px !important;
 }
-</style>
 
+</style>
 <style>
 
-/* --- v99.3.16: Haiku imported lines centered + bold title line --- */
+/* --- v99.3.12: Haiku imported lines centered + bold title line --- */
 .llSkyBox[data-idx="2"] .body{ text-align:center !important; }
 .llSkyBox[data-idx="2"] .body .sbLine{ text-align:center !important; }
 
 </style>
 <style>
-/* v99.3.16: header pill uses fixed width set in layout */
+/* v99.3.12: header pill uses fixed width set in layout */
 #llSkyHeader{ display:flex; justify-content:center; align-items:center; }
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v99.3.19_WheelCaptureFix.html • v99.3.19 • Built: 2026-02-16 21:18 PT</div>
+  <div id="llPinkBanner">garden_v99.3.12_NoSkyGlow_NoSunGlow.html • v99.3.12 • Built: 2026-02-11 23:17 PT</div>
 
 
 <script>
-// v99.3.16: Disable legacy backRows preview module (BRX owns back-row rendering now).
+// v99.3.12: Disable legacy backRows preview module (BRX owns back-row rendering now).
 window.__DISABLE_LEGACY_BACKROWS = true;
 </script>
 <!-- VERSION BANNER INJECT -->
 <style>
 #__versionBanner{position:fixed;left:12px;top:12px;z-index:99999;padding:8px 10px;border-radius:10px;background:rgba(255,0,255,0.22);border:2px solid magenta;color:#111;font:600 12px/1.2 system-ui,Segoe UI,Arial;}
 
-/* --- v99.3.16: Photo Reel skybox only — remove ALL internal padding --- */
-/* --- v99.3.16: Photo Reel skybox — make imagery fill the entire card --- */
+/* --- v99.3.12: Photo Reel skybox only — remove ALL internal padding --- */
+/* --- v99.3.12: Photo Reel skybox — make imagery fill the entire card --- */
 .llSkyBox[data-idx="3"]{
   padding: 0 !important;
 }
@@ -1923,9 +1898,9 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.3.19_WheelCaptureFix.html</span><br>
-Version: <span id="__bannerVersion">v99.3.19</span><br>
-P26-02-16T01:59:20Z</span></div>
+File: <span id="__bannerFileName">garden_v99.3.12_GardenExport_HaikuReflectionSkyboxes_KeepFocusToday_OptionC_Fix51_RemoveBackHillLogic_KeepHillSilhouette.html</span><br>
+Version: <span id="__bannerVersion">v99.3.20</span><br>
+Created: P26-02-17T05:31:01.525Z</span></div>
 <script>
 (function(){
   try{
@@ -1940,7 +1915,7 @@ P26-02-16T01:59:20Z</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.3.19 loaded", new Date().toISOString());
+  console.log("[VERSION] v99.3.20 loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -1948,7 +1923,7 @@ P26-02-16T01:59:20Z</span></div>
 
 <script>
 /**********************************************************
- * v99.3.16: Grid anchors (continuous 21 slots) - robust wiring
+ * v99.3.12: Grid anchors (continuous 21 slots) - robust wiring
  *
  * Fixes:
  * - Draws into the *existing* hill SVG overlay group (#gridOverlayG)
@@ -2208,7 +2183,7 @@ P26-02-16T01:59:20Z</span></div>
   }
 
 
-  // --- v99.3.16 hotfix: ensure fill-based hill boundary helpers are in global scope ---
+  // --- v99.3.12 hotfix: ensure fill-based hill boundary helpers are in global scope ---
   // (Previous insertion accidentally nested these inside yTopAtX, making hillTopAtX undefined elsewhere.)
   if (typeof window.hillTopAtX !== 'function') {
     window.__LL_getHillGeomEl = function(){
@@ -2278,7 +2253,7 @@ window.__LL_hillTopAtX_fill = function(x, yTopGuess, yBottom){
       catch(e){ return NaN; }
     };
   }
-  // --- end v99.3.16 hotfix ---
+  // --- end v99.3.12 hotfix ---
 
 
   function footprintAtY(y){
@@ -2512,7 +2487,7 @@ window.__LL_hillTopAtX_fill = function(x, yTopGuess, yBottom){
 
 
 
-<!-- SVG Symbol Definitions (v99.3.16.0 optimization) -->
+<!-- SVG Symbol Definitions (v99.3.12.0 optimization) -->
 <svg style="display:none" id="svgDefs">
   <defs>
     <!-- Reusable petal ellipse -->
@@ -2546,7 +2521,7 @@ window.__LL_hillTopAtX_fill = function(x, yTopGuess, yBottom){
 <!-- Debug Panel -->
 <div aria-hidden="false" id="dbgPanel">
   <div class="hdr">
-    <div class="t">LifeLog DEBUG v99.3.16 (press D)</div>
+    <div class="t">LifeLog DEBUG v99.3.12 (press D)</div>
     <div class="btns">
       <button id="dbgCopy" type="button">Copy</button>
       <button id="dbgClear" type="button">Clear</button>
@@ -2691,7 +2666,7 @@ window.__LL_hillTopAtX_fill = function(x, yTopGuess, yBottom){
 
 
 // ============================================
-// v99.3.16.0: Debug Panel (standalone bootstrap)
+// v99.3.12.0: Debug Panel (standalone bootstrap)
 // ============================================
 (function(){
   const panel = document.getElementById('dbgPanel');
@@ -2726,7 +2701,7 @@ window.__LL_hillTopAtX_fill = function(x, yTopGuess, yBottom){
   }
   window.__LLDBG__.step = dbgStep_;
 
-  log('v99.3.16.0 bootstrap: JS executed');
+  log('v99.3.12.0 bootstrap: JS executed');
 
   window.addEventListener('error', (e)=>{
     const msg = (e && e.message) ? e.message : 'Unknown error';
@@ -2904,7 +2879,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   </div>
 
   <div class="util hidden" id="util">
-    <div class="utilTitle">LifeLog Garden Walk v99.3.16</div>
+    <div class="utilTitle">LifeLog Garden Walk v99.3.12</div>
     <div class="utilSub">Scroll to walk through weeks. Press H to hide/show this panel.</div>
 	    <div class="row">
 	      <label>Wireframe</label>
@@ -3037,7 +3012,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
 
 <script>
 // ============================================
-// v99.3.16.0: OPTIMIZED MAIN APPLICATION
+// v99.3.12.0: OPTIMIZED MAIN APPLICATION
 // ============================================
 (function(){
 'use strict';
@@ -3071,7 +3046,7 @@ function wrapLLDBGStep_(){
     }
   }catch(e){}
 }
-dbg_('v99.3.16.0: Main script starting');
+dbg_('v99.3.12.0: Main script starting');
 
 // ============================================
 // Constants
@@ -3092,7 +3067,7 @@ const DAY_PALETTE = [
 const WEEK_LEVEL_NAMES = { 1:"Quiet Week", 2:"Gentle Week", 3:"Strong Week", 4:"Focused Week", 5:"Legend Week" };
 
 /* ============================================================
-   v99.3.16: Garden Epoch + Week Virtualization
+   v99.3.12: Garden Epoch + Week Virtualization
    - Logical weekIndex: 0 = Epoch Monday (2025-09-01)
    - Active window: 15 past / 5 future around focusWeekIndex
    - Only the current active row (focusWeekIndex) is selectable
@@ -3122,7 +3097,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const WEEK_MS = 7 * DAY_MS;
 
 // ============================================
-// v99.3.16.0: CACHED DOM REFERENCES
+// v99.3.12.0: CACHED DOM REFERENCES
 // ============================================
 let DOM = {};
 
@@ -3494,7 +3469,7 @@ function flowerSvg(day){
   const mirror = (level === 4 || level === 5) ? (rMirror() < 0.5 ? -1 : 1) : 1;
 
   
-  // --- v99.3.16: 4-color deterministic petal system ---
+  // --- v99.3.12: 4-color deterministic petal system ---
   // C1: Primary, C2: Secondary, C3: Primary-dominant blend (80/20), C4: Secondary-dominant blend (20/80)
   const C1 = primary;
   const C2 = secondary;
@@ -3616,7 +3591,7 @@ const monthC = (MONTH_COLORS[month] || "#C7D4E2");
   }
 
   function head(scale, diskR, yHead, outerN, innerN){
-    // v99.3.16: build deterministic color maps sized to the current petal counts
+    // v99.3.12: build deterministic color maps sized to the current petal counts
     const mapOuter = buildPetalColorList_(outerN, petalSeedBase + `_outer_${outerN}`);
     const mapInner = buildPetalColorList_(innerN,  petalSeedBase + `_inner_${innerN}`);
 let petals = "";
@@ -3750,7 +3725,7 @@ let petals = "";
 }
 
 // ============================================
-// Data Building (v99.3.16 virtualized)
+// Data Building (v99.3.12 virtualized)
 // ============================================
 
 function dateFromDateKey_(dk){
@@ -3872,7 +3847,7 @@ const days = [];
     let reflection = "";
     let themeCloudUrl = "";
 
-    // v99.3.16: Lifetime metrics per-day (from GardenExport JSON)
+    // v99.3.12: Lifetime metrics per-day (from GardenExport JSON)
     let streakIndex = "";
     let cumulativeScore = "";
     let lifetimeLevel = "";
@@ -3882,7 +3857,7 @@ const days = [];
     if (ex && ex.byDate.has(dateKey)) {
       exportRow = ex.byDate.get(dateKey) || {};
 
-      // v99.3.16: Lifetime metrics from export row
+      // v99.3.12: Lifetime metrics from export row
       streakIndex = (exportRow.StreakIndex != null && exportRow.StreakIndex !== "") ? exportRow.StreakIndex
                    : (exportRow.StreakIndex_Daily != null && exportRow.StreakIndex_Daily !== "") ? exportRow.StreakIndex_Daily
                    : "";
@@ -4034,7 +4009,7 @@ const stemColors = stemColorsForMonthIndex_(monthIndex);
       inspiration,
       connection,
       emotion,
-      // v99.3.16 lifetime metrics
+      // v99.3.12 lifetime metrics
       StreakIndex: streakIndex,
       CumulativeScore: cumulativeScore,
       LifetimeLevel: lifetimeLevel,
@@ -4080,7 +4055,7 @@ const bandMeta = [];
 const flowerWrapEls = [];
 
 
-// v99.3.16 Phase A: canonical per-slot metadata store (keyed by slotId)
+// v99.3.12 Phase A: canonical per-slot metadata store (keyed by slotId)
 const SLOT_META = new Map();
 let GRASS_PARALLAX = 0.35;
 let GRASS_Y_OFFSET = 52;
@@ -4101,7 +4076,7 @@ let targetIndex = 0;
 let currentOffset = 0;
 let lastWheelAt = 0;
 let lastFrontIndex = -1;
-let lastBackRowsFrontIndex = -9999; // v99.3.16: back-row preview refresh guard
+let lastBackRowsFrontIndex = -9999; // v99.3.12: back-row preview refresh guard
 
 // ===== NAV BUTTON API (exposed for UI bridge script) =====
 window.__LL = window.__LL || {};
@@ -4136,7 +4111,7 @@ const todState = { mode: "realtime", manualMinutes: 720, playRate: 0 };
 let lastTodTick = 0;
 
 // ============================================
-// v99.3.16.0: OPTIMIZED buildBands with DocumentFragment
+// v99.3.12.0: OPTIMIZED buildBands with DocumentFragment
 // ============================================
 function buildBands(){
   const weeksStack = DOM.weeksStack;
@@ -4164,7 +4139,7 @@ function buildBands(){
   CACHED.transformsDirty = true;
 }
 
-// v99.3.16: Render manager
+// v99.3.12: Render manager
 const __llRenderedWeeks = new Map();      // weekIndex -> { band, gband }
 const __llBandMetaByWeekIndex = new Map(); // weekIndex -> { weekMon, iso, weekLevel, weekIndex }
 
@@ -4342,7 +4317,7 @@ try { window.__LL_syncRenderedWeeks_ = syncRenderedWeeks_; } catch(e) {}
 try { window.__LL_getFrontIndex = () => (typeof frontIndex === "number" ? frontIndex : 0); } catch(e) {}
 
 
-// v99.3.16.0: Lazy render flowers for a band
+// v99.3.12.0: Lazy render flowers for a band
 
 function renderBandFlowers(band){
   if (!band || band.dataset.rendered === "true") return;
@@ -4372,7 +4347,7 @@ function renderBandFlowers(band){
     wrap.dataset.dayIndex = String(d);
     wrap.dataset.dateKey = dayData.dateKey;
     
-    // v99.3.16 Phase A: stable identifiers (WeekID + SlotID) for every slot
+    // v99.3.12 Phase A: stable identifiers (WeekID + SlotID) for every slot
     wrap.dataset.weekId = week.iso;           wrap.dataset.weekKey = week.iso; // Phase B Step 1: canonical week key alias
 // YYYY-Www
     wrap.dataset.slotId = week.iso + ':' + String(d); // stable across rerenders; Monday=0 ... Sunday=6
@@ -4417,7 +4392,7 @@ flowerWrapEls.push(wrap);
   band.dataset.rendered = "true";
 }
 
-// v99.3.16.0: Render bands within a range
+// v99.3.12.0: Render bands within a range
 function renderBandsInRange(start, end){
   for (let i = Math.max(0, start); i < Math.min(bands.length, end); i++){
     renderBandFlowers(bands[i]);
@@ -4461,7 +4436,7 @@ function refreshFrontGrass(){
 }
 
 // ============================================
-// v99.3.16.0: OPTIMIZED applyTransforms with dirty flag
+// v99.3.12.0: OPTIMIZED applyTransforms with dirty flag
 // ============================================
 function applyTransforms(tNow){
   const frontF = currentOffset;
@@ -4480,7 +4455,7 @@ function applyTransforms(tNow){
     try { if (typeof hideSkyBoxes_ === 'function') hideSkyBoxes_('row change', __llLastRowDir); if (typeof dbg_==='function') dbg_(`Row change -> keep selection (hide boxes) dir=${__llLastRowDir}`); } catch(e) {}
     try{ setTimeout(()=>{ try{ rebindSelectionToVisibleWrap_('row change'); }catch(e){} }, 0); }catch(e) {}
     updateFrontText(frontIndex);
-// v99.3.16: Keep the hill back-row preview synchronized with the currently-front week.
+// v99.3.12: Keep the hill back-row preview synchronized with the currently-front week.
 try{
   if (DOM.uBackRowsOn && DOM.uBackRowsOn.checked){
     if ((frontIndex|0) !== (lastBackRowsFrontIndex|0)){
@@ -4492,8 +4467,8 @@ try{
   }
 }catch(e){}
 
-    // v99.3.16.0: Lazy render bands near the front
-    /* v99.3.16.0: all bands are rendered; no lazy re-render needed here */
+    // v99.3.12.0: Lazy render bands near the front
+    /* v99.3.12.0: all bands are rendered; no lazy re-render needed here */
     const fs = document.getElementById('frontSpotlight');
     if (fs) fs.classList.add('on');
   }
@@ -4511,7 +4486,7 @@ try{
     const dist = (wi - frontF);
     const yComp = 1 / (1 + Math.abs(dist) * 0.35);
 
-    // v99.3.16: Render all week bands at all times (no lazy hiding)
+    // v99.3.12: Render all week bands at all times (no lazy hiding)
     band.style.display = "block";
     if (gband) gband.style.display = "block";
 
@@ -5090,7 +5065,7 @@ function layoutSolve(){
   band.style.transform = `translate3d(${tx}px,${ty}px,0px) scale(${scale})`;
 
   
-// v99.3.16: Cap flower portion to <= 50% of viewport height.
+// v99.3.12: Cap flower portion to <= 50% of viewport height.
 // Robust binary-search solve: ensure tallest visible flower canopy occupies <= 50% of stage height.
 // We recompute tx/ty for each candidate scale so the band stays bottom-anchored.
 try{
@@ -5177,7 +5152,7 @@ try{
 // UI Wiring
 // ============================================
 
-// v99.3.16: compute the current front week index from currentOffset (do not rely on lastFrontIndex during init)
+// v99.3.12: compute the current front week index from currentOffset (do not rely on lastFrontIndex during init)
 function getFrontIndexNow_(){
   const frontF = currentOffset;
   return Math.max(0, Math.round(frontF));
@@ -5231,7 +5206,7 @@ function applyUiToState(){
 
   const setVar = (name, val) => document.documentElement.style.setProperty(name, val);
 
-  // Grass height locked to v99.3.16 look
+  // Grass height locked to v99.3.12 look
   // (Keep CSS defaults as fallback, but override here for consistency)
   const grassScaleLocked = 0.62;
   const grassBaseHLocked = 420; // px baseline
@@ -5263,7 +5238,7 @@ function applyUiToState(){
   }
 
 
-  // Hills toggle (v99.3.16)
+  // Hills toggle (v99.3.12)
   if (DOM.hills3 && DOM.uHillsOn){
     const on = !!DOM.uHillsOn.checked;
     DOM.hills3.classList.toggle('isHidden', !on);
@@ -5271,11 +5246,11 @@ function applyUiToState(){
   }
 
   
-  // Back rows preview toggle (v99.3.16)
+  // Back rows preview toggle (v99.3.12)
   if (DOM.backRowsG && DOM.uBackRowsOn){
     const on = !!DOM.uBackRowsOn.checked;
     dbg_(`[BRX] UI toggle changed -> ${on ? 'ON' : 'OFF'}`);
-    // Expose to synthetic back rows renderer (v99.3.16)
+    // Expose to synthetic back rows renderer (v99.3.12)
     try{
       window.__showBackRows = on;
       __ensureBackRowsHeartbeat(on);
@@ -5300,7 +5275,7 @@ function applyUiToState(){
     if (on){ try{ (window.renderGridWeeksPreview || function(){} )(); }catch(e){} }
   }
 
-  // Hill guides (v99.3.16)
+  // Hill guides (v99.3.12)
   if (DOM.hills3 && DOM.uHillGuidesOn){
     const on = !!DOM.uHillGuidesOn.checked;
     DOM.hills3.classList.toggle('showHillGuides', on);
@@ -5343,7 +5318,7 @@ function applyUiToState(){
   }
 
 
-  // v99.3.16.0: Update cached values
+  // v99.3.12.0: Update cached values
   const style = getComputedStyle(document.documentElement);
   CACHED.grassOpacity = parseFloat(style.getPropertyValue('--grassOpacity')) || 0.86;
   CACHED.transformsDirty = true;
@@ -5443,7 +5418,7 @@ if (DOM.uHillGuidesOn) DOM.uHillGuidesOn.addEventListener("change", applyUiToSta
     if (k === "escape") { try { clearSelection_(); } catch(err) {} return; }
     if (k === "h" && DOM.utilEl) { DOM.utilEl.classList.toggle("hidden"); return; }
     if (k === "w" && DOM.uWireframe) { DOM.uWireframe.checked = !DOM.uWireframe.checked; applyUiToState(); return; }
-// v99.3.16: Keyboard scroll weeks with Up/Down (Shift = faster jump)
+// v99.3.12: Keyboard scroll weeks with Up/Down (Shift = faster jump)
 if (e.key === "ArrowUp" || e.key === "ArrowDown"){
   e.preventDefault();
   const dir = (e.key === "ArrowDown") ? -1 : +1;
@@ -5454,18 +5429,15 @@ if (e.key === "ArrowUp" || e.key === "ArrowDown"){
   else if (next > maxIdx){ targetIndex = maxIdx;  }
   else targetIndex = next;
 
-  // Snap immediately so the back-row preview updates instantly on key press.
-  currentOffset = targetIndex;
+  // Do NOT snap. Match mouse-wheel behavior: let tick() animate currentOffset toward targetIndex.
   CACHED.transformsDirty = true;
-  try { applyTransforms(performance.now()); } catch(err) {}
-
   return;
 }
   });
 }
 
 // ============================================
-// v99.3.16.0: OPTIMIZED Main Loop with dirty flag
+// v99.3.12.0: OPTIMIZED Main Loop with dirty flag
 // ============================================
 function tick(tNow){
   const offsetChanged = Math.abs(targetIndex - currentOffset) > 0.001;
@@ -5476,7 +5448,7 @@ function tick(tNow){
     CACHED.transformsDirty = true;
   }
 
-  // v99.3.16.0: Only run expensive transforms when dirty or offset changed
+  // v99.3.12.0: Only run expensive transforms when dirty or offset changed
   if (CACHED.transformsDirty || offsetChanged){
     applyTransforms(tNow);
     CACHED.transformsDirty = false;
@@ -5488,7 +5460,7 @@ function tick(tNow){
 
 
 
-// v99.3.16: Only the current active row is interactive/selectable.
+// v99.3.12: Only the current active row is interactive/selectable.
 function updateRowInteractivity_(activeWeekIndex){
   try{
     const aw = (activeWeekIndex|0);
@@ -5631,7 +5603,7 @@ function escapeHTML_(s){
     .replace(/'/g,'&#39;');
 }
 
-// ---------------- Hill Guides (v99.3.16) ----------------
+// ---------------- Hill Guides (v99.3.12) ----------------
 // One mound background; guides define 3 "back lanes" (Left/Center/Right) on the mound.
 // Each lane has 14 row guides (for the 42 back weeks total).
 
@@ -6046,14 +6018,14 @@ function ensureSkyBoxes_(){
   __llSkyLayer.id = 'llSkyLayer';
   // place inside stage so it is clipped
   (DOM.stage || document.getElementById('stage') || document.body).appendChild(__llSkyLayer);
-  // (v99.3.16) indicator line removed
+  // (v99.3.12) indicator line removed
 
 __llBoxGroup = document.createElement('div');
 __llBoxGroup.className = 'llBoxGroup';
 __llBoxGroup.id = 'llBoxGroup';
 __llSkyLayer.appendChild(__llBoxGroup);
 
-// (v99.3.16) indicator line removed
+// (v99.3.12) indicator line removed
 __llLinkSvg = null; __llLinkPath = null; __llLinkGlow = null;
 
 
@@ -6314,7 +6286,7 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('resize', () => scheduleFitAllSkyBoxes_());
 });
 function setSkyBoxMeta_(boxOrSide, maybeWhich, maybeText){
-    // v99.3.16: We no longer display the "From garden export" mini row.
+    // v99.3.12: We no longer display the "From garden export" mini row.
     // Keep this helper as a safe remover/no-op and support both call signatures:
     //   (boxEl, text) OR legacy (side, which, text)
     let box = null;
@@ -6401,7 +6373,7 @@ function updateSkyBoxesFromDay_(day, weekKey) {
     const conn = n0(day && day.connection);
     const emo = n0(day && day.emotion);
 
-    // v99.3.16: Lifetime metrics (from GardenExport columns AF/AG/AH)
+    // v99.3.12: Lifetime metrics (from GardenExport columns AF/AG/AH)
     const streakRaw = (day && day.StreakIndex != null && day.StreakIndex !== "") ? day.StreakIndex : "";
     const cumRaw = (day && day.CumulativeScore != null && day.CumulativeScore !== "") ? day.CumulativeScore : "";
     const lifeRaw = (day && day.LifetimeLevel != null && day.LifetimeLevel !== "") ? day.LifetimeLevel : "";
@@ -6531,7 +6503,7 @@ function computeAnchorForWrap_(wrap){
   const allHs = Array.from(wrap.querySelectorAll('.hsCore,[data-role="hotspot"]'));
   if (allHs.length){
     if (lvl >= 4){
-      // v99.3.16: For L4/L5, anchor to the HIGHEST core (smallest screen Y).
+      // v99.3.12: For L4/L5, anchor to the HIGHEST core (smallest screen Y).
       let best = null;
       let bestTop = Infinity;
       for (const el of allHs){
@@ -6583,7 +6555,7 @@ function syncSkyBoxesToWrap_(){
   const uiScale = (__llUiScale || 1);
   const pad = 14 * uiScale;
 
-  // v99.3.16: robust clamp using layout-local bounds (offset geometry),
+  // v99.3.12: robust clamp using layout-local bounds (offset geometry),
   // independent of absolute positioning and independent of current group screen position.
   const leftGutter  = 16 * uiScale;
 
@@ -6650,7 +6622,7 @@ function syncSkyBoxesToWrap_(){
   // Default right bound: stage edge minus gutters
   let maxContentX = stageW - pad - rightGutter - gw;
 
-  // v99.3.16: hard UI-column guard.
+  // v99.3.12: hard UI-column guard.
   // Skyboxes must not extend past the LEFT edge of the week nav UI (▲ / This Week / ▼),
   // which is flush to the stage right side.
   try{
@@ -6690,7 +6662,7 @@ function syncSkyBoxesToWrap_(){
 
 
 
-function updateSkyLinkPath_(wrap){ /* removed in v99.3.16 */ }
+function updateSkyLinkPath_(wrap){ /* removed in v99.3.12 */ }
 
 
 function startSkySyncLoop_(){
@@ -6729,7 +6701,7 @@ function getIndicatorCoreRect_(wrap){
   const cores = Array.from(wrap.querySelectorAll('.hsCore,[data-role="hotspot"]'));
   if (cores.length){
     if (lvl >= 4){
-      // v99.3.16+: explicit: highest core (smallest Y)
+      // v99.3.12+: explicit: highest core (smallest Y)
       let best = cores[0], bestTop = Infinity;
       for (const c of cores){
         const r = c.getBoundingClientRect();
@@ -7028,7 +7000,7 @@ function layoutSkyBoxes_(wrap){
     const boxW = Math.round(BOX_W0 * uiScale * 1.25);
     const boxH = Math.round(BOX_H0 * uiScale);
 
-    // v99.3.16: Header pill width matches a single skybox (same as Daily Statistics width)
+    // v99.3.12: Header pill width matches a single skybox (same as Daily Statistics width)
     try {
       if (__llSkyHeader) {
         __llSkyHeader.style.width = boxW + 'px';
@@ -7044,7 +7016,7 @@ function layoutSkyBoxes_(wrap){
 
     // Prefer being near the anchor horizontally
     const desiredX = Math.max(STAGE_PAD, Math.min(W - STAGE_PAD - groupW, Math.round((W - groupW) / 2)));
-    // v99.3.16: skyboxes are intentionally NOT anchored to the selected flower horizontally.
+    // v99.3.12: skyboxes are intentionally NOT anchored to the selected flower horizontally.
     // Keep scoring purely on readability/body size, independent of flower X.
     const score = bodyPx;
 
@@ -7086,7 +7058,7 @@ function layoutSkyBoxes_(wrap){
   }
 
 
-  // v99.3.16: Sat/Sun bias shift (rudimentary but effective).
+  // v99.3.12: Sat/Sun bias shift (rudimentary but effective).
 // Saturday: subtle 5% left shift
 // Sunday: stronger 10% left shift
 try{
@@ -7103,7 +7075,7 @@ try{
   }
 }catch(e){}
 
-  // v99.3.16: hard right guard at the week-nav UI column (▲ / This Week / ▼).
+  // v99.3.12: hard right guard at the week-nav UI column (▲ / This Week / ▼).
   // Requirement: skyboxes must NOT extend past the left edge of that UI column (0 padding).
   // This clamp is applied in the *layout* pass (the authoritative placer).
   let __llRightGuardX = null;
@@ -7120,7 +7092,7 @@ try{
     const rightLimit = (__llRightGuardX - best.groupW); // 0 padding
     groupX = Math.min(groupX, rightLimit);
   }
-  // Stage clamp (v99.3.16: no right-guard; nav is bottom-right)
+  // Stage clamp (v99.3.12: no right-guard; nav is bottom-right)
   {
     const rightBound = (W - STAGE_PAD - best.groupW);
     groupX = Math.max(STAGE_PAD, Math.min(rightBound, groupX));
@@ -7158,7 +7130,7 @@ try{
   __llBoxGroup.style.top  = Math.round(groupY) + 'px';
 
   // Log
-  if (isVerboseSelDbg_() && window.__LLDBG__ && __LLDBG__.log){ __LLDBG__.log(`v99.3.16 Boxes: layout=${c.name} scale=${uiScale.toFixed(2)} fontMul=${fontMul.toFixed(2)} bodyPx=${Math.round(Math.min(MAX_BODY_PX,11*uiScale*fontMul))} pos=(${Math.round(groupX)},${Math.round(groupY)}) anchor=(${Math.round(a.ax)},${Math.round(a.ay)})`); }
+  if (isVerboseSelDbg_() && window.__LLDBG__ && __LLDBG__.log){ __LLDBG__.log(`v99.3.12 Boxes: layout=${c.name} scale=${uiScale.toFixed(2)} fontMul=${fontMul.toFixed(2)} bodyPx=${Math.round(Math.min(MAX_BODY_PX,11*uiScale*fontMul))} pos=(${Math.round(groupX)},${Math.round(groupY)}) anchor=(${Math.round(a.ax)},${Math.round(a.ay)})`); }
 }
 
 
@@ -7429,7 +7401,7 @@ document.addEventListener('click', (ev) => {
 
   const wrap = hs.closest('.flowerWrap') || hs.closest('[data-date-key],[data-datekey]');
 
-  // v99.3.16: Only the current active row is selectable.
+  // v99.3.12: Only the current active row is selectable.
   try{
     const wi = wrap ? parseInt(wrap.dataset.weekIndex||'-1',10) : -1;
     const active = (typeof lastFrontIndex === 'number') ? (lastFrontIndex|0) : todayWeekIndex_();
@@ -7939,7 +7911,7 @@ function syncEnvelopeOverlay_(){
    BACK ROW PNG PLACEHOLDERS (HTML layer, screen/pixel space)
    Phase B Step 4b (PNG placeholders) - robust placement
    ============================================================ */
-const BACKPNG_HTML_ENABLED = false; // v99.3.16 forced OFF (back-hill system removed)
+const BACKPNG_HTML_ENABLED = false; // v99.3.12 forced OFF (back-hill system removed)
 const BACKPNG_SVG_ENABLED = false; // lock OFF old SVG back-png system
 window.__LL_DISABLE_BACKPNG_SVG__ = true;
 const BACKPNG_HTML_SCALE_NEAR = 0.60;  // B1 (front-most back row) ~3x previous 0.20
@@ -8443,11 +8415,11 @@ window.addEventListener('resize', ()=>{
 
 document.addEventListener("DOMContentLoaded", () => {
   
-  // v99.3.16 Phase A: track pointer for Inspector (I)
+  // v99.3.12 Phase A: track pointer for Inspector (I)
   window.__LL_LAST_PTR_X__ = window.innerWidth/2;
   window.__LL_LAST_PTR_Y__ = window.innerHeight/2;
   window.addEventListener('pointermove', (ev)=>{ window.__LL_LAST_PTR_X__ = ev.clientX; window.__LL_LAST_PTR_Y__ = ev.clientY; }, {passive:true});
-dbg_('v99.3.16.0: DOMContentLoaded');
+dbg_('v99.3.12.0: DOMContentLoaded');
 
   cacheDomRefs();
   try{ wrapLLDBGStep_(); }catch(e){}
@@ -8475,25 +8447,11 @@ initUi();
   lastTodTick = performance.now();
   requestAnimationFrame(tick);
 
-  // Wheel scrolling:
-  // - Keep stage listener (so wheel works when hovering stage)
-  // - Also add a window-level capture listener (helps in wallpaper hosts like Lively where wheel
-  //   sometimes bypasses the stage element)
-  // - Ensure stage can receive focus (some hosts only forward wheel after a click/focus)
-  if (DOM.stage){
-    try { DOM.stage.tabIndex = 0; } catch(e){}
-    DOM.stage.addEventListener("pointerdown", ()=>{ try{ DOM.stage.focus(); }catch(e){} }, { passive:true });
-    DOM.stage.addEventListener("wheel", onWheel, { passive: false });
-  }
-  // Capture at window so overlays / host quirks don't swallow the wheel event.
-  window.addEventListener("wheel", (e)=>{
-    try { onWheel(e); } catch(err) {}
-  }, { passive:false, capture:true });
-
+  if (DOM.stage) DOM.stage.addEventListener("wheel", onWheel, { passive: false });
 
 
   // ============================
-  // v99.3.16: Grid21 Anchor Lattice (single source of truth)
+  // v99.3.12: Grid21 Anchor Lattice (single source of truth)
   // - Used by Debug Anchors and Back rows (preview)
   // ============================
 
@@ -8607,7 +8565,7 @@ window.__LL_BACKROWS_ANCHOR_MATCHED = true; // prevent later global overrides
   }catch(e){}
 
 
-  dbg_('v99.3.16.0: Initialization complete');
+  dbg_('v99.3.12.0: Initialization complete');
 });
 })();
 
@@ -8616,9 +8574,9 @@ window.__LL_BACKROWS_ANCHOR_MATCHED = true; // prevent later global overrides
 
 
 <script id="llOptionASelection_v87340">
-/* v99.3.16 Option A: enlarge hotspots, robust selection adornments (ring + silhouette) */
+/* v99.3.12 Option A: enlarge hotspots, robust selection adornments (ring + silhouette) */
 (function(){
-  const TAG = "[v99.3.16:A]";
+  const TAG = "[v99.3.12:A]";
   const MIN_R = 26;        // px
   const SCALE_R = 2.6;     // multiplier on original r
   const MAX_R = 72;
@@ -8756,7 +8714,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 
 
 <script>
-/* v99.3.16: Grid weeks (42) preview - Step 1 (visual-only scaffolding) */
+/* v99.3.12: Grid weeks (42) preview - Step 1 (visual-only scaffolding) */
 
 (() => {
   // 42-week perspective back-grid: render 7 tiny flower heads per week row.
@@ -8983,11 +8941,11 @@ window.applySelectedAdornments = applySelectedAdornments;
 
 
 <script>
-// [v99.3.16 Phase A] Hard-disable BRX runtime (no interval, no anchors, no PNG renders)
+// [v99.3.12 Phase A] Hard-disable BRX runtime (no interval, no anchors, no PNG renders)
 window.__PHASEA_DISABLE_BRX__ = true;
 if (window.__PHASEA_DISABLE_BRX__) {
   (function(){
-    const VERSION='v99.3.16';
+    const VERSION='v99.3.12';
     // Install a stub so any callers don't crash
     const stub = {
       version: VERSION,
@@ -9005,7 +8963,7 @@ if (window.__PHASEA_DISABLE_BRX__) {
   })();
 } else {
 /*
- * v99.3.16 BRX: Hill-SVG PNG-only back rows (single renderer)
+ * v99.3.12 BRX: Hill-SVG PNG-only back rows (single renderer)
  *
  * Fix for: PNGs not drawing because prior attempts were targeting the wrong SVG/layer.
  * In this build, back-row debug anchors and lattice are drawn in #hillSvg and clipped
@@ -9275,7 +9233,7 @@ if (window.__PHASEA_DISABLE_BRX__) {
 </script>
 
 <script>
-// v99.3.16 Inspector (I): logs slot metadata under cursor without depending on existing debug wiring
+// v99.3.12 Inspector (I): logs slot metadata under cursor without depending on existing debug wiring
 (function(){
   function emit(msg, obj){
     try {
@@ -9315,7 +9273,7 @@ if (window.__PHASEA_DISABLE_BRX__) {
 
 
 <script>
-// v99.3.16 Phase A: BRX hard-disabled (Step 1). Keep code present, but prevent any back-row rendering/heartbeat.
+// v99.3.12 Phase A: BRX hard-disabled (Step 1). Keep code present, but prevent any back-row rendering/heartbeat.
 (function(){
   try{
     const disable = () => {
@@ -9359,7 +9317,7 @@ if (window.__PHASEA_DISABLE_BRX__) {
 
 <script id="phaseA_hardDisconnect_backRowToggles_v92_0_3">
 /*
-  v99.3.16 Phase A hard disconnect
+  v99.3.12 Phase A hard disconnect
   Goal: Back-row/BRX toggles do nothing (no render, no anchors, no new debug spam).
   We are NOT removing BRX code yet (next step); we are neutralizing it.
 */
