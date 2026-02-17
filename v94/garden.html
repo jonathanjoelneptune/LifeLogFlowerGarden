@@ -8,7 +8,7 @@
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v99.3.28_TodayPoll_ApplyUpdateAndDebug_PhaseB_Step1_WeekKey_SelectionDebug
+  v99.3.29_TodayPoll_FrostySkyboxesNight
     + Add canonical data-week-key on each flowerWrap (alias of weekId)
     + Add ISO weekKey helper (fallback) and richer selection/deselection debug payload (dateKey + weekKey + indices)
 
@@ -1531,19 +1531,38 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 
 .llSkyBox{
   position:absolute;
+  border-radius:14px;
+  padding:18px 22px;
   box-sizing:border-box;
-  border-radius: 16px;
+  /* Frosty white glass (day) */
   background:
-    55%, rgba(255,255,255,0.14) 100%),
-    linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.10) 100%);
-  border: 1px solid rgba(255,255,255,0.26);
-  box-shadow: 0 14px 34px rgba(0,0,0,0.16);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  color: rgba(0,0,0,0.84);
-  overflow:hidden;
-  pointer-events:auto; /* allow clicks to not pass through and clear selection */
+    radial-gradient(140% 140% at 30% 18%,
+      rgba(255,255,255,0.78) 0%,
+      rgba(255,255,255,0.48) 42%,
+      rgba(255,255,255,0.26) 100%),
+    linear-gradient(180deg,
+      rgba(255,255,255,0.46) 0%,
+      rgba(255,255,255,0.22) 100%);
+  border:1px solid rgba(255,255,255,0.38);
+  box-shadow:0 10px 30px rgba(0,0,0,0.22);
+  backdrop-filter: blur(18px) saturate(1.18);
+  -webkit-backdrop-filter: blur(18px) saturate(1.18);
 }
+/* Night boost: when stars are on, make the glass a touch whiter for readability */
+.stage[data-stars-on="1"] .llSkyBox,
+[data-stars-on="1"] .llSkyBox{
+  background:
+    radial-gradient(140% 140% at 30% 18%,
+      rgba(255,255,255,0.86) 0%,
+      rgba(255,255,255,0.56) 42%,
+      rgba(255,255,255,0.30) 100%),
+    linear-gradient(180deg,
+      rgba(255,255,255,0.54) 0%,
+      rgba(255,255,255,0.26) 100%);
+  border-color: rgba(255,255,255,0.46);
+  box-shadow:0 10px 34px rgba(0,0,0,0.26);
+}
+
   .llSkyBox .body{
     white-space: pre-wrap;
     line-height: 1.35;
@@ -1898,9 +1917,9 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.3.28_TodayPoll_ApplyUpdateAndDebug_GardenExport_HaikuReflectionSkyboxes_KeepFocusToday_OptionC_Fix51_RemoveBackHillLogic_KeepHillSilhouette.html</span><br>
-Version: <span id="__bannerVersion">v99.3.28_TodayPoll_ApplyUpdateAndDebug</span><br>
-Created: <span id="__bannerCreated">2026-02-07T22:50:16.090Z</span></div>
+File: <span id="__bannerFileName">garden_v99.3.29_TodayPoll_FrostySkyboxesNight.html</span><br>
+Version: <span id="__bannerVersion">v99.3.29_TodayPoll_FrostySkyboxesNight</span><br>
+Created: P26-02-17T07:05:47.391Z</span></div>
 <script>
 (function(){
   try{
