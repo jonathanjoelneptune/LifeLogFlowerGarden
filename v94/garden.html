@@ -5,6 +5,8 @@
 
 
 
+
+
 <!DOCTYPE html>
 <!--
   CHANGELOG
@@ -1874,7 +1876,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v99.3.18_NightFrostWhite.html • v99.3.18 • Built: 2026-02-15 17:59 PT</div>
+  <div id="llPinkBanner">garden_v99.3.19_WheelCaptureFix.html • v99.3.19 • Built: 2026-02-16 21:18 PT</div>
 
 
 <script>
@@ -1921,8 +1923,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.3.18_NightFrostWhite.html</span><br>
-Version: <span id="__bannerVersion">v99.3.18</span><br>
+File: <span id="__bannerFileName">garden_v99.3.19_WheelCaptureFix.html</span><br>
+Version: <span id="__bannerVersion">v99.3.19</span><br>
 P26-02-16T01:59:20Z</span></div>
 <script>
 (function(){
@@ -1938,7 +1940,7 @@ P26-02-16T01:59:20Z</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.3.16 loaded", new Date().toISOString());
+  console.log("[VERSION] v99.3.19 loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -8473,7 +8475,21 @@ initUi();
   lastTodTick = performance.now();
   requestAnimationFrame(tick);
 
-  if (DOM.stage) DOM.stage.addEventListener("wheel", onWheel, { passive: false });
+  // Wheel scrolling:
+  // - Keep stage listener (so wheel works when hovering stage)
+  // - Also add a window-level capture listener (helps in wallpaper hosts like Lively where wheel
+  //   sometimes bypasses the stage element)
+  // - Ensure stage can receive focus (some hosts only forward wheel after a click/focus)
+  if (DOM.stage){
+    try { DOM.stage.tabIndex = 0; } catch(e){}
+    DOM.stage.addEventListener("pointerdown", ()=>{ try{ DOM.stage.focus(); }catch(e){} }, { passive:true });
+    DOM.stage.addEventListener("wheel", onWheel, { passive: false });
+  }
+  // Capture at window so overlays / host quirks don't swallow the wheel event.
+  window.addEventListener("wheel", (e)=>{
+    try { onWheel(e); } catch(err) {}
+  }, { passive:false, capture:true });
+
 
 
   // ============================
