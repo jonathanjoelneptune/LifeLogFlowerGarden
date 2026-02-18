@@ -8,7 +8,7 @@
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v99.3.30_TodayPoll_LivelyBgPoll
+  v99.3.36_TodayPoll_LivelyRafScheduler
     + Add canonical data-week-key on each flowerWrap (alias of weekId)
     + Add ISO weekKey helper (fallback) and richer selection/deselection debug payload (dateKey + weekKey + indices)
 
@@ -1917,9 +1917,9 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.3.30_TodayPoll_LivelyBgPoll.html</span><br>
-Version: <span id="__bannerVersion">v99.3.30_TodayPoll_LivelyBgPoll</span><br>
-Created: P26-02-17T07:05:47.391Z</span></div>
+File: <span id="__bannerFileName">garden_v99.3.36_TodayPoll_LivelyRafScheduler.html</span><br>
+Version: <span id="__bannerVersion">v99.3.36_TodayPoll_LivelyRafScheduler</span><br>
+Created: <span id="__bannerCreated">2026-02-18T06:53:30.497Z</span></div></div>
 <script>
 (function(){
   try{
@@ -9822,8 +9822,6 @@ function proxyFetchExport_(targetUrl){
       return Math.max(15000, Math.min(900000, ms));
     })(),
     debugHud: (String(qs_("debugpoll") || "").trim() === "1") || (String(qs_("debug") || "").trim() === "1"),
-    // Allow polling even when document is hidden (some wallpaper hosts keep pages hidden)
-    runWhenHidden: (String(qs_(\"poll_bg\") || \"\").trim() === \"1\") || (function(){ try{ return /lively|wallpaper/i.test(navigator.userAgent || \"\"); }catch(e){ return false; } })(),
     // How many latest rows to fetch each tick (we only need today's row; keep small)
     limit: 35
   };
@@ -10016,8 +10014,7 @@ function proxyFetchExport_(targetUrl){
       const sLeft = Math.floor(msLeft/1000);
       const mm = String(Math.floor(sLeft/60)).padStart(2,"0");
       const ss = String(sLeft%60).padStart(2,"0");
-      const hidden = !!document.hidden;
-      const status = (hidden && !CFG.runWhenHidden) ? "PAUSED" : (ST.lastErr ? "ERROR" : "RUNNING");
+      const status = document.hidden ? "PAUSED" : (ST.lastErr ? "ERROR" : "RUNNING");
       const lastOk = ST.lastOkAt ? fmtTimePT_(new Date(ST.lastOkAt)) : "—";
       const lastCh = ST.lastChangeAt ? fmtTimePT_(new Date(ST.lastChangeAt)) : "—";
       setHud_(`POLL ${status} | DateKey ${ST.activeDateKey} | Next ${mm}:${ss} | Last OK ${lastOk} | Last Change ${lastCh}${ST.lastErr ? (" | " + ST.lastErr) : ""}`);
@@ -10025,8 +10022,11 @@ function proxyFetchExport_(targetUrl){
   }
 
   function stopTodayPoller_(){
-    if(ST.timer){ clearTimeout(ST.timer); ST.timer = null; }
-    if(ST.hudTimer){ clearInterval(ST.hudTimer); ST.hudTimer = null; }
+    try{ if(ST.timer){ clearTimeout(ST.timer); ST.timer = null; } }catch(e){}
+    try{ if(ST.hudTimer){ clearInterval(ST.hudTimer); ST.hudTimer = null; } }catch(e){}
+    try{ if(ST.rafId){ cancelAnimationFrame(ST.rafId); ST.rafId = 0; } }catch(e){}
+    if(hudEl){ try{ hudEl.remove(); }catch(e){} hudEl = null; }
+  }    if(ST.hudTimer){ clearInterval(ST.hudTimer); ST.hudTimer = null; }
     if(hudEl){ try{ hudEl.remove(); }catch(e){} hudEl = null; }
   }
 
@@ -10046,8 +10046,8 @@ function proxyFetchExport_(targetUrl){
         try{ console.log("[todaypoll] Date rollover", { from: prev, to: nowKey }); }catch(e){}
         try{ refreshVisibleWeekOnly_(); }catch(e){}
       }
-      const hidden = !!document.hidden;
-      if(hidden && !CFG.runWhenHidden){
+
+      if(document.hidden){
         ST.lastErr = "";
         return;
       }
@@ -10133,15 +10133,59 @@ function proxyFetchExport_(targetUrl){
     if(!CFG.enabled) return;
     scheduleHudLoop_();
 
-    const doTick = async()=>{
-      await tick_();
-      ST.nextPollAtPerf = performance.now() + CFG.pollMs;
-      ST.timer = setTimeout(doTick, CFG.pollMs);
+    // Lively/Wallpaper engines may aggressively throttle setTimeout when "background".
+    // We drive polling primarily via requestAnimationFrame time checks, with a setTimeout
+    // as a secondary fallback when rAF is throttled.
+    const kick = ()=>{
+      try{
+        if(ST.timer){ clearTimeout(ST.timer); ST.timer = null; }
+      }catch(e){}
+      try{
+        if(ST.rafId){ cancelAnimationFrame(ST.rafId); ST.rafId = 0; }
+      }catch(e){}
+      ST.nextPollAtPerf = performance.now() + 500; // first tick soon
+      ST.inTick = false;
+
+      const maybeTick = async()=>{
+        if(!CFG.enabled) return;
+        if(ST.inTick) return;
+        ST.inTick = true;
+        try{
+          await tick_();
+        }finally{
+          ST.inTick = false;
+        }
+      };
+
+      const rafLoop = async(now)=>{
+        if(!CFG.enabled) return;
+        // if we're past due, run a tick and schedule next
+        if(now >= (ST.nextPollAtPerf || 0)){
+          ST.nextPollAtPerf = now + CFG.pollMs;
+          await maybeTick();
+        }
+        ST.rafId = requestAnimationFrame(rafLoop);
+      };
+
+      // Start rAF loop
+      ST.rafId = requestAnimationFrame(rafLoop);
+
+      // Fallback timer (in case rAF is paused but timers run)
+      const timeoutLoop = async()=>{
+        if(!CFG.enabled) return;
+        const now = performance.now();
+        if(now >= (ST.nextPollAtPerf || 0)){
+          ST.nextPollAtPerf = now + CFG.pollMs;
+          await maybeTick();
+        }
+        ST.timer = setTimeout(timeoutLoop, Math.max(500, Math.min(5000, CFG.pollMs)));
+      };
+      ST.timer = setTimeout(timeoutLoop, 500);
+
+      console.log("[todaypoll] enabled", { pollMs: CFG.pollMs, tz: LL_TZ, scheduler: "raf+timeout" });
     };
 
-    ST.nextPollAtPerf = performance.now() + 500; // first tick soon
-    ST.timer = setTimeout(doTick, 500);
-    console.log("[todaypoll] enabled", { pollMs: CFG.pollMs, tz: LL_TZ });
+    kick();
   }
 
   // Expose controls for debugging
@@ -10168,16 +10212,15 @@ function proxyFetchExport_(targetUrl){
 
       if(!CFG.enabled) return;
 
-      // Run a tick immediately and restart the timeout schedule
-      if(ST.timer){ clearTimeout(ST.timer); ST.timer = null; }
+      // Force an immediate tick, then schedule the next one pollMs from now.
+      const now = performance.now();
+      ST.nextPollAtPerf = now + CFG.pollMs;
+
+      // Avoid fighting with scroll/drag for a moment.
+      window.__llIgnoreWheelUntilMs_ = now + 400;
+
       (async()=>{
-        await tick_();
-        ST.nextPollAtPerf = performance.now() + CFG.pollMs;
-        ST.timer = setTimeout(async function doTick(){
-          await tick_();
-          ST.nextPollAtPerf = performance.now() + CFG.pollMs;
-          ST.timer = setTimeout(doTick, CFG.pollMs);
-        }, CFG.pollMs);
+        try{ await tick_(); }catch(_e){}
       })();
     } catch(_e){}
   }, { capture: true });
