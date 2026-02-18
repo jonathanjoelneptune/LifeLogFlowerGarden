@@ -8,7 +8,7 @@
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v99.3.29_TodayPoll_FrostySkyboxesNight
+  v99.3.30_TodayPoll_LivelyBgPoll
     + Add canonical data-week-key on each flowerWrap (alias of weekId)
     + Add ISO weekKey helper (fallback) and richer selection/deselection debug payload (dateKey + weekKey + indices)
 
@@ -1917,8 +1917,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.3.29_TodayPoll_FrostySkyboxesNight.html</span><br>
-Version: <span id="__bannerVersion">v99.3.29_TodayPoll_FrostySkyboxesNight</span><br>
+File: <span id="__bannerFileName">garden_v99.3.30_TodayPoll_LivelyBgPoll.html</span><br>
+Version: <span id="__bannerVersion">v99.3.30_TodayPoll_LivelyBgPoll</span><br>
 Created: P26-02-17T07:05:47.391Z</span></div>
 <script>
 (function(){
@@ -9822,6 +9822,8 @@ function proxyFetchExport_(targetUrl){
       return Math.max(15000, Math.min(900000, ms));
     })(),
     debugHud: (String(qs_("debugpoll") || "").trim() === "1") || (String(qs_("debug") || "").trim() === "1"),
+    // Allow polling even when document is hidden (some wallpaper hosts keep pages hidden)
+    runWhenHidden: (String(qs_(\"poll_bg\") || \"\").trim() === \"1\") || (function(){ try{ return /lively|wallpaper/i.test(navigator.userAgent || \"\"); }catch(e){ return false; } })(),
     // How many latest rows to fetch each tick (we only need today's row; keep small)
     limit: 35
   };
@@ -10014,7 +10016,8 @@ function proxyFetchExport_(targetUrl){
       const sLeft = Math.floor(msLeft/1000);
       const mm = String(Math.floor(sLeft/60)).padStart(2,"0");
       const ss = String(sLeft%60).padStart(2,"0");
-      const status = document.hidden ? "PAUSED" : (ST.lastErr ? "ERROR" : "RUNNING");
+      const hidden = !!document.hidden;
+      const status = (hidden && !CFG.runWhenHidden) ? "PAUSED" : (ST.lastErr ? "ERROR" : "RUNNING");
       const lastOk = ST.lastOkAt ? fmtTimePT_(new Date(ST.lastOkAt)) : "—";
       const lastCh = ST.lastChangeAt ? fmtTimePT_(new Date(ST.lastChangeAt)) : "—";
       setHud_(`POLL ${status} | DateKey ${ST.activeDateKey} | Next ${mm}:${ss} | Last OK ${lastOk} | Last Change ${lastCh}${ST.lastErr ? (" | " + ST.lastErr) : ""}`);
@@ -10043,8 +10046,8 @@ function proxyFetchExport_(targetUrl){
         try{ console.log("[todaypoll] Date rollover", { from: prev, to: nowKey }); }catch(e){}
         try{ refreshVisibleWeekOnly_(); }catch(e){}
       }
-
-      if(document.hidden){
+      const hidden = !!document.hidden;
+      if(hidden && !CFG.runWhenHidden){
         ST.lastErr = "";
         return;
       }
