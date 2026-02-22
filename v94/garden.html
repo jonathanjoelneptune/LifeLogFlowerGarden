@@ -5,6 +5,7 @@
 
 
 
+
 <!DOCTYPE html>
 <!--
   CHANGELOG
@@ -115,7 +116,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = '89.7.95';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v99.3.39_SkyboxSwayRestore';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -1870,7 +1871,7 @@ font-weight:800;}
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v99.3.28_TodayPoll_ApplyUpdateAndDebug_NoSkyGlow_NoSunGlow.html • v99.3.28_TodayPoll_ApplyUpdateAndDebug • Built: 2026-02-11 23:17 PT</div>
+  <div id="llPinkBanner">garden_v99.3.39_SkyboxSwayRestore.html • v99.3.39_SkyboxSwayRestore • Built: 2026-02-22 22:46 UTC</div>
 
 
 <script>
@@ -1917,9 +1918,9 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.3.29_TodayPoll_FrostySkyboxesNight.html</span><br>
-Version: <span id="__bannerVersion">v99.3.29_TodayPoll_FrostySkyboxesNight</span><br>
-Created: P26-02-17T07:05:47.391Z</span></div>
+File: <span id="__bannerFileName">garden_v99.3.39_SkyboxSwayRestore.html</span><br>
+Version: <span id="__bannerVersion">v99.3.39_SkyboxSwayRestore</span><br>
+Created: 2026-02-22T22:46:14.788Z</div>
 <script>
 (function(){
   try{
@@ -1934,7 +1935,7 @@ Created: P26-02-17T07:05:47.391Z</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.3.28_TodayPoll_ApplyUpdateAndDebug loaded", new Date().toISOString());
+  console.log("[VERSION] v99.3.39_SkyboxSwayRestore loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -7182,11 +7183,24 @@ function showSkyBoxesForWrap_(wrap){
 
   // Make visible first so any sizing/fit logic runs with real (non-hidden) metrics
   __llBoxGrid.style.display = 'grid';
+
+  // v99.3.39: Restore skybox sway behavior (v89.6.40 pattern)
+  // Remove + re-add visibility to reliably restart CSS keyframe animation, and avoid transform fights.
+  try {
+    __llBoxGroup.classList.remove('isVisible');
+    __llBoxGroup.classList.remove('sway');
+    void __llBoxGroup.offsetWidth; // force style flush
+  } catch(e){}
+
   __llBoxGroup.classList.add('isVisible');
   __llBoxGroup.setAttribute('aria-hidden','false');
 
   updateSkyBoxesFromDay_(day, wrap);
   layoutSkyBoxes_(wrap);
+
+  // Start tracking the selected wrap and then enable sway
+  try { if (typeof startSkySyncLoop_ === 'function') startSkySyncLoop_(); } catch(e){}
+  try { __llBoxGroup.classList.add('sway'); } catch(e){}
 
   // Force a post-layout refit (double RAF for stable sizes)
   requestAnimationFrame(() => requestAnimationFrame(() => scheduleFitAllSkyBoxes_(true)));
@@ -8967,7 +8981,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 window.__PHASEA_DISABLE_BRX__ = true;
 if (window.__PHASEA_DISABLE_BRX__) {
   (function(){
-    const VERSION='v99.3.28_TodayPoll_ApplyUpdateAndDebug';
+    const VERSION='v99.3.39_SkyboxSwayRestore';
     // Install a stub so any callers don't crash
     const stub = {
       version: VERSION,
