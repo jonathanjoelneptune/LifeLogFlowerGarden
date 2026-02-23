@@ -6,6 +6,7 @@
 
 
 
+
 <!DOCTYPE html>
 <!--
   CHANGELOG
@@ -116,7 +117,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v99.3.39_SkyboxSwayRestore';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v99.3.41_ScreenSaverAllRows';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -1871,7 +1872,7 @@ font-weight:800;}
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v99.3.39_SkyboxSwayRestore.html • v99.3.39_SkyboxSwayRestore • Built: 2026-02-22 22:46 UTC</div>
+  <div id="llPinkBanner">garden_v99.3.41_ScreenSaverAllRows.html • v99.3.41_ScreenSaverAllRows • Built: 2026-02-23 21:52 UTC</div>
 
 
 <script>
@@ -1918,8 +1919,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.3.39_SkyboxSwayRestore.html</span><br>
-Version: <span id="__bannerVersion">v99.3.39_SkyboxSwayRestore</span><br>
+File: <span id="__bannerFileName">garden_v99.3.41_ScreenSaverAllRows.html</span><br>
+Version: <span id="__bannerVersion">v99.3.41_ScreenSaverAllRows</span><br>
 Created: 2026-02-22T22:46:14.788Z</div>
 <script>
 (function(){
@@ -1935,7 +1936,7 @@ Created: 2026-02-22T22:46:14.788Z</div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.3.39_SkyboxSwayRestore loaded", new Date().toISOString());
+  console.log("[VERSION] v99.3.41_ScreenSaverAllRows loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -7558,6 +7559,161 @@ document.addEventListener('click', (ev) => {
   clearSelection_('blank click');
 }, true);
 
+
+// ============================================
+// ScreenSaver Mode (URL-driven)
+// ============================================
+// Enable via URL params (GitHub-friendly):
+//   ?ss=1                       (or ?screensaver=1 or ?mode=ss)
+// Optional timing overrides (milliseconds):
+//   &ssOpen=5000   (how long a skybox stays open)
+//   &ssWait=5000   (how long to wait after closing before opening the next)
+// Notes:
+// - Current implementation chooses randomly from *any row* (no auto-scroll).
+// - Any user interaction (mouse/keyboard/wheel/touch) stops screensaver immediately.
+// - Press "S" to toggle screensaver on/off (debug-friendly).
+
+const __LL_SCREENSAVER = {
+  enabled: false,
+  openMs: 5000,
+  waitMs: 5000,
+  timerA: null,
+  timerB: null,
+  lastSlotId: '',
+  startedOnce: false
+};
+
+function __llParseBoolParam_(v){
+  const s = String(v || '').trim().toLowerCase();
+  return (s === '1' || s === 'true' || s === 'yes' || s === 'on' || s === 'ss' || s === 'screensaver');
+}
+
+function __llReadScreenSaverParams_(){
+  try{
+    if (typeof URLSearchParams === 'undefined') return;
+    const qs = new URLSearchParams(window.location.search || '');
+    const enable =
+      __llParseBoolParam_(qs.get('ss')) ||
+      __llParseBoolParam_(qs.get('screensaver')) ||
+      __llParseBoolParam_(qs.get('screenSaver')) ||
+      __llParseBoolParam_(qs.get('mode')) && (String(qs.get('mode')).toLowerCase() === 'ss' || String(qs.get('mode')).toLowerCase() === 'screensaver');
+
+    const openMs = parseInt(qs.get('ssOpen') || qs.get('openMs') || '', 10);
+    const waitMs = parseInt(qs.get('ssWait') || qs.get('waitMs') || '', 10);
+
+    if (enable) __LL_SCREENSAVER.enabled = true;
+    if (Number.isFinite(openMs) && openMs > 0) __LL_SCREENSAVER.openMs = Math.max(250, Math.min(openMs, 10*60*1000));
+    if (Number.isFinite(waitMs) && waitMs >= 0) __LL_SCREENSAVER.waitMs = Math.max(0, Math.min(waitMs, 10*60*1000));
+  }catch(e){}
+}
+
+function __llGetSelectableAllWraps_(){
+  try{
+    return (flowerWrapEls || [])
+      .filter(w => w && w.isConnected && w.dataset && (w.dataset.dateKey || w.dataset.datekey));
+  }catch(e){
+    return [];
+  }
+}
+
+function __llPickRandomWrap_(list){
+  if (!list || !list.length) return null;
+  if (list.length === 1) return list[0];
+  // avoid repeating the same slot consecutively when possible
+  for (let tries = 0; tries < 12; tries++){
+    const w = list[(Math.random() * list.length) | 0];
+    const sid = (w && w.dataset) ? (w.dataset.slotId || '') : '';
+    if (sid && sid !== __LL_SCREENSAVER.lastSlotId) return w;
+  }
+  return list[(Math.random() * list.length) | 0];
+}
+
+function __llStopScreenSaver_(why){
+  try{
+    __LL_SCREENSAVER.enabled = false;
+    if (__LL_SCREENSAVER.timerA) { clearTimeout(__LL_SCREENSAVER.timerA); __LL_SCREENSAVER.timerA = null; }
+    if (__LL_SCREENSAVER.timerB) { clearTimeout(__LL_SCREENSAVER.timerB); __LL_SCREENSAVER.timerB = null; }
+    if (typeof dbg_ === 'function') dbg_(`Screensaver: STOP (${why || 'user'})`);
+  }catch(e){}
+}
+
+function __llScreenSaverLoop_(){
+  if (!__LL_SCREENSAVER.enabled) return;
+
+  const list = __llGetSelectableAllWraps_();
+  const next = __llPickRandomWrap_(list);
+
+  if (!next){
+    // Try again shortly until data/row is ready
+    __LL_SCREENSAVER.timerA = setTimeout(__llScreenSaverLoop_, 800);
+    return;
+  }
+
+  const sid = (next && next.dataset) ? (next.dataset.slotId || '') : '';
+  if (sid) __LL_SCREENSAVER.lastSlotId = sid;
+
+  try{
+    // Open selection + skyboxes
+    if (typeof __llMarkSuppressDocClear_ === 'function') __llMarkSuppressDocClear_();
+    if (typeof setSelection_ === 'function') setSelection_(next);
+    if (typeof dbg_ === 'function') dbg_(`Screensaver: OPEN ${next.dataset.dateKey || next.dataset.datekey || ''}`);
+  }catch(e){}
+
+  // Close after openMs
+  __LL_SCREENSAVER.timerA = setTimeout(()=>{
+    try{
+      if (typeof clearSelection_ === 'function') clearSelection_('screensaver');
+      if (typeof dbg_ === 'function') dbg_('Screensaver: CLOSE');
+    }catch(e){}
+    // Wait, then open next
+    __LL_SCREENSAVER.timerB = setTimeout(()=>{
+      __llScreenSaverLoop_();
+    }, __LL_SCREENSAVER.waitMs);
+  }, __LL_SCREENSAVER.openMs);
+}
+
+function __llStartScreenSaver_(why){
+  try{
+    if (__LL_SCREENSAVER.timerA) { clearTimeout(__LL_SCREENSAVER.timerA); __LL_SCREENSAVER.timerA = null; }
+    if (__LL_SCREENSAVER.timerB) { clearTimeout(__LL_SCREENSAVER.timerB); __LL_SCREENSAVER.timerB = null; }
+    __LL_SCREENSAVER.enabled = true;
+    __LL_SCREENSAVER.startedOnce = true;
+    if (typeof dbg_ === 'function') dbg_(`Screensaver: START (${why || 'url'}) open=${__LL_SCREENSAVER.openMs}ms wait=${__LL_SCREENSAVER.waitMs}ms`);
+    // small delay to ensure initial render/export apply settles
+    setTimeout(__llScreenSaverLoop_, 600);
+  }catch(e){}
+}
+
+// URL-driven enable + start (after DOM is interactive)
+__llReadScreenSaverParams_();
+if (__LL_SCREENSAVER.enabled){
+  // Start after initial UI init cycle; this is conservative and avoids racing export apply/rebuild.
+  window.addEventListener('load', ()=>{
+    if (__LL_SCREENSAVER.enabled && !__LL_SCREENSAVER.startedOnce) __llStartScreenSaver_('url');
+  }, { once: true });
+}
+
+// Stop screensaver on any user interaction
+(function(){
+  const stop = (why)=>{ if (__LL_SCREENSAVER.enabled) __llStopScreenSaver_(why); };
+  window.addEventListener('pointerdown', ()=>stop('pointerdown'), { passive:true, capture:true });
+  window.addEventListener('wheel', ()=>stop('wheel'), { passive:true, capture:true });
+  window.addEventListener('touchstart', ()=>stop('touchstart'), { passive:true, capture:true });
+  window.addEventListener('mousemove', ()=>stop('mousemove'), { passive:true, capture:true });
+  window.addEventListener('keydown', (ev)=>{
+    // "S" toggles screensaver on/off for debugging
+    if (ev && (ev.key === 's' || ev.key === 'S')){
+      ev.preventDefault();
+      ev.stopPropagation();
+      if (__LL_SCREENSAVER.enabled) __llStopScreenSaver_('toggle');
+      else __llStartScreenSaver_('toggle');
+      return;
+    }
+    stop('keydown');
+  }, { capture:true });
+})();
+
+
 // ============================================
 // Init
 // ============================================
@@ -8981,7 +9137,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 window.__PHASEA_DISABLE_BRX__ = true;
 if (window.__PHASEA_DISABLE_BRX__) {
   (function(){
-    const VERSION='v99.3.39_SkyboxSwayRestore';
+    const VERSION='v99.3.41_ScreenSaverAllRows';
     // Install a stub so any callers don't crash
     const stub = {
       version: VERSION,
