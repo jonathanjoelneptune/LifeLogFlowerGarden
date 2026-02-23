@@ -117,7 +117,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v99.3.42_ScreenSaverAllRows_FixGhostHide';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v99.3.45_ScreenSaverAlwaysRun';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -1872,7 +1872,7 @@ font-weight:800;}
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v99.3.42_ScreenSaverAllRows_FixGhostHide.html • v99.3.42_ScreenSaverAllRows_FixGhostHide • Built: 2026-02-23 22:00 UTC</div>
+  <div id="llPinkBanner">garden_v99.3.45_ScreenSaverAlwaysRun.html • v99.3.45_ScreenSaverAlwaysRun • Built: 2026-02-23 22:00 UTC</div>
 
 
 <script>
@@ -1919,8 +1919,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.3.42_ScreenSaverAllRows_FixGhostHide.html</span><br>
-Version: <span id="__bannerVersion">v99.3.42_ScreenSaverAllRows_FixGhostHide</span><br>
+File: <span id="__bannerFileName">garden_v99.3.45_ScreenSaverAlwaysRun.html</span><br>
+Version: <span id="__bannerVersion">v99.3.45_ScreenSaverAlwaysRun</span><br>
 Created: 2026-02-22T22:46:14.788Z</div>
 <script>
 (function(){
@@ -1936,7 +1936,7 @@ Created: 2026-02-22T22:46:14.788Z</div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.3.42_ScreenSaverAllRows_FixGhostHide loaded", new Date().toISOString());
+  console.log("[VERSION] v99.3.45_ScreenSaverAlwaysRun loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -7582,12 +7582,14 @@ document.addEventListener('click', (ev) => {
 
 const __LL_SCREENSAVER = {
   enabled: false,
+  alwaysRun: false,
   openMs: 5000,
   waitMs: 5000,
   timerA: null,
   timerB: null,
   lastSlotId: '',
-  startedOnce: false
+  startedOnce: false,
+  stopOnMove: false
 };
 
 function __llParseBoolParam_(v){
@@ -7607,10 +7609,14 @@ function __llReadScreenSaverParams_(){
 
     const openMs = parseInt(qs.get('ssOpen') || qs.get('openMs') || '', 10);
     const waitMs = parseInt(qs.get('ssWait') || qs.get('waitMs') || '', 10);
+    const alwaysRun = __llParseBoolParam_(qs.get('ssAlways')) || __llParseBoolParam_(qs.get('ssAlwaysRun')) || __llParseBoolParam_(qs.get('alwaysRun'));
+    const stopOnMove = __llParseBoolParam_(qs.get('ssMove')) || __llParseBoolParam_(qs.get('ssStopOnMove')) || __llParseBoolParam_(qs.get('stopOnMove'));
 
-    if (enable) __LL_SCREENSAVER.enabled = true;
+    if (enable) { __LL_SCREENSAVER.enabled = true; __LL_SCREENSAVER.alwaysRun = true; }
     if (Number.isFinite(openMs) && openMs > 0) __LL_SCREENSAVER.openMs = Math.max(250, Math.min(openMs, 10*60*1000));
     if (Number.isFinite(waitMs) && waitMs >= 0) __LL_SCREENSAVER.waitMs = Math.max(0, Math.min(waitMs, 10*60*1000));
+    if (stopOnMove) __LL_SCREENSAVER.stopOnMove = true;
+    if (alwaysRun) __LL_SCREENSAVER.alwaysRun = true;
   }catch(e){}
 }
 
@@ -7660,6 +7666,10 @@ function __llScreenSaverLoop_(){
   if (sid) __LL_SCREENSAVER.lastSlotId = sid;
 
   try{
+    // Screensaver is authoritative: close any open skyboxes before opening next
+    try{ if (typeof clearSelection_ === 'function') clearSelection_('screensaver-pre'); }catch(e){}
+    try{ if (typeof hideSkyBoxes_ === 'function') hideSkyBoxes_('screensaver-pre'); }catch(e){}
+
     // Open selection + skyboxes
     if (typeof __llMarkSuppressDocClear_ === 'function') __llMarkSuppressDocClear_();
     if (typeof setSelection_ === 'function') setSelection_(next);
@@ -7700,13 +7710,21 @@ if (__LL_SCREENSAVER.enabled){
   }, { once: true });
 }
 
-// Stop screensaver on any user interaction
+// Stop screensaver on user interaction (disabled in URL screensaver mode: it always runs)
+// Note: Wallpaper engines may emit synthetic mousemove events continuously.
+// By default, we do NOT stop on mousemove. Enable via URL: &ssStopOnMove=1
 (function(){
-  const stop = (why)=>{ if (__LL_SCREENSAVER.enabled) __llStopScreenSaver_(why); };
+  const stop = (why)=>{
+    if (!__LL_SCREENSAVER.enabled) return;
+    if (__LL_SCREENSAVER.alwaysRun) return;
+    __llStopScreenSaver_(why);
+  };
   window.addEventListener('pointerdown', ()=>stop('pointerdown'), { passive:true, capture:true });
   window.addEventListener('wheel', ()=>stop('wheel'), { passive:true, capture:true });
   window.addEventListener('touchstart', ()=>stop('touchstart'), { passive:true, capture:true });
-  window.addEventListener('mousemove', ()=>stop('mousemove'), { passive:true, capture:true });
+  if (__LL_SCREENSAVER.stopOnMove){
+    window.addEventListener('mousemove', ()=>stop('mousemove'), { passive:true, capture:true });
+  }
   window.addEventListener('keydown', (ev)=>{
     // "S" toggles screensaver on/off for debugging
     if (ev && (ev.key === 's' || ev.key === 'S')){
@@ -9144,7 +9162,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 window.__PHASEA_DISABLE_BRX__ = true;
 if (window.__PHASEA_DISABLE_BRX__) {
   (function(){
-    const VERSION='v99.3.42_ScreenSaverAllRows_FixGhostHide';
+    const VERSION='v99.3.45_ScreenSaverAlwaysRun';
     // Install a stub so any callers don't crash
     const stub = {
       version: VERSION,
