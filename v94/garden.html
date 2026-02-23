@@ -322,7 +322,7 @@ console.log("[v99.3.28_TodayPoll_ApplyUpdateAndDebug] loaded", new Date().toISOS
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v99.3.48_StrokeBack_GrassSeamsFix.html</title>
+<title>garden_v99.3.50_StrokeB_GrassOutline.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -382,7 +382,7 @@ console.log("[v99.3.28_TodayPoll_ApplyUpdateAndDebug] loaded", new Date().toISOS
   --grassW: 50%;
   --grassH: 140%;
   --grassBgSize: var(--grassW) var(--grassH);
-  --grassFilter: blur(0.35px) saturate(0.98) contrast(0.98);
+  --grassFilter: blur(0.25px) saturate(1.02) contrast(1.08) drop-shadow(0 -1px 0 rgba(0,0,0,0.35)) drop-shadow(0 1px 0 rgba(0,0,0,0.12)) drop-shadow(1px 0 0 rgba(0,0,0,0.12)) drop-shadow(-1px 0 0 rgba(0,0,0,0.12));
   --grassDeformMul: 1;
   --grassTileW: 720px;
 
@@ -1889,7 +1889,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v99.3.48_StrokeBack_GrassSeamsFix.html • v99.3.48_StrokeBack_GrassSeamsFix • Built: 2026-02-23 23:30 UTC</div>
+  <div id="llPinkBanner">garden_v99.3.50_StrokeB_GrassOutline.html • v99.3.50_StrokeB_GrassOutline • Built: 2026-02-23 23:27 UTC</div>
 
 
 <script>
@@ -1936,8 +1936,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.3.48_StrokeBack_GrassSeamsFix.html</span><br>
-Version: <span id="__bannerVersion">v99.3.48_StrokeBack_GrassSeamsFix</span><br>
+File: <span id="__bannerFileName">garden_v99.3.50_StrokeB_GrassOutline.html</span><br>
+Version: <span id="__bannerVersion">v99.3.50_StrokeB_GrassOutline</span><br>
 Created: 2026-02-22T22:46:14.788Z</div>
 <script>
 (function(){
@@ -1953,7 +1953,7 @@ Created: 2026-02-22T22:46:14.788Z</div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.3.48_StrokeBack_GrassSeamsFix loaded", new Date().toISOString());
+  console.log("[VERSION] v99.3.50_StrokeB_GrassOutline loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -3587,14 +3587,14 @@ const monthC = (MONTH_COLORS[month] || "#C7D4E2");
   const LEAF_Y = { 1: 770, 2: 505, 3: 605, 4: 580, 5: 560 };
 
   const petalEllipse = (cx, cy, rx, ry, rotDeg, fill, strokeAlpha=0.46) => {
-    const strokeCol = 'rgba(0,0,0,0.78)';
+    const strokeCol = 'rgba(0,0,0,0.85)';
     const hiFill = 'rgba(255,255,255,0.08)';
     const hiRx = rx * 0.82;
     const hiRy = ry * 0.82;
     const hiCy = cy - (ry * 0.08);
     return `
       <ellipse class="petal" cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" transform="rotate(${rotDeg} ${cx} ${cy})"
-        fill="${fill}" stroke="${strokeCol}" stroke-width="1.55" stroke-linejoin="round" opacity="0.98"/>
+        fill="${fill}" stroke="${strokeCol}" stroke-width="1.95" stroke-linejoin="round" opacity="0.98"/>
       <ellipse class="petalHi" cx="${cx}" cy="${hiCy}" rx="${hiRx}" ry="${hiRy}" transform="rotate(${rotDeg} ${cx} ${cy})"
         fill="${hiFill}" stroke="none" opacity="1"/>
     `;
@@ -9238,7 +9238,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 window.__PHASEA_DISABLE_BRX__ = true;
 if (window.__PHASEA_DISABLE_BRX__) {
   (function(){
-    const VERSION='v99.3.48_StrokeBack_GrassSeamsFix';
+    const VERSION='v99.3.50_StrokeB_GrassOutline';
     // Install a stub so any callers don't crash
     const stub = {
       version: VERSION,
