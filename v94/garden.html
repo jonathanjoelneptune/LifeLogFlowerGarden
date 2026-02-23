@@ -322,7 +322,7 @@ console.log("[v99.3.28_TodayPoll_ApplyUpdateAndDebug] loaded", new Date().toISOS
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v99.3.51_StrokeBPlus_GrassOutlineFix.html</title>
+<title>garden_v99.3.52_ColorGradeSceneCoherence.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -1889,7 +1889,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v99.3.51_StrokeBPlus_GrassOutlineFix.html • v99.3.51_StrokeBPlus_GrassOutlineFix • Built: 2026-02-23 23:38 UTC</div>
+  <div id="llPinkBanner">garden_v99.3.52_ColorGradeSceneCoherence.html • v99.3.52_ColorGradeSceneCoherence • Built: 2026-02-23 23:48 UTC</div>
 
 
 <script>
@@ -1936,8 +1936,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.3.51_StrokeBPlus_GrassOutlineFix.html</span><br>
-Version: <span id="__bannerVersion">v99.3.51_StrokeBPlus_GrassOutlineFix</span><br>
+File: <span id="__bannerFileName">garden_v99.3.52_ColorGradeSceneCoherence.html</span><br>
+Version: <span id="__bannerVersion">v99.3.52_ColorGradeSceneCoherence</span><br>
 Created: 2026-02-23T23:38:23.441Z</div>
 <script>
 (function(){
@@ -1953,7 +1953,7 @@ Created: 2026-02-23T23:38:23.441Z</div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.3.51_StrokeBPlus_GrassOutlineFix loaded", new Date().toISOString());
+  console.log("[VERSION] v99.3.52_ColorGradeSceneCoherence loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -3349,6 +3349,104 @@ function mixHex(a,b,t){
   return ("#" + to(rr) + to(rg) + to(rb)).toUpperCase();
 }
 
+function rgbFromHex_(hex){
+  const h = normHex6(hex, null);
+  if (!h) return null;
+  const s = h.slice(1);
+  const r = parseInt(s.slice(0,2),16);
+  const g = parseInt(s.slice(2,4),16);
+  const b = parseInt(s.slice(4,6),16);
+  if (!Number.isFinite(r) || !Number.isFinite(g) || !Number.isFinite(b)) return null;
+  return { r, g, b };
+}
+
+function hexFromRgb_(r,g,b){
+  const to = (v)=>{
+    const x = Math.max(0, Math.min(255, Math.round(v)));
+    return x.toString(16).padStart(2,'0');
+  };
+  return ('#' + to(r) + to(g) + to(b)).toUpperCase();
+}
+
+function rgbToHsl_(r,g,b){
+  r/=255; g/=255; b/=255;
+  const max = Math.max(r,g,b), min = Math.min(r,g,b);
+  let h = 0, s = 0;
+  const l = (max + min) / 2;
+  const d = max - min;
+  if (d !== 0){
+    s = d / (1 - Math.abs(2*l - 1));
+    switch(max){
+      case r: h = ((g-b)/d) % 6; break;
+      case g: h = (b-r)/d + 2; break;
+      default: h = (r-g)/d + 4; break;
+    }
+    h *= 60;
+    if (h < 0) h += 360;
+  }
+  return { h, s, l };
+}
+
+function hslToRgb_(h,s,l){
+  h = ((h%360)+360)%360;
+  s = clamp01(s); l = clamp01(l);
+  const c = (1 - Math.abs(2*l - 1)) * s;
+  const x = c * (1 - Math.abs(((h/60) % 2) - 1));
+  const m = l - c/2;
+  let rp=0,gp=0,bp=0;
+  if (h < 60) { rp=c; gp=x; bp=0; }
+  else if (h < 120) { rp=x; gp=c; bp=0; }
+  else if (h < 180) { rp=0; gp=c; bp=x; }
+  else if (h < 240) { rp=0; gp=x; bp=c; }
+  else if (h < 300) { rp=x; gp=0; bp=c; }
+  else { rp=c; gp=0; bp=x; }
+  return { r:(rp+m)*255, g:(gp+m)*255, b:(bp+m)*255 };
+}
+
+function getSceneAmbientHex_(){
+  const p = (window.__LL_PALETTE__ && window.__LL_PALETTE__.skyA) ? window.__LL_PALETTE__ : null;
+  if (p){
+    // Slightly horizon-leaning blend for "in-scene" lighting
+    return mixHex(mixHex(p.skyB, p.skyC, 0.55), p.skyA, 0.20);
+  }
+  try{
+    const cs = getComputedStyle(DOM.stage || document.documentElement);
+    const a = cs.getPropertyValue('--skyA').trim();
+    const b = cs.getPropertyValue('--skyB').trim();
+    const c = cs.getPropertyValue('--skyC').trim();
+    if (a && b && c) return mixHex(mixHex(b,c,0.55), a, 0.20);
+  }catch(e){}
+  return '#88BDF0';
+}
+
+function gradePetalHexForScene_(hex){
+  const src = normHex6(hex, null);
+  if (!src) return hex;
+  const rgb = rgbFromHex_(src);
+  if (!rgb) return src;
+
+  // Nonlinear saturation compression: preserves low/mid saturation, tames neon.
+  let { h, s, l } = rgbToHsl_(rgb.r, rgb.g, rgb.b);
+  const s0 = s;
+  s = clamp01(s * (0.92 - 0.18 * s));
+
+  // Small lift for very dark colors so strokes and shading read better.
+  if (l < 0.22) l = clamp01(l + 0.03);
+
+  const rgb2 = hslToRgb_(h, s, l);
+  let out = hexFromRgb_(rgb2.r, rgb2.g, rgb2.b);
+
+  // Ambient blend: nudges petals into the scene lighting so they feel "in" the sky.
+  const amb = getSceneAmbientHex_();
+  const pal = window.__LL_PALETTE__ || null;
+  const mixAmt = pal && pal.stars ? 0.05 : 0.08;
+  out = mixHex(out, amb, mixAmt);
+
+  // If saturation was tiny to begin with, keep it stable.
+  if (s0 < 0.10) out = src;
+  return out;
+}
+
 const lighten = (hex, amt) => mixHex(hex, "#ffffff", amt);
 const darken  = (hex, amt) => mixHex(hex, "#000000", amt);
 
@@ -4007,6 +4105,12 @@ const days = [];
     // Color defaults
     if (!primary) primary = "#FFFFFF";
     if (!secondary) secondary = "#FFFFFF";
+
+    // Color grading for scene coherence
+    // - Nonlinear saturation compression to tame neon
+    // - Subtle ambient sky blend so petals feel lit by the scene
+    primary = gradePetalHexForScene_(primary);
+    secondary = gradePetalHexForScene_(secondary);
 
 const stemColors = stemColorsForMonthIndex_(monthIndex);
 
@@ -5002,6 +5106,9 @@ function applyTimeOfDayBackground(){
   if (!DOM.stage) return;
   const m = getActiveMinutes();
   const p = (typeof paletteForMinuteSolar_ === 'function' ? paletteForMinuteSolar_(m) : paletteForMinute(m));
+
+  // Expose current palette for other render logic (flower color grading, glass tinting, etc.)
+  window.__LL_PALETTE__ = p;
 
   DOM.stage.style.setProperty("--skyA", p.skyA);
   DOM.stage.style.setProperty("--skyB", p.skyB);
@@ -9238,7 +9345,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 window.__PHASEA_DISABLE_BRX__ = true;
 if (window.__PHASEA_DISABLE_BRX__) {
   (function(){
-    const VERSION='v99.3.51_StrokeBPlus_GrassOutlineFix';
+    const VERSION='v99.3.52_ColorGradeSceneCoherence';
     // Install a stub so any callers don't crash
     const stub = {
       version: VERSION,
