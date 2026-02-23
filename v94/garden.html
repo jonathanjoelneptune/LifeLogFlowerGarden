@@ -117,7 +117,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v99.3.41_ScreenSaverAllRows';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v99.3.42_ScreenSaverAllRows_FixGhostHide';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -1872,7 +1872,7 @@ font-weight:800;}
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v99.3.41_ScreenSaverAllRows.html • v99.3.41_ScreenSaverAllRows • Built: 2026-02-23 21:52 UTC</div>
+  <div id="llPinkBanner">garden_v99.3.42_ScreenSaverAllRows_FixGhostHide.html • v99.3.42_ScreenSaverAllRows_FixGhostHide • Built: 2026-02-23 22:00 UTC</div>
 
 
 <script>
@@ -1919,8 +1919,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.3.41_ScreenSaverAllRows.html</span><br>
-Version: <span id="__bannerVersion">v99.3.41_ScreenSaverAllRows</span><br>
+File: <span id="__bannerFileName">garden_v99.3.42_ScreenSaverAllRows_FixGhostHide.html</span><br>
+Version: <span id="__bannerVersion">v99.3.42_ScreenSaverAllRows_FixGhostHide</span><br>
 Created: 2026-02-22T22:46:14.788Z</div>
 <script>
 (function(){
@@ -1936,7 +1936,7 @@ Created: 2026-02-22T22:46:14.788Z</div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.3.41_ScreenSaverAllRows loaded", new Date().toISOString());
+  console.log("[VERSION] v99.3.42_ScreenSaverAllRows_FixGhostHide loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -7165,6 +7165,10 @@ function showSkyBoxesForWrap_(wrap){
   __llIgnoreRowClearUntilTs = Math.max(__llIgnoreRowClearUntilTs||0, performance.now() + 1200);
   __llSuppressOutsideClickUntilTs = Math.max(__llSuppressOutsideClickUntilTs||0, performance.now() + 700);
   ensureSkyBoxes_();
+  // [SKY] Cancel any pending hide "park offscreen" timer so we don't instantly vanish after a row-change hide.
+  try{
+    if (__llBoxHideTimer){ clearTimeout(__llBoxHideTimer); __llBoxHideTimer = null; }
+  }catch(e){}
 
   // Pull day model from the band that owns this wrap
   let day = null;
@@ -7237,10 +7241,13 @@ function hideSkyBoxes_(reason, dir){
 
   // After fade-out / whoosh, park offscreen (keep nodes for reuse)
   __llBoxHideTimer = setTimeout(()=>{
-    if (__llBoxGroup){
+    try{
+      // Guard: if the boxes were re-opened before this timer fires, do not "park offscreen".
+      if (!__llBoxGroup) { __llBoxHideTimer = null; return; }
+      if (__llBoxGroup.classList && __llBoxGroup.classList.contains('isVisible')) { __llBoxHideTimer = null; return; }
       __llBoxGroup.style.left = '-9999px';
       __llBoxGroup.style.top  = '-9999px';
-    }
+    }catch(e){}
     __llBoxHideTimer = null;
   }, isRow ? 260 : 220);
 
@@ -9137,7 +9144,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 window.__PHASEA_DISABLE_BRX__ = true;
 if (window.__PHASEA_DISABLE_BRX__) {
   (function(){
-    const VERSION='v99.3.41_ScreenSaverAllRows';
+    const VERSION='v99.3.42_ScreenSaverAllRows_FixGhostHide';
     // Install a stub so any callers don't crash
     const stub = {
       version: VERSION,
