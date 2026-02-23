@@ -322,7 +322,7 @@ console.log("[v99.3.28_TodayPoll_ApplyUpdateAndDebug] loaded", new Date().toISOS
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v99.3.47_PolishFix_ScreensaverSingle_HeaderFit.html</title>
+<title>garden_v99.3.48_StrokeBack_GrassSeamsFix.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -382,9 +382,9 @@ console.log("[v99.3.28_TodayPoll_ApplyUpdateAndDebug] loaded", new Date().toISOS
   --grassW: 50%;
   --grassH: 140%;
   --grassBgSize: var(--grassW) var(--grassH);
-  --grassFilter: blur(0.65px) saturate(0.92) contrast(0.96);
+  --grassFilter: blur(0.35px) saturate(0.98) contrast(0.98);
   --grassDeformMul: 1;
-  --grassTileW: 900px;
+  --grassTileW: 720px;
 
   /* Clouds */
   --cloudOpacity: 1.00;
@@ -843,11 +843,11 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  background-image: var(--grassImg);
-  background-repeat: repeat-x;
-  background-position: 0% 100%;
-  background-size: var(--grassTileW, 900px) 100%;
-  filter: var(--grassFilter);
+  /* Two offset layers to eliminate visible tiling seams/gaps */
+  background-image: var(--grassImg), var(--grassImg);
+  background-repeat: repeat-x, repeat-x;
+  background-size: var(--grassTileW, 720px) 100%, var(--grassTileW, 720px) 100%;
+  background-position: 0% 100%, calc(var(--grassTileW, 720px) * 0.5) 100%;
   transform: scaleX(calc(var(--grassFlip) * 1));
   transform-origin: 50% 100%;
   --gx: 8px;
@@ -855,7 +855,7 @@ body {
   --gsy: 0.02;
   --gdur: 14s;
   --gdel: 0s;
-  filter: saturate(1.02) hue-rotate(var(--fgGrassHue)) saturate(var(--fgGrassSat)) brightness(var(--fgGrassBright));
+  filter: var(--grassFilter) hue-rotate(var(--fgGrassHue)) saturate(var(--fgGrassSat)) brightness(var(--fgGrassBright));
 }
 
 .grassHaze {
@@ -1889,7 +1889,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v99.3.47_PolishFix_ScreensaverSingle_HeaderFit.html • v99.3.47_PolishFix_ScreensaverSingle_HeaderFit • Built: 2026-02-23 23:30 UTC</div>
+  <div id="llPinkBanner">garden_v99.3.48_StrokeBack_GrassSeamsFix.html • v99.3.48_StrokeBack_GrassSeamsFix • Built: 2026-02-23 23:30 UTC</div>
 
 
 <script>
@@ -1936,8 +1936,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.3.47_PolishFix_ScreensaverSingle_HeaderFit.html</span><br>
-Version: <span id="__bannerVersion">v99.3.47_PolishFix_ScreensaverSingle_HeaderFit</span><br>
+File: <span id="__bannerFileName">garden_v99.3.48_StrokeBack_GrassSeamsFix.html</span><br>
+Version: <span id="__bannerVersion">v99.3.48_StrokeBack_GrassSeamsFix</span><br>
 Created: 2026-02-22T22:46:14.788Z</div>
 <script>
 (function(){
@@ -1953,7 +1953,7 @@ Created: 2026-02-22T22:46:14.788Z</div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.3.47_PolishFix_ScreensaverSingle_HeaderFit loaded", new Date().toISOString());
+  console.log("[VERSION] v99.3.48_StrokeBack_GrassSeamsFix loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -3587,14 +3587,14 @@ const monthC = (MONTH_COLORS[month] || "#C7D4E2");
   const LEAF_Y = { 1: 770, 2: 505, 3: 605, 4: 580, 5: 560 };
 
   const petalEllipse = (cx, cy, rx, ry, rotDeg, fill, strokeAlpha=0.46) => {
-    const strokeCol = darken(fill, 0.22);
+    const strokeCol = 'rgba(0,0,0,0.78)';
     const hiFill = 'rgba(255,255,255,0.08)';
     const hiRx = rx * 0.82;
     const hiRy = ry * 0.82;
     const hiCy = cy - (ry * 0.08);
     return `
       <ellipse class="petal" cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" transform="rotate(${rotDeg} ${cx} ${cy})"
-        fill="${fill}" stroke="${strokeCol}" stroke-width="1.35" stroke-linejoin="round" opacity="0.98"/>
+        fill="${fill}" stroke="${strokeCol}" stroke-width="1.55" stroke-linejoin="round" opacity="0.98"/>
       <ellipse class="petalHi" cx="${cx}" cy="${hiCy}" rx="${hiRx}" ry="${hiRy}" transform="rotate(${rotDeg} ${cx} ${cy})"
         fill="${hiFill}" stroke="none" opacity="1"/>
     `;
@@ -9238,7 +9238,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 window.__PHASEA_DISABLE_BRX__ = true;
 if (window.__PHASEA_DISABLE_BRX__) {
   (function(){
-    const VERSION='v99.3.47_PolishFix_ScreensaverSingle_HeaderFit';
+    const VERSION='v99.3.48_StrokeBack_GrassSeamsFix';
     // Install a stub so any callers don't crash
     const stub = {
       version: VERSION,
