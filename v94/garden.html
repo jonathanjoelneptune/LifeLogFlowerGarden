@@ -323,7 +323,7 @@ console.log("[v99.3.28_TodayPoll_ApplyUpdateAndDebug] loaded", new Date().toISOS
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v99.3.54_ScreenSaverStartDelay30s.html</title>
+<title>garden_v99.3.55_ScreenSaverDisableHotkeysInSS.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -1894,7 +1894,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v99.3.54_ScreenSaverStartDelay30s.html • v99.3.54_ScreenSaverStartDelay30s • Built: 2026-02-24 05:23 UTC</div>
+  <div id="llPinkBanner">garden_v99.3.55_ScreenSaverDisableHotkeysInSS.html • v99.3.55_ScreenSaverDisableHotkeysInSS • Built: 2026-02-24 06:18 UTC</div>
 
 
 <script>
@@ -1941,8 +1941,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.3.54_ScreenSaverStartDelay30s.html</span><br>
-Version: <span id="__bannerVersion">v99.3.54_ScreenSaverStartDelay30s</span><br>
+File: <span id="__bannerFileName">garden_v99.3.55_ScreenSaverDisableHotkeysInSS.html</span><br>
+Version: <span id="__bannerVersion">v99.3.55_ScreenSaverDisableHotkeysInSS</span><br>
 Created: 2026-02-23T23:38:23.441Z</div>
 <script>
 (function(){
@@ -1958,7 +1958,7 @@ Created: 2026-02-23T23:38:23.441Z</div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.3.54_ScreenSaverStartDelay30s loaded", new Date().toISOString());
+  console.log("[VERSION] v99.3.55_ScreenSaverDisableHotkeysInSS loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -2772,6 +2772,7 @@ window.__LL_hillTopAtX_fill = function(x, yTopGuess, yBottom){
   }
 
   document.addEventListener('keydown', (ev)=>{
+    if ((ev.key === 'd' || ev.key === 'D') && window.__llIsScreensaverActive__ && window.__llIsScreensaverActive__()) return;
     if (ev.key === 'd' || ev.key === 'D'){
       open = !open;
       panel.classList.toggle('open', open);
@@ -2920,7 +2921,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   </div>
 
   <div class="util hidden" id="util">
-    <div class="utilTitle">LifeLog Garden Walk v99.3.54_ScreenSaverStartDelay30s</div>
+    <div class="utilTitle">LifeLog Garden Walk v99.3.55_ScreenSaverDisableHotkeysInSS</div>
     <div class="utilSub">Scroll to walk through weeks. Press H to hide/show this panel.</div>
 	    <div class="row">
 	      <label>Wireframe</label>
@@ -5682,6 +5683,9 @@ if (DOM.uHillGuidesOn) DOM.uHillGuidesOn.addEventListener("change", applyUiToSta
     if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
     const k = (e.key || "").toLowerCase();
     if (k === "escape") { try { clearSelection_(); } catch(err) {} return; }
+    if (window.__llIsScreensaverActive__ && window.__llIsScreensaverActive__()){
+      if (k === "h" || k === "w") return;
+    }
     if (k === "h" && DOM.utilEl) { DOM.utilEl.classList.toggle("hidden"); return; }
     if (k === "w" && DOM.uWireframe) { DOM.uWireframe.checked = !DOM.uWireframe.checked; applyUiToState(); return; }
 // v99.3.28_TodayPoll_ApplyUpdateAndDebug: Keyboard scroll weeks with Up/Down (Shift = faster jump)
@@ -7860,7 +7864,14 @@ const __LL_SCREENSAVER = {
   lastSlotId: '',
   startedOnce: false,
   stopOnMove: false
+};;
+
+// Expose screensaver state so other handlers can gate hotkeys
+window.__LL_SCREENSAVER = __LL_SCREENSAVER;
+window.__llIsScreensaverActive__ = window.__llIsScreensaverActive__ || function(){
+  try{ return !!(__LL_SCREENSAVER && __LL_SCREENSAVER.enabled); }catch(e){ return false; }
 };
+
 
 function __llParseBoolParam_(v){
   const s = String(v || '').trim().toLowerCase();
@@ -9442,7 +9453,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 window.__PHASEA_DISABLE_BRX__ = true;
 if (window.__PHASEA_DISABLE_BRX__) {
   (function(){
-    const VERSION='v99.3.54_ScreenSaverStartDelay30s';
+    const VERSION='v99.3.55_ScreenSaverDisableHotkeysInSS';
     // Install a stub so any callers don't crash
     const stub = {
       version: VERSION,
