@@ -8,9 +8,12 @@
 
 
 
+
 <!DOCTYPE html>
 <!--
   CHANGELOG
+  v99.3.56_BackRowSlotSpread
+    + Add scale-compensated back-row slot spread to prevent horizontal clumping
   v99.3.29_TodayPoll_FrostySkyboxesNight
     + Add canonical data-week-key on each flowerWrap (alias of weekId)
     + Add ISO weekKey helper (fallback) and richer selection/deselection debug payload (dateKey + weekKey + indices)
@@ -323,7 +326,7 @@ console.log("[v99.3.28_TodayPoll_ApplyUpdateAndDebug] loaded", new Date().toISOS
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v99.3.55_ScreenSaverDisableHotkeysInSS.html</title>
+<title>garden_v99.3.56_BackRowSlotSpread.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -1894,7 +1897,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v99.3.55_ScreenSaverDisableHotkeysInSS.html • v99.3.55_ScreenSaverDisableHotkeysInSS • Built: 2026-02-24 06:18 UTC</div>
+  <div id="llPinkBanner">garden_v99.3.56_BackRowSlotSpread.html • v99.3.56_BackRowSlotSpread • Built: 2026-02-24T19:55:45.776 UTC 06:18 UTC</div>
 
 
 <script>
@@ -1941,9 +1944,9 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.3.55_ScreenSaverDisableHotkeysInSS.html</span><br>
-Version: <span id="__bannerVersion">v99.3.55_ScreenSaverDisableHotkeysInSS</span><br>
-Created: 2026-02-23T23:38:23.441Z</div>
+File: <span id="__bannerFileName">garden_v99.3.56_BackRowSlotSpread.html</span><br>
+Version: <span id="__bannerVersion">v99.3.56_BackRowSlotSpread</span><br>
+Created: 2026-02-24T19:55:45.776Z</div>
 <script>
 (function(){
   try{
@@ -1958,7 +1961,7 @@ Created: 2026-02-23T23:38:23.441Z</div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.3.55_ScreenSaverDisableHotkeysInSS loaded", new Date().toISOString());
+  console.log("[VERSION] v99.3.56_BackRowSlotSpread loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -2921,7 +2924,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   </div>
 
   <div class="util hidden" id="util">
-    <div class="utilTitle">LifeLog Garden Walk v99.3.55_ScreenSaverDisableHotkeysInSS</div>
+    <div class="utilTitle">LifeLog Garden Walk v99.3.56_BackRowSlotSpread</div>
     <div class="utilSub">Scroll to walk through weeks. Press H to hide/show this panel.</div>
 	    <div class="row">
 	      <label>Wireframe</label>
@@ -4691,6 +4694,65 @@ function refreshFrontGrass(){
 // ============================================
 // v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: OPTIMIZED applyTransforms with dirty flag
 // ============================================
+
+// ============================================
+// v99.3.56_BackRowSlotSpread: keep back-row flowers horizontally de-clumped
+// ============================================
+const __LL_BACK_SPREAD_MAX_BEHIND = 12;   // rows behind where we reach full edge spread
+const __LL_BACK_SPREAD_EDGE_PAD   = 0.03; // 3% inset from the edges to avoid clipping
+
+function __llClamp01_(v){ return v < 0 ? 0 : (v > 1 ? 1 : v); }
+function __llLerp_(a,b,t){ return a + (b-a)*t; }
+
+// Updates the 7 day slots in a band so they keep filling the view width even when the band is scaled down.
+function updateBandSlotSpread_(band, behind, s){
+  if (!band) return;
+
+  // Cache so we do not rewrite styles every frame if nothing meaningfully changed
+  const key = (behind < 0.05) ? "front" : ("b" + (Math.round(behind*100)/100) + "|s" + (Math.round(s*1000)/1000));
+  if (band.__llSpreadKey === key) return;
+  band.__llSpreadKey = key;
+
+  const slots = band.querySelectorAll(".flowerSlot");
+  if (!slots || slots.length < 7) return;
+
+  // As behind increases, expand anchors outward until Monday/Sunday approach the edges
+  const tSpread  = __llClamp01_((behind - 0.25) / __LL_BACK_SPREAD_MAX_BEHIND);
+  const leftEdge = __LL_BACK_SPREAD_EDGE_PAD;
+  const rightEdge= 1 - __LL_BACK_SPREAD_EDGE_PAD;
+
+  // Stable per-week jitter to reduce visible “columns”
+  const weekIso = (band._weekData && band._weekData.iso) ? String(band._weekData.iso)
+              : (band.dataset.weekId || band.dataset.weekKey || band.dataset.weekIndex || "wk");
+
+  const colSpan = (rightEdge - leftEdge) / 6;
+  const maxJit  = colSpan * 0.18 * tSpread; // subtle, grows with distance
+
+  for (let d=0; d<7 && d<slots.length; d++){
+    const base = (d + 0.5) / 7;                       // canonical slot center
+    const edge = __llLerp_(leftEdge, rightEdge, d/6); // edge-to-edge anchors
+
+    // Blend from canonical -> edge anchors as row moves back
+    let desired = __llLerp_(base, edge, tSpread);
+
+    // Organic jitter (do not jitter Monday/Sunday so edges stay clean)
+    if (d !== 0 && d !== 6 && maxJit > 0){
+      const rr = mulberry32(hash32FromString("spread_" + weekIso + "_" + d));
+      desired += (rr()*2 - 1) * maxJit;
+    }
+
+    desired = Math.max(0.01, Math.min(0.99, desired));
+
+    // Compensate for the band’s scale() around center:
+    // final = 0.5 + s*(pre - 0.5)  =>  pre = 0.5 + (final - 0.5)/s
+    const invS = 1 / Math.max(0.001, s);
+    const pre  = 0.5 + (desired - 0.5) * invS;
+
+    slots[d].style.left = (pre * 100).toFixed(3) + "%";
+  }
+}
+
+
 function applyTransforms(tNow){
   const frontF = currentOffset;
   const t = tNow * 0.001;
@@ -4791,7 +4853,9 @@ if (DOM.uBackRowsOn && DOM.uBackRowsOn.checked) {
       }
       band.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0px) scale(${s.toFixed(3)})`;
 
-      if (gband){
+      
+      try{ updateBandSlotSpread_(band, behind, s); }catch(e){}
+if (gband){
         gband.style.setProperty("--grassFlip", String(grassFlip));
         let grassFade = behind >= 2 ? 0 : behind > 1 ? 1 - easeSmooth(behind - 1) : 1;
         gband.style.opacity = (CACHED.grassOpacity * grassFade).toFixed(3);
@@ -4810,7 +4874,9 @@ if (DOM.uBackRowsOn && DOM.uBackRowsOn.checked) {
       band.style.filter = "none";
       band.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0px) scale(${s.toFixed(3)})`;
 
-      if (gband){
+      
+      try{ updateBandSlotSpread_(band, 0, 1); }catch(e){}
+if (gband){
         gband.style.setProperty("--grassFlip", String(grassFlip));
         gband.style.opacity = (o*0.86).toFixed(3);
         let gy = (y * GRASS_PARALLAX) + GRASS_Y_OFFSET;
@@ -9453,7 +9519,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 window.__PHASEA_DISABLE_BRX__ = true;
 if (window.__PHASEA_DISABLE_BRX__) {
   (function(){
-    const VERSION='v99.3.55_ScreenSaverDisableHotkeysInSS';
+    const VERSION='v99.3.56_BackRowSlotSpread';
     // Install a stub so any callers don't crash
     const stub = {
       version: VERSION,
@@ -10816,4 +10882,3 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
 
 </body>
 </html>
-
