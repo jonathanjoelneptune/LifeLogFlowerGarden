@@ -125,7 +125,7 @@
     const dateKey = (p.date || "").trim();
 
     const fit = (p.fit || "contain").toLowerCase().trim();  // contain | cover
-    const intervalMs = clampInt(p.interval_ms, 2200, 800, 15000);
+    const intervalMs = clampInt(p.interval_ms, 10000, 800, 15000);
     const fadeMs = clampInt(p.fade_ms, 450, 150, 4000);
 
     const w = clampInt(p.w, 1200, 300, 3000);
