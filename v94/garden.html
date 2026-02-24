@@ -323,7 +323,7 @@ console.log("[v99.3.28_TodayPoll_ApplyUpdateAndDebug] loaded", new Date().toISOS
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v99.3.55_ScreenSaverDisableHotkeysInSS.html</title>
+<title>garden_v99.3.56_ScreensaverAmbient_ParallaxDimNightGrass.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -585,10 +585,65 @@ body {
   z-index: 1;
 }
 .stars canvas {
+  position:absolute;
+  left:0; top:0;
   width: 100%;
   height: 100%;
   display: block;
   opacity: 0.95;
+}
+#starsCvBack{ opacity:0.70; }
+#starsCvFront{ opacity:0.95; }
+
+
+/* ---------- Screensaver Ambient Mode Enhancements (v99.3.56) ---------- */
+:root{
+  --ssCamX: 0px;
+  --ssCamY: 0px;
+  --ssStarBackX: 0px;
+  --ssStarBackY: 0px;
+  --ssStarFrontX: 0px;
+  --ssStarFrontY: 0px;
+}
+
+/* Only in screensaver mode: gently drift the scene (background + garden), but not the skyboxes */
+.stage.ssOn .bg{
+  transform: translate3d(var(--ssCamX), var(--ssCamY), 0);
+  will-change: transform;
+}
+.stage.ssOn #gardenBand{
+  transform: translate3d(var(--ssCamX), var(--ssCamY), 0);
+  will-change: transform;
+}
+
+/* Parallax stars in screensaver mode */
+.stage.ssOn #starsCvBack{
+  transform: translate3d(var(--ssStarBackX), var(--ssStarBackY), 0);
+  will-change: transform;
+}
+.stage.ssOn #starsCvFront{
+  transform: translate3d(var(--ssStarFrontX), var(--ssStarFrontY), 0);
+  will-change: transform;
+}
+
+/* Screensaver spotlight: dim non-selected flowers slightly while a skybox is open */
+.stage.ssOn.ssDimOthers #weeksStack .flowerWrap{
+  filter: saturate(0.82) brightness(0.92) contrast(0.96);
+  opacity: 0.93;
+  transition: filter 420ms ease, opacity 420ms ease;
+}
+.stage.ssOn.ssDimOthers #weeksStack .flowerWrap.isSelected{
+  filter: none;
+  opacity: 1;
+}
+
+/* Screensaver night grass: reduce intensity a bit so skyboxes + blooms lead */
+.stage.ssOn.ssNight #frontGrass,
+.stage.ssOn.ssNight #grassStack,
+.stage.ssOn.ssNight #dowGrass{
+  filter: brightness(0.82) contrast(0.92) saturate(0.92);
+  opacity: 0.92;
+  transition: filter 650ms ease, opacity 650ms ease;
 }
 
 /* ---------- Light Rays (v86) ---------- */
@@ -1894,7 +1949,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v99.3.55_ScreenSaverDisableHotkeysInSS.html • v99.3.55_ScreenSaverDisableHotkeysInSS • Built: 2026-02-24 06:18 UTC</div>
+  <div id="llPinkBanner">garden_v99.3.56_ScreensaverAmbient_ParallaxDimNightGrass.html • v99.3.56_ScreensaverAmbient_ParallaxDimNightGrass • Built: 2026-02-24 06:18 UTC</div>
 
 
 <script>
@@ -1941,8 +1996,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.3.55_ScreenSaverDisableHotkeysInSS.html</span><br>
-Version: <span id="__bannerVersion">v99.3.55_ScreenSaverDisableHotkeysInSS</span><br>
+File: <span id="__bannerFileName">garden_v99.3.56_ScreensaverAmbient_ParallaxDimNightGrass.html</span><br>
+Version: <span id="__bannerVersion">v99.3.56_ScreensaverAmbient_ParallaxDimNightGrass</span><br>
 Created: 2026-02-23T23:38:23.441Z</div>
 <script>
 (function(){
@@ -1958,7 +2013,7 @@ Created: 2026-02-23T23:38:23.441Z</div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.3.55_ScreenSaverDisableHotkeysInSS loaded", new Date().toISOString());
+  console.log("[VERSION] v99.3.56_ScreensaverAmbient_ParallaxDimNightGrass loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -2830,7 +2885,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   <div class="bg">
     <div class="skyGrad" id="skyGrad"></div>
     <div class="sunGlow" id="sunGlow"></div>
-    <div class="stars" id="starsWrap"><canvas id="starsCv"></canvas></div>
+    <div class="stars" id="starsWrap"><canvas id="starsCvBack"></canvas><canvas id="starsCvFront"></canvas></div>
     <div class="lightEdgeGlow" id="lightEdgeGlow" aria-hidden="true"></div>
     <div class="lightRays" id="lightRays" aria-hidden="true"></div>
     <div class="clouds" id="clouds" aria-hidden="true"></div>
@@ -2921,7 +2976,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   </div>
 
   <div class="util hidden" id="util">
-    <div class="utilTitle">LifeLog Garden Walk v99.3.55_ScreenSaverDisableHotkeysInSS</div>
+    <div class="utilTitle">LifeLog Garden Walk v99.3.56_ScreensaverAmbient_ParallaxDimNightGrass</div>
     <div class="utilSub">Scroll to walk through weeks. Press H to hide/show this panel.</div>
 	    <div class="row">
 	      <label>Wireframe</label>
@@ -3188,7 +3243,8 @@ function cacheDomRefs(){
     frontGrassEl: document.getElementById('frontGrass'),
     timeTint: document.getElementById('timeTint'),
     starsWrap: document.getElementById('starsWrap'),
-    starsCv: document.getElementById('starsCv'),
+    starsCvBack: document.getElementById('starsCvBack'),
+    starsCvFront: document.getElementById('starsCvFront'),
     utilEl: document.getElementById('util'),
     uStagger: document.getElementById('uStagger'),
     vStagger: document.getElementById('vStagger'),
@@ -5214,27 +5270,62 @@ function applyTimeOfDayVisuals(){
 // Stars
 // ============================================
 function drawStars(){
-  const cv = DOM.starsCv;
-  if (!cv) return;
+  const cvBack = DOM.starsCvFrontBack;
+  const cvFront = DOM.starsCvFrontFront;
+  if (!cvBack || !cvFront) return;
+
   const dpr = Math.max(1, Math.floor(window.devicePixelRatio || 1));
-  const w = cv.clientWidth * dpr;
-  const h = cv.clientHeight * dpr;
-  cv.width = w;
-  cv.height = h;
-  const ctx = cv.getContext("2d");
-  ctx.clearRect(0,0,w,h);
+  const w = cvFront.clientWidth * dpr;
+  const h = cvFront.clientHeight * dpr;
 
-  const r = mulberry32(hash32FromString("stars_seed"));
-  const count = Math.floor((w*h) / 52000);
-
-  for (let i=0;i<count;i++){
-    const x = r() * w, y = r() * h * 0.62;
-    const rad = (r()*1.2 + 0.4) * dpr;
-    ctx.beginPath();
-    ctx.fillStyle = `rgba(255,255,255,${(0.30 + r()*0.55).toFixed(2)})`;
-    ctx.arc(x,y,rad,0,Math.PI*2);
-    ctx.fill();
+  function prepCanvas(cv){
+    cv.width = w;
+    cv.height = h;
+    const ctx = cv.getContext("2d");
+    ctx.clearRect(0,0,w,h);
+    return ctx;
   }
+
+  function drawLayer(ctx, seedKey, densityMul, sizeMul, alphaBase){
+    const r = mulberry32(hash32FromString(seedKey));
+    const baseCount = Math.floor((w*h) / 52000);
+    const count = Math.max(40, Math.floor(baseCount * densityMul));
+
+    for (let i=0;i<count;i++){
+      const x = r()*w;
+      const y = r()*h;
+      const s = (0.55 + r()*1.35) * dpr * sizeMul;
+      const a = (alphaBase + r()*0.45) * (0.45 + r()*0.55);
+      const hue = 210 + r()*40; // cool whites
+      const sat = 12 + r()*18;
+      const lit = 86 + r()*12;
+      ctx.fillStyle = `hsla(${hue},${sat}%,${lit}%,${a})`;
+      ctx.beginPath();
+      ctx.arc(x,y,s,0,Math.PI*2);
+      ctx.fill();
+
+      // occasional tiny sparkle cross
+      if (r() < 0.07){
+        ctx.strokeStyle = `rgba(255,255,255,${a*0.55})`;
+        ctx.lineWidth = Math.max(1, 0.9*dpr);
+        ctx.beginPath();
+        ctx.moveTo(x - 2.8*dpr*sizeMul, y);
+        ctx.lineTo(x + 2.8*dpr*sizeMul, y);
+        ctx.moveTo(x, y - 2.8*dpr*sizeMul);
+        ctx.lineTo(x, y + 2.8*dpr*sizeMul);
+        ctx.stroke();
+      }
+    }
+  }
+
+  const ctxB = prepCanvas(cvBack);
+  const ctxF = prepCanvas(cvFront);
+
+  // Back layer: fewer, softer, slightly larger
+  drawLayer(ctxB, "stars_seed_back", 0.72, 1.35, 0.06);
+
+  // Front layer: more, sharper, smaller
+  drawLayer(ctxF, "stars_seed_front", 1.15, 0.95, 0.08);
 }
 
 // ============================================
@@ -7860,6 +7951,7 @@ const __LL_SCREENSAVER = {
   timerA: null,
   timerB: null,
   kickTimer: null,
+  _driftRAF: null,
   token: 0,
   lastSlotId: '',
   startedOnce: false,
@@ -7894,7 +7986,8 @@ function __llReadScreenSaverParams_(){
     const alwaysRun = __llParseBoolParam_(qs.get('ssAlways')) || __llParseBoolParam_(qs.get('ssAlwaysRun')) || __llParseBoolParam_(qs.get('alwaysRun'));
     const stopOnMove = __llParseBoolParam_(qs.get('ssMove')) || __llParseBoolParam_(qs.get('ssStopOnMove')) || __llParseBoolParam_(qs.get('stopOnMove'));
 
-    if (enable) { __LL_SCREENSAVER.enabled = true; __LL_SCREENSAVER.alwaysRun = true; }
+    if (enable) { __LL_SCREENSAVER.enabled = true;
+    try{ __llStartSsDrift_(); }catch(e){} __LL_SCREENSAVER.alwaysRun = true; }
     if (Number.isFinite(openMs) && openMs > 0) __LL_SCREENSAVER.openMs = Math.max(250, Math.min(openMs, 10*60*1000));
     if (Number.isFinite(waitMs) && waitMs >= 0) __LL_SCREENSAVER.waitMs = Math.max(0, Math.min(waitMs, 10*60*1000));
     if (Number.isFinite(startDelayMs) && startDelayMs >= 0) __LL_SCREENSAVER.startDelayMs = Math.max(0, Math.min(startDelayMs, 10*60*1000));
@@ -7925,6 +8018,7 @@ function __llPickRandomWrap_(list){
 }
 
 function __llStopScreenSaver_(why){
+  try{ __llStopSsDrift_(); }catch(e){}
   try{
     __LL_SCREENSAVER.enabled = false;
     __LL_SCREENSAVER.token = (__LL_SCREENSAVER.token|0) + 1; // invalidate pending callbacks
@@ -7935,6 +8029,74 @@ function __llStopScreenSaver_(why){
   }catch(e){}
 }
 
+
+// ---------- Screensaver Ambient Drift + Parallax (v99.3.56) ----------
+function __llApplySsNightClass_(){
+  try{
+    const pal = window.__LL_PALETTE__ || null;
+    const isNightish = !!(pal && pal.stars);
+    if (DOM && DOM.stage) DOM.stage.classList.toggle('ssNight', isNightish);
+  }catch(e){}
+}
+
+function __llStartSsDrift_(){
+  try{
+    if (!DOM || !DOM.stage) return;
+    if (__LL_SCREENSAVER._driftRAF) return;
+
+    const tok = __LL_SCREENSAVER.token;
+    const t0 = performance.now();
+    DOM.stage.classList.add('ssOn');
+
+    const ampX = 18;   // px
+    const ampY = 6;    // px
+    const period = 180000; // ms (3 minutes)
+
+    const tick = ()=>{
+      // token guard
+      if (!__LL_SCREENSAVER.enabled) { __LL_SCREENSAVER._driftRAF = null; return; }
+      if (tok !== __LL_SCREENSAVER.token) { __LL_SCREENSAVER._driftRAF = null; return; }
+
+      const t = performance.now() - t0;
+      const a = (t % period) / period * Math.PI * 2;
+      const x = Math.sin(a) * ampX;
+      const y = Math.cos(a * 0.83) * ampY;
+
+      DOM.stage.style.setProperty('--ssCamX', x.toFixed(2) + 'px');
+      DOM.stage.style.setProperty('--ssCamY', y.toFixed(2) + 'px');
+
+      // Parallax stars: slower than camera for depth
+      DOM.stage.style.setProperty('--ssStarBackX', (x * 0.35).toFixed(2) + 'px');
+      DOM.stage.style.setProperty('--ssStarBackY', (y * 0.35).toFixed(2) + 'px');
+      DOM.stage.style.setProperty('--ssStarFrontX', (x * 0.60).toFixed(2) + 'px');
+      DOM.stage.style.setProperty('--ssStarFrontY', (y * 0.60).toFixed(2) + 'px');
+
+      __llApplySsNightClass_();
+
+      __LL_SCREENSAVER._driftRAF = requestAnimationFrame(tick);
+    };
+
+    __LL_SCREENSAVER._driftRAF = requestAnimationFrame(tick);
+  }catch(e){}
+}
+
+function __llStopSsDrift_(){
+  try{
+    if (__LL_SCREENSAVER._driftRAF){
+      cancelAnimationFrame(__LL_SCREENSAVER._driftRAF);
+      __LL_SCREENSAVER._driftRAF = null;
+    }
+    if (DOM && DOM.stage){
+      DOM.stage.classList.remove('ssOn','ssDimOthers');
+      DOM.stage.style.removeProperty('--ssCamX');
+      DOM.stage.style.removeProperty('--ssCamY');
+      DOM.stage.style.removeProperty('--ssStarBackX');
+      DOM.stage.style.removeProperty('--ssStarBackY');
+      DOM.stage.style.removeProperty('--ssStarFrontX');
+      DOM.stage.style.removeProperty('--ssStarFrontY');
+    }
+  }catch(e){}
+}
 function __llScreenSaverLoop_(tok){
   if (!__LL_SCREENSAVER.enabled) return;
   // Token guard: prevents overlapping loops/timers (e.g., double-start)
@@ -7961,6 +8123,7 @@ function __llScreenSaverLoop_(tok){
     // Open selection + skyboxes
     if (typeof __llMarkSuppressDocClear_ === 'function') __llMarkSuppressDocClear_();
     if (typeof setSelection_ === 'function') setSelection_(next);
+    try{ if (DOM && DOM.stage) DOM.stage.classList.add('ssDimOthers'); }catch(e){}
     if (typeof dbg_ === 'function') dbg_(`Screensaver: OPEN ${next.dataset.dateKey || next.dataset.datekey || ''}`);
   }catch(e){}
 
@@ -7968,6 +8131,7 @@ function __llScreenSaverLoop_(tok){
   __LL_SCREENSAVER.timerA = setTimeout(()=>{
     try{
       if (typeof clearSelection_ === 'function') clearSelection_('screensaver');
+      try{ if (DOM && DOM.stage) DOM.stage.classList.remove('ssDimOthers'); }catch(e){}
       if (typeof dbg_ === 'function') dbg_('Screensaver: CLOSE');
     }catch(e){}
     // Wait, then open next
@@ -7985,6 +8149,7 @@ function __llStartScreenSaver_(why){
     __LL_SCREENSAVER.token = (__LL_SCREENSAVER.token|0) + 1;
     const tok = __LL_SCREENSAVER.token;
     __LL_SCREENSAVER.enabled = true;
+    try{ __llStartSsDrift_(); }catch(e){}
     __LL_SCREENSAVER.startedOnce = true;
     if (typeof dbg_ === 'function') dbg_(`Screensaver: START (${why || 'url'}) open=${__LL_SCREENSAVER.openMs}ms wait=${__LL_SCREENSAVER.waitMs}ms`);
     // small delay to ensure initial render/export apply settles
@@ -9453,7 +9618,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 window.__PHASEA_DISABLE_BRX__ = true;
 if (window.__PHASEA_DISABLE_BRX__) {
   (function(){
-    const VERSION='v99.3.55_ScreenSaverDisableHotkeysInSS';
+    const VERSION='v99.3.56_ScreensaverAmbient_ParallaxDimNightGrass';
     // Install a stub so any callers don't crash
     const stub = {
       version: VERSION,
