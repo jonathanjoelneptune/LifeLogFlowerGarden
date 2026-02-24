@@ -323,7 +323,7 @@ console.log("[v99.3.28_TodayPoll_ApplyUpdateAndDebug] loaded", new Date().toISOS
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v99.3.56_ScreensaverAiryFade_GrayscaleOnly.html</title>
+<title>garden_v99.3.57_ScreensaverAiryFadeFix.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -332,6 +332,7 @@ console.log("[v99.3.28_TodayPoll_ApplyUpdateAndDebug] loaded", new Date().toISOS
    - Consolidated will-change
    ============================================ */
 :root {
+  --llSsFadeMs: 160ms; /* default; overridden in screensaver */
   /* Scene tuning */
   --sceneBright: 1.08;
   --sceneContrast: 1.04;
@@ -1549,7 +1550,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
   will-change: transform, opacity;
   opacity: 0;
   transform: translate3d(0,0,0) scale(0.985);
-  transition: opacity 160ms ease, transform 180ms ease;
+  transition: opacity var(--llSsFadeMs,160ms) ease, transform var(--llSsFadeMs,180ms) ease;
 }
 .llBoxGroup.whooshUp{
   opacity: 0;
@@ -1925,7 +1926,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v99.3.56_ScreensaverAiryFade_GrayscaleOnly.html • v99.3.56_ScreensaverAiryFade_GrayscaleOnly • Built: 2026-02-24 06:18 UTC</div>
+  <div id="llPinkBanner">garden_v99.3.57_ScreensaverAiryFadeFix.html • v99.3.57_ScreensaverAiryFadeFix • Built: 2026-02-24 06:18 UTC</div>
 
 
 <script>
@@ -1972,8 +1973,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.3.56_ScreensaverAiryFade_GrayscaleOnly.html</span><br>
-Version: <span id="__bannerVersion">v99.3.56_ScreensaverAiryFade_GrayscaleOnly</span><br>
+File: <span id="__bannerFileName">garden_v99.3.57_ScreensaverAiryFadeFix.html</span><br>
+Version: <span id="__bannerVersion">v99.3.57_ScreensaverAiryFadeFix</span><br>
 Created: 2026-02-23T23:38:23.441Z</div>
 <script>
 (function(){
@@ -1989,7 +1990,7 @@ Created: 2026-02-23T23:38:23.441Z</div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.3.56_ScreensaverAiryFade_GrayscaleOnly loaded", new Date().toISOString());
+  console.log("[VERSION] v99.3.57_ScreensaverAiryFadeFix loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -2952,7 +2953,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   </div>
 
   <div class="util hidden" id="util">
-    <div class="utilTitle">LifeLog Garden Walk v99.3.56_ScreensaverAiryFade_GrayscaleOnly</div>
+    <div class="utilTitle">LifeLog Garden Walk v99.3.57_ScreensaverAiryFadeFix</div>
     <div class="utilSub">Scroll to walk through weeks. Press H to hide/show this panel.</div>
 	    <div class="row">
 	      <label>Wireframe</label>
@@ -7512,21 +7513,7 @@ function showSkyBoxesForWrap_(wrap){
 
   __llBoxGroup.classList.add('isVisible');
   __llBoxGroup.setAttribute('aria-hidden','false');
-
-  if (__LL_SCREENSAVER && __LL_SCREENSAVER.enabled){
-    try{
-      __llBoxGroup.style.opacity = '0';
-      if (__llLinkPath) __llLinkPath.style.opacity = '0';
-      if (__llLinkGlow) __llLinkGlow.style.opacity = '0';
-      requestAnimationFrame(()=>{
-        try{
-          __llBoxGroup.style.opacity = '1';
-          if (__llLinkPath) __llLinkPath.style.opacity = '1';
-          if (__llLinkGlow) __llLinkGlow.style.opacity = '1';
-        }catch(e){}
-      });
-    }catch(e){}
-  }
+  // Screensaver: rely on CSS transition (opacity) for airy fade
 
   updateSkyBoxesFromDay_(day, wrap);
   layoutSkyBoxes_(wrap);
@@ -7556,7 +7543,7 @@ function hideSkyBoxes_(reason, dir){
 
   // Directional whoosh for row changes
   __llBoxGroup.classList.remove('whooshUp','whooshDown');
-  if (isRow){
+  if (isRow && !(__LL_SCREENSAVER && __LL_SCREENSAVER.enabled)){
     if (d > 0) __llBoxGroup.classList.add('whooshUp');
     else if (d < 0) __llBoxGroup.classList.add('whooshDown');
   }
@@ -7933,7 +7920,7 @@ function __llSsApplyFadeVar_(){
 }
 function __llSsSetDimActive_(on){
   try{
-    const b = document.body || document.documentElement;
+    const b = document.documentElement;
     if (!b) return;
     if (on) b.classList.add('ssDimActive');
     else b.classList.remove('ssDimActive');
@@ -7970,7 +7957,7 @@ function __llReadScreenSaverParams_(){
     const alwaysRun = __llParseBoolParam_(qs.get('ssAlways')) || __llParseBoolParam_(qs.get('ssAlwaysRun')) || __llParseBoolParam_(qs.get('alwaysRun'));
     const stopOnMove = __llParseBoolParam_(qs.get('ssMove')) || __llParseBoolParam_(qs.get('ssStopOnMove')) || __llParseBoolParam_(qs.get('stopOnMove'));
 
-    if (enable) { __LL_SCREENSAVER.enabled = true; __LL_SCREENSAVER.alwaysRun = true; }
+    if (enable) { __LL_SCREENSAVER.enabled = true; __LL_SCREENSAVER.alwaysRun = true; try{ document.documentElement.classList.add('ssMode'); }catch(e){} }
     if (Number.isFinite(openMs) && openMs > 0) __LL_SCREENSAVER.openMs = Math.max(250, Math.min(openMs, 10*60*1000));
     if (Number.isFinite(waitMs) && waitMs >= 0) __LL_SCREENSAVER.waitMs = Math.max(0, Math.min(waitMs, 10*60*1000));
     if (Number.isFinite(startDelayMs) && startDelayMs >= 0) __LL_SCREENSAVER.startDelayMs = Math.max(0, Math.min(startDelayMs, 10*60*1000));
@@ -9530,7 +9517,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 window.__PHASEA_DISABLE_BRX__ = true;
 if (window.__PHASEA_DISABLE_BRX__) {
   (function(){
-    const VERSION='v99.3.56_ScreensaverAiryFade_GrayscaleOnly';
+    const VERSION='v99.3.57_ScreensaverAiryFadeFix';
     // Install a stub so any callers don't crash
     const stub = {
       version: VERSION,
