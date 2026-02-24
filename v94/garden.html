@@ -12,7 +12,7 @@
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v99.3.56_BackRowSlotSpread
+  v99.3.57_FullCirclePetals
     + Add scale-compensated back-row slot spread to prevent horizontal clumping
   v99.3.29_TodayPoll_FrostySkyboxesNight
     + Add canonical data-week-key on each flowerWrap (alias of weekId)
@@ -326,7 +326,7 @@ console.log("[v99.3.28_TodayPoll_ApplyUpdateAndDebug] loaded", new Date().toISOS
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v99.3.56_BackRowSlotSpread.html</title>
+<title>garden_v99.3.57_FullCirclePetals.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -1897,7 +1897,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v99.3.56_BackRowSlotSpread.html • v99.3.56_BackRowSlotSpread • Built: 2026-02-24T19:55:45.776 UTC 06:18 UTC</div>
+  <div id="llPinkBanner">garden_v99.3.57_FullCirclePetals.html • v99.3.57_FullCirclePetals • Built: 2026-02-24T19:55:45.776 UTC 06:18 UTC</div>
 
 
 <script>
@@ -1944,9 +1944,9 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.3.56_BackRowSlotSpread.html</span><br>
-Version: <span id="__bannerVersion">v99.3.56_BackRowSlotSpread</span><br>
-Created: 2026-02-24T19:55:45.776Z</div>
+File: <span id="__bannerFileName">garden_v99.3.57_FullCirclePetals.html</span><br>
+Version: <span id="__bannerVersion">v99.3.57_FullCirclePetals</span><br>
+P26-02-24T21:12:36.957249Z</div>
 <script>
 (function(){
   try{
@@ -1961,7 +1961,7 @@ Created: 2026-02-24T19:55:45.776Z</div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.3.56_BackRowSlotSpread loaded", new Date().toISOString());
+  console.log("[VERSION] v99.3.57_FullCirclePetals loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -2924,7 +2924,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   </div>
 
   <div class="util hidden" id="util">
-    <div class="utilTitle">LifeLog Garden Walk v99.3.56_BackRowSlotSpread</div>
+    <div class="utilTitle">LifeLog Garden Walk v99.3.57_FullCirclePetals</div>
     <div class="utilSub">Scroll to walk through weeks. Press H to hide/show this panel.</div>
 	    <div class="row">
 	      <label>Wireframe</label>
@@ -3824,37 +3824,20 @@ const monthC = (MONTH_COLORS[month] || "#C7D4E2");
   }
 
   function head(scale, diskR, yHead, outerN, innerN){
-    // Deterministic color maps sized to the current petal counts
-    const mapOuter = buildPetalColorList_(outerN, petalSeedBase + `_outer_${outerN}`);
-    const mapInner = buildPetalColorList_(innerN,  petalSeedBase + `_inner_${innerN}`);
-
-    // Deterministic micro-variation for a less "stamped" look
-    const rGeomO = mulberry32(hash32FromString(petalSeedBase + `_geomO_${outerN}`));
-    const rGeomI = mulberry32(hash32FromString(petalSeedBase + `_geomI_${innerN}`));
-
+    // Full-circle classic coloring: stable, symmetric rings (no per-petal stagger)
     let petals = "";
-    const rxO0 = diskR * 0.30, ryO0 = diskR * 2.05;
+    const rxO = diskR * 0.30, ryO = diskR * 2.05;
     for (let i=0;i<outerN;i++){
-      const a0 = i*(360/outerN);
-      const jr = (rGeomO()*2-1);
-      const js = (rGeomO()*2-1);
-      const rxO = rxO0 * (1 + js*0.045);
-      const ryO = ryO0 * (1 + jr*0.040);
-      const a = a0 + (rGeomO()*2-1)*2.4;
-      const fill = petalFill_(mapOuter, i);
+      const a = i*(360/outerN);
+      const fill = (i % 2 === 0) ? C1 : C3;
       petals += petalEllipse(0,yHead,rxO,ryO,a,fill);
     }
 
     let inner = "";
-    const rxI0 = diskR * 0.22, ryI0 = diskR * 1.55;
+    const rxI = diskR * 0.22, ryI = diskR * 1.55;
     for (let i=0;i<innerN;i++){
-      const a0 = i*(360/innerN) + 12;
-      const jr = (rGeomI()*2-1);
-      const js = (rGeomI()*2-1);
-      const rxI = rxI0 * (1 + js*0.045);
-      const ryI = ryI0 * (1 + jr*0.040);
-      const a = a0 + (rGeomI()*2-1)*2.0;
-      const fill = petalFill_(mapInner, i);
+      const a = i*(360/innerN) + 12;
+      const fill = (i % 2 === 0) ? C2 : C4;
       inner += petalEllipse(0,yHead+3,rxI,ryI,a,fill,0.40);
     }
 
@@ -4696,7 +4679,7 @@ function refreshFrontGrass(){
 // ============================================
 
 // ============================================
-// v99.3.56_BackRowSlotSpread: keep back-row flowers horizontally de-clumped
+// v99.3.57_FullCirclePetals: keep back-row flowers horizontally de-clumped
 // ============================================
 const __LL_BACK_SPREAD_MAX_BEHIND = 12;   // rows behind where we reach full edge spread
 const __LL_BACK_SPREAD_EDGE_PAD   = 0.03; // 3% inset from the edges to avoid clipping
@@ -9519,7 +9502,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 window.__PHASEA_DISABLE_BRX__ = true;
 if (window.__PHASEA_DISABLE_BRX__) {
   (function(){
-    const VERSION='v99.3.56_BackRowSlotSpread';
+    const VERSION='v99.3.57_FullCirclePetals';
     // Install a stub so any callers don't crash
     const stub = {
       version: VERSION,
