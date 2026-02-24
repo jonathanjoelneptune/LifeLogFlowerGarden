@@ -7,6 +7,7 @@
 
 
 
+
 <!DOCTYPE html>
 <!--
   CHANGELOG
@@ -322,7 +323,7 @@ console.log("[v99.3.28_TodayPoll_ApplyUpdateAndDebug] loaded", new Date().toISOS
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v99.3.53_ColorGradeModes_PetalHiFix.html</title>
+<title>garden_v99.3.54_ScreenSaverStartDelay30s.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -1893,7 +1894,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v99.3.53_ColorGradeModes_PetalHiFix.html • v99.3.53_ColorGradeModes_PetalHiFix • Built: 2026-02-23 23:48 UTC</div>
+  <div id="llPinkBanner">garden_v99.3.54_ScreenSaverStartDelay30s.html • v99.3.54_ScreenSaverStartDelay30s • Built: 2026-02-24 05:23 UTC</div>
 
 
 <script>
@@ -1940,8 +1941,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.3.53_ColorGradeModes_PetalHiFix.html</span><br>
-Version: <span id="__bannerVersion">v99.3.53_ColorGradeModes_PetalHiFix</span><br>
+File: <span id="__bannerFileName">garden_v99.3.54_ScreenSaverStartDelay30s.html</span><br>
+Version: <span id="__bannerVersion">v99.3.54_ScreenSaverStartDelay30s</span><br>
 Created: 2026-02-23T23:38:23.441Z</div>
 <script>
 (function(){
@@ -1957,7 +1958,7 @@ Created: 2026-02-23T23:38:23.441Z</div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.3.53_ColorGradeModes_PetalHiFix loaded", new Date().toISOString());
+  console.log("[VERSION] v99.3.54_ScreenSaverStartDelay30s loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -2919,7 +2920,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   </div>
 
   <div class="util hidden" id="util">
-    <div class="utilTitle">LifeLog Garden Walk v99.3.53_ColorGradeModes_PetalHiFix</div>
+    <div class="utilTitle">LifeLog Garden Walk v99.3.54_ScreenSaverStartDelay30s</div>
     <div class="utilSub">Scroll to walk through weeks. Press H to hide/show this panel.</div>
 	    <div class="row">
 	      <label>Wireframe</label>
@@ -7851,6 +7852,7 @@ const __LL_SCREENSAVER = {
   alwaysRun: false,
   openMs: 5000,
   waitMs: 5000,
+  startDelayMs: 30000, // delay before first OPEN when screensaver starts (ms)
   timerA: null,
   timerB: null,
   kickTimer: null,
@@ -7877,12 +7879,14 @@ function __llReadScreenSaverParams_(){
 
     const openMs = parseInt(qs.get('ssOpen') || qs.get('openMs') || '', 10);
     const waitMs = parseInt(qs.get('ssWait') || qs.get('waitMs') || '', 10);
+    const startDelayMs = parseInt(qs.get('ssStart') || qs.get('ssDelay') || qs.get('startDelayMs') || '', 10);
     const alwaysRun = __llParseBoolParam_(qs.get('ssAlways')) || __llParseBoolParam_(qs.get('ssAlwaysRun')) || __llParseBoolParam_(qs.get('alwaysRun'));
     const stopOnMove = __llParseBoolParam_(qs.get('ssMove')) || __llParseBoolParam_(qs.get('ssStopOnMove')) || __llParseBoolParam_(qs.get('stopOnMove'));
 
     if (enable) { __LL_SCREENSAVER.enabled = true; __LL_SCREENSAVER.alwaysRun = true; }
     if (Number.isFinite(openMs) && openMs > 0) __LL_SCREENSAVER.openMs = Math.max(250, Math.min(openMs, 10*60*1000));
     if (Number.isFinite(waitMs) && waitMs >= 0) __LL_SCREENSAVER.waitMs = Math.max(0, Math.min(waitMs, 10*60*1000));
+    if (Number.isFinite(startDelayMs) && startDelayMs >= 0) __LL_SCREENSAVER.startDelayMs = Math.max(0, Math.min(startDelayMs, 10*60*1000));
     if (stopOnMove) __LL_SCREENSAVER.stopOnMove = true;
     if (alwaysRun) __LL_SCREENSAVER.alwaysRun = true;
   }catch(e){}
@@ -7973,7 +7977,7 @@ function __llStartScreenSaver_(why){
     __LL_SCREENSAVER.startedOnce = true;
     if (typeof dbg_ === 'function') dbg_(`Screensaver: START (${why || 'url'}) open=${__LL_SCREENSAVER.openMs}ms wait=${__LL_SCREENSAVER.waitMs}ms`);
     // small delay to ensure initial render/export apply settles
-    __LL_SCREENSAVER.kickTimer = setTimeout(()=>{ __LL_SCREENSAVER.kickTimer = null; __llScreenSaverLoop_(tok); }, 600);
+    __LL_SCREENSAVER.kickTimer = setTimeout(()=>{ __LL_SCREENSAVER.kickTimer = null; __llScreenSaverLoop_(tok); }, (__LL_SCREENSAVER.startDelayMs || 600));
   }catch(e){}
 }
 
@@ -9438,7 +9442,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 window.__PHASEA_DISABLE_BRX__ = true;
 if (window.__PHASEA_DISABLE_BRX__) {
   (function(){
-    const VERSION='v99.3.53_ColorGradeModes_PetalHiFix';
+    const VERSION='v99.3.54_ScreenSaverStartDelay30s';
     // Install a stub so any callers don't crash
     const stub = {
       version: VERSION,
