@@ -323,7 +323,7 @@ console.log("[v99.3.28_TodayPoll_ApplyUpdateAndDebug] loaded", new Date().toISOS
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v99.3.57_ScreensaverAiryFadeFix.html</title>
+<title>garden_v99.3.55_ScreenSaverDisableHotkeysInSS.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -332,7 +332,6 @@ console.log("[v99.3.28_TodayPoll_ApplyUpdateAndDebug] loaded", new Date().toISOS
    - Consolidated will-change
    ============================================ */
 :root {
-  --llSsFadeMs: 160ms; /* default; overridden in screensaver */
   /* Scene tuning */
   --sceneBright: 1.08;
   --sceneContrast: 1.04;
@@ -1319,37 +1318,6 @@ body.wireframeMode .flowerSvg line {
       overflow: hidden;
       text-overflow: ellipsis;
     }
-
-/* ============================================================
-   Screensaver: slow airy fades + grayscale dim transitions
-   ============================================================ */
-:root { --llSsFadeMs: 8000ms; }
-
-.ssMode .llSkyBoxesGroup,
-.ssMode .llSkyBoxLinkPath,
-.ssMode .llSkyBoxLinkGlow {
-  transition-property: opacity, transform;
-  transition-duration: var(--llSsFadeMs);
-  transition-timing-function: ease-in-out;
-}
-
-/* No whoosh in screensaver mode */
-.ssMode .llSkyBoxesGroup.whooshUp,
-.ssMode .llSkyBoxesGroup.whooshDown {
-  animation: none !important;
-}
-
-/* Dim all non-selected flowers gradually in screensaver mode */
-.ssMode.ssDimActive .flowerWrap {
-  transition: filter var(--llSsFadeMs) ease-in-out, opacity var(--llSsFadeMs) ease-in-out;
-  filter: grayscale(1) saturate(0.10) brightness(0.92);
-  opacity: 0.55;
-}
-.ssMode.ssDimActive .flowerWrap.isSelected {
-  filter: none;
-  opacity: 1;
-}
-
 </style>
 
 <style id="llUtilNoteStyles">
@@ -1550,7 +1518,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
   will-change: transform, opacity;
   opacity: 0;
   transform: translate3d(0,0,0) scale(0.985);
-  transition: opacity var(--llSsFadeMs,160ms) ease, transform var(--llSsFadeMs,180ms) ease;
+  transition: opacity 160ms ease, transform 180ms ease;
 }
 .llBoxGroup.whooshUp{
   opacity: 0;
@@ -1926,7 +1894,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v99.3.57_ScreensaverAiryFadeFix.html • v99.3.57_ScreensaverAiryFadeFix • Built: 2026-02-24 06:18 UTC</div>
+  <div id="llPinkBanner">garden_v99.3.55_ScreenSaverDisableHotkeysInSS.html • v99.3.55_ScreenSaverDisableHotkeysInSS • Built: 2026-02-24 06:18 UTC</div>
 
 
 <script>
@@ -1973,8 +1941,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.3.57_ScreensaverAiryFadeFix.html</span><br>
-Version: <span id="__bannerVersion">v99.3.57_ScreensaverAiryFadeFix</span><br>
+File: <span id="__bannerFileName">garden_v99.3.55_ScreenSaverDisableHotkeysInSS.html</span><br>
+Version: <span id="__bannerVersion">v99.3.55_ScreenSaverDisableHotkeysInSS</span><br>
 Created: 2026-02-23T23:38:23.441Z</div>
 <script>
 (function(){
@@ -1990,7 +1958,7 @@ Created: 2026-02-23T23:38:23.441Z</div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.3.57_ScreensaverAiryFadeFix loaded", new Date().toISOString());
+  console.log("[VERSION] v99.3.55_ScreenSaverDisableHotkeysInSS loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -2953,7 +2921,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   </div>
 
   <div class="util hidden" id="util">
-    <div class="utilTitle">LifeLog Garden Walk v99.3.57_ScreensaverAiryFadeFix</div>
+    <div class="utilTitle">LifeLog Garden Walk v99.3.55_ScreenSaverDisableHotkeysInSS</div>
     <div class="utilSub">Scroll to walk through weeks. Press H to hide/show this panel.</div>
 	    <div class="row">
 	      <label>Wireframe</label>
@@ -6746,7 +6714,7 @@ function updateSkyBoxesFromDay_(day, weekKey) {
         "?api=" + REEL_API_ENC +
         "&bot=" + encodeURIComponent(botParam) +
         "&date=" + encodeURIComponent(dk) +
-        "&fit=contain&w=1200&cache_s=600&preload=2&interval_ms=5000&fade_ms=1000&shuffle=1";
+        "&fit=contain&w=1200&cache_s=600&preload=2&interval_ms=10000&fade_ms=3000&shuffle=1";
 
       const iframeHtml =
         `<div class="llReelWrap" style="width:100%;height:100%;border-radius:12px;overflow:hidden;background:transparent;">` +
@@ -7468,11 +7436,6 @@ function showSkyBoxesForWrap_(wrap){
   __llIgnoreRowClearUntilTs = Math.max(__llIgnoreRowClearUntilTs||0, performance.now() + 1200);
   __llSuppressOutsideClickUntilTs = Math.max(__llSuppressOutsideClickUntilTs||0, performance.now() + 700);
   ensureSkyBoxes_();
-  // Screensaver airy fade-in + dim
-  if (__LL_SCREENSAVER && __LL_SCREENSAVER.enabled){
-    __llSsApplyFadeVar_();
-    __llSsSetDimActive_(true);
-  }
   // [SKY] Cancel any pending hide "park offscreen" timer so we don't instantly vanish after a row-change hide.
   try{
     if (__llBoxHideTimer){ clearTimeout(__llBoxHideTimer); __llBoxHideTimer = null; }
@@ -7500,20 +7463,13 @@ function showSkyBoxesForWrap_(wrap){
   // v99.3.39: Restore skybox sway behavior (v89.6.40 pattern)
   // Remove + re-add visibility to reliably restart CSS keyframe animation, and avoid transform fights.
   try {
-    if (__LL_SCREENSAVER && __LL_SCREENSAVER.enabled){
-    __llSsApplyFadeVar_();
-    try{ __llBoxGroup.style.opacity = '0'; if (__llLinkPath) __llLinkPath.style.opacity = '0'; if (__llLinkGlow) __llLinkGlow.style.opacity = '0'; }catch(e){}
-    try{ __llSsSetDimActive_(false); }catch(e){}
-  }
-
-  __llBoxGroup.classList.remove('isVisible');
+    __llBoxGroup.classList.remove('isVisible');
     __llBoxGroup.classList.remove('sway');
     void __llBoxGroup.offsetWidth; // force style flush
   } catch(e){}
 
   __llBoxGroup.classList.add('isVisible');
   __llBoxGroup.setAttribute('aria-hidden','false');
-  // Screensaver: rely on CSS transition (opacity) for airy fade
 
   updateSkyBoxesFromDay_(day, wrap);
   layoutSkyBoxes_(wrap);
@@ -7543,7 +7499,7 @@ function hideSkyBoxes_(reason, dir){
 
   // Directional whoosh for row changes
   __llBoxGroup.classList.remove('whooshUp','whooshDown');
-  if (isRow && !(__LL_SCREENSAVER && __LL_SCREENSAVER.enabled)){
+  if (isRow){
     if (d > 0) __llBoxGroup.classList.add('whooshUp');
     else if (d < 0) __llBoxGroup.classList.add('whooshDown');
   }
@@ -7564,7 +7520,7 @@ function hideSkyBoxes_(reason, dir){
       __llBoxGroup.style.top  = '-9999px';
     }catch(e){}
     __llBoxHideTimer = null;
-  }, ( (__LL_SCREENSAVER && __LL_SCREENSAVER.enabled) ? (Math.max(50, (__LL_SCREENSAVER.fadeMs||8000)) + 60) : (isRow ? 260 : 220) ));
+  }, isRow ? 260 : 220);
 
   if (typeof dbg_ === 'function'){
     try{ if (isVerboseSelDbg_()) dbg_(`v88 Boxes: hide reason=${reason||'clear'} dir=${d||0}${isRow?' whoosh':''}`); }catch(e){}
@@ -7901,7 +7857,6 @@ const __LL_SCREENSAVER = {
   openMs: 5000,
   waitMs: 5000,
   startDelayMs: 30000, // delay before first OPEN when screensaver starts (ms)
-  fadeMs: 8000,   // screensaver fade in/out (ms)
   timerA: null,
   timerB: null,
   kickTimer: null,
@@ -7909,24 +7864,7 @@ const __LL_SCREENSAVER = {
   lastSlotId: '',
   startedOnce: false,
   stopOnMove: false
-};
-
-// Screensaver UI classes/helpers
-function __llSsApplyFadeVar_(){
-  try{
-    const ms = (__LL_SCREENSAVER && Number.isFinite(__LL_SCREENSAVER.fadeMs)) ? (__LL_SCREENSAVER.fadeMs|0) : 8000;
-    document.documentElement.style.setProperty('--llSsFadeMs', Math.max(0, ms) + 'ms');
-  }catch(e){}
-}
-function __llSsSetDimActive_(on){
-  try{
-    const b = document.documentElement;
-    if (!b) return;
-    if (on) b.classList.add('ssDimActive');
-    else b.classList.remove('ssDimActive');
-  }catch(e){}
-}
-;
+};;
 
 // Expose screensaver state so other handlers can gate hotkeys
 window.__LL_SCREENSAVER = __LL_SCREENSAVER;
@@ -7953,15 +7891,13 @@ function __llReadScreenSaverParams_(){
     const openMs = parseInt(qs.get('ssOpen') || qs.get('openMs') || '', 10);
     const waitMs = parseInt(qs.get('ssWait') || qs.get('waitMs') || '', 10);
     const startDelayMs = parseInt(qs.get('ssStart') || qs.get('ssDelay') || qs.get('startDelayMs') || '', 10);
-    const fadeMs = parseInt(qs.get('ssFade') || qs.get('fadeMs') || qs.get('ssFadeMs') || '', 10);
     const alwaysRun = __llParseBoolParam_(qs.get('ssAlways')) || __llParseBoolParam_(qs.get('ssAlwaysRun')) || __llParseBoolParam_(qs.get('alwaysRun'));
     const stopOnMove = __llParseBoolParam_(qs.get('ssMove')) || __llParseBoolParam_(qs.get('ssStopOnMove')) || __llParseBoolParam_(qs.get('stopOnMove'));
 
-    if (enable) { __LL_SCREENSAVER.enabled = true; __LL_SCREENSAVER.alwaysRun = true; try{ document.documentElement.classList.add('ssMode'); }catch(e){} }
+    if (enable) { __LL_SCREENSAVER.enabled = true; __LL_SCREENSAVER.alwaysRun = true; }
     if (Number.isFinite(openMs) && openMs > 0) __LL_SCREENSAVER.openMs = Math.max(250, Math.min(openMs, 10*60*1000));
     if (Number.isFinite(waitMs) && waitMs >= 0) __LL_SCREENSAVER.waitMs = Math.max(0, Math.min(waitMs, 10*60*1000));
     if (Number.isFinite(startDelayMs) && startDelayMs >= 0) __LL_SCREENSAVER.startDelayMs = Math.max(0, Math.min(startDelayMs, 10*60*1000));
-    if (Number.isFinite(fadeMs) && fadeMs >= 0) __LL_SCREENSAVER.fadeMs = Math.max(0, Math.min(fadeMs, 60*1000));
     if (stopOnMove) __LL_SCREENSAVER.stopOnMove = true;
     if (alwaysRun) __LL_SCREENSAVER.alwaysRun = true;
   }catch(e){}
@@ -9517,7 +9453,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 window.__PHASEA_DISABLE_BRX__ = true;
 if (window.__PHASEA_DISABLE_BRX__) {
   (function(){
-    const VERSION='v99.3.57_ScreensaverAiryFadeFix';
+    const VERSION='v99.3.55_ScreenSaverDisableHotkeysInSS';
     // Install a stub so any callers don't crash
     const stub = {
       version: VERSION,
