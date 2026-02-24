@@ -322,7 +322,7 @@ console.log("[v99.3.28_TodayPoll_ApplyUpdateAndDebug] loaded", new Date().toISOS
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v99.3.52_ColorGradeSceneCoherence.html</title>
+<title>garden_v99.3.53_ColorGradeModes_PetalHiFix.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -855,7 +855,11 @@ body {
   --gsy: 0.02;
   --gdur: 14s;
   --gdel: 0s;
-  filter: var(--grassFilter) hue-rotate(var(--fgGrassHue)) saturate(var(--fgGrassSat)) brightness(var(--fgGrassBright));
+  filter: var(--grassFilter) hue-rotate(var(--fgGrassHue)) saturate(var(--fgGrassSat)) brightness(var(--fgGrassBright))
+    drop-shadow(0 -1px 0 rgba(0,0,0,0.55))
+    drop-shadow(0 1px 0 rgba(0,0,0,0.22))
+    drop-shadow(1px 0 0 rgba(0,0,0,0.22))
+    drop-shadow(-1px 0 0 rgba(0,0,0,0.22));
 }
 
 .grassHaze {
@@ -1889,7 +1893,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v99.3.52_ColorGradeSceneCoherence.html • v99.3.52_ColorGradeSceneCoherence • Built: 2026-02-23 23:48 UTC</div>
+  <div id="llPinkBanner">garden_v99.3.53_ColorGradeModes_PetalHiFix.html • v99.3.53_ColorGradeModes_PetalHiFix • Built: 2026-02-23 23:48 UTC</div>
 
 
 <script>
@@ -1936,8 +1940,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.3.52_ColorGradeSceneCoherence.html</span><br>
-Version: <span id="__bannerVersion">v99.3.52_ColorGradeSceneCoherence</span><br>
+File: <span id="__bannerFileName">garden_v99.3.53_ColorGradeModes_PetalHiFix.html</span><br>
+Version: <span id="__bannerVersion">v99.3.53_ColorGradeModes_PetalHiFix</span><br>
 Created: 2026-02-23T23:38:23.441Z</div>
 <script>
 (function(){
@@ -1953,7 +1957,7 @@ Created: 2026-02-23T23:38:23.441Z</div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.3.52_ColorGradeSceneCoherence loaded", new Date().toISOString());
+  console.log("[VERSION] v99.3.53_ColorGradeModes_PetalHiFix loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -2915,7 +2919,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   </div>
 
   <div class="util hidden" id="util">
-    <div class="utilTitle">LifeLog Garden Walk v99.3.28_TodayPoll_ApplyUpdateAndDebug</div>
+    <div class="utilTitle">LifeLog Garden Walk v99.3.53_ColorGradeModes_PetalHiFix</div>
     <div class="utilSub">Scroll to walk through weeks. Press H to hide/show this panel.</div>
 	    <div class="row">
 	      <label>Wireframe</label>
@@ -2993,6 +2997,19 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
       </select>
       <div class="val" id="vSeason">Auto</div>
     </div>
+    <div class="row">
+      <label>Color grade</label>
+      <select class="select" id="uColorGrade" style="grid-column:2 / span 1;">
+        <option value="subtle">Subtle</option>
+        <option value="stronger">Slightly stronger</option>
+        <option value="cinematic">Cinematic</option>
+        <option value="blended">Very blended</option>
+        <option value="ambient">Ambient</option>
+        <option value="off">Off</option>
+      </select>
+      <div class="val" id="vColorGrade">Subtle</div>
+    </div>
+
     <div class="row">
       <label>Manual clock</label>
       <input id="uTodClock" max="1440" min="0" type="range" value="720"/>
@@ -3217,6 +3234,8 @@ function cacheDomRefs(){
     vTod: document.getElementById('vTod'),
     uSeason: document.getElementById('uSeason'),
     vSeason: document.getElementById('vSeason'),
+    uColorGrade: document.getElementById('uColorGrade'),
+    vColorGrade: document.getElementById('vColorGrade'),
     btnRewind: document.getElementById('btnRewind'),
     btnForward: document.getElementById('btnForward'),
     btnPause: document.getElementById('btnPause'),
@@ -3419,33 +3438,101 @@ function getSceneAmbientHex_(){
   return '#88BDF0';
 }
 
+// ============================================
+// Color grading (petal coherence modes)
+// ============================================
+let __llColorGradeMode = "subtle"; // subtle | stronger | cinematic | blended | ambient | off
+
+(function initColorGradeModeFromUrl_(){
+  try{
+    const p = new URLSearchParams(location.search || "");
+    const u = (p.get("grade") || p.get("colorgrade") || "").toLowerCase().trim();
+    const saved = (localStorage.getItem("llColorGradeMode") || "").toLowerCase().trim();
+    const pick = u || saved || "subtle";
+    if (pick) __llColorGradeMode = pick;
+  }catch(e){}
+})();
+
+function getColorGradeParams_(mode){
+  const m = (mode || "subtle").toLowerCase();
+  switch(m){
+    case "off":
+      return { mode:"off" };
+    case "ambient":
+      return { mode:"ambient", sBase:1.0, sCurve:0.0, mixAmtDay:0.14, mixAmtNight:0.10, liftDark:0.00 };
+    case "blended":
+    case "very":
+    case "veryblended":
+      return { mode:"blended", sBase:0.78, sCurve:0.42, mixAmtDay:0.22, mixAmtNight:0.14, liftDark:0.05 };
+    case "cinematic":
+      return { mode:"cinematic", sBase:0.82, sCurve:0.36, mixAmtDay:0.16, mixAmtNight:0.10, liftDark:0.04 };
+    case "stronger":
+    case "slightly":
+    case "slightlystronger":
+      return { mode:"stronger", sBase:0.88, sCurve:0.28, mixAmtDay:0.11, mixAmtNight:0.07, liftDark:0.035 };
+    case "subtle":
+    default:
+      return { mode:"subtle", sBase:0.92, sCurve:0.18, mixAmtDay:0.08, mixAmtNight:0.05, liftDark:0.03 };
+  }
+}
+
+function setColorGradeMode_(mode){
+  const p = getColorGradeParams_(mode);
+  __llColorGradeMode = p.mode || "subtle";
+  try{ localStorage.setItem("llColorGradeMode", __llColorGradeMode); }catch(e){}
+  try{
+    if (DOM.uColorGrade) DOM.uColorGrade.value = __llColorGradeMode;
+    if (DOM.vColorGrade){
+      const label = ({
+        subtle:"Subtle",
+        stronger:"Slightly stronger",
+        cinematic:"Cinematic",
+        blended:"Very blended",
+        ambient:"Ambient",
+        off:"Off"
+      })[__llColorGradeMode] || __llColorGradeMode;
+      DOM.vColorGrade.textContent = label;
+    }
+  }catch(e){}
+}
+
 function gradePetalHexForScene_(hex){
   const src = normHex6(hex, null);
   if (!src) return hex;
+
+  const params = getColorGradeParams_(__llColorGradeMode);
+  if (!params || params.mode === "off") return src;
+
   const rgb = rgbFromHex_(src);
   if (!rgb) return src;
 
-  // Nonlinear saturation compression: preserves low/mid saturation, tames neon.
+  // Preserve truly low-sat colors (avoid shifting neutrals)
   let { h, s, l } = rgbToHsl_(rgb.r, rgb.g, rgb.b);
   const s0 = s;
-  s = clamp01(s * (0.92 - 0.18 * s));
+  if (s0 < 0.10) return src;
 
-  // Small lift for very dark colors so strokes and shading read better.
-  if (l < 0.22) l = clamp01(l + 0.03);
+  // Nonlinear saturation compression to tame neon
+  const sBase = params.sBase ?? 0.92;
+  const sCurve = params.sCurve ?? 0.18;
+  s = clamp01(s * (sBase - sCurve * s));
+
+  // Small lift for very dark colors so strokes/shading read better
+  const lift = params.liftDark ?? 0.03;
+  if (lift > 0 && l < 0.22) l = clamp01(l + lift);
 
   const rgb2 = hslToRgb_(h, s, l);
   let out = hexFromRgb_(rgb2.r, rgb2.g, rgb2.b);
 
-  // Ambient blend: nudges petals into the scene lighting so they feel "in" the sky.
+  // Ambient blend for in-scene lighting
   const amb = getSceneAmbientHex_();
   const pal = window.__LL_PALETTE__ || null;
-  const mixAmt = pal && pal.stars ? 0.05 : 0.08;
-  out = mixHex(out, amb, mixAmt);
+  const isNightish = !!(pal && pal.stars);
+  const mixAmt = isNightish ? (params.mixAmtNight ?? 0.05) : (params.mixAmtDay ?? 0.08);
+  if (mixAmt > 0) out = mixHex(out, amb, mixAmt);
 
-  // If saturation was tiny to begin with, keep it stable.
-  if (s0 < 0.10) out = src;
   return out;
 }
+
 
 const lighten = (hex, amt) => mixHex(hex, "#ffffff", amt);
 const darken  = (hex, amt) => mixHex(hex, "#000000", amt);
@@ -3685,18 +3772,13 @@ const monthC = (MONTH_COLORS[month] || "#C7D4E2");
   const LEAF_Y = { 1: 770, 2: 505, 3: 605, 4: 580, 5: 560 };
 
   const petalEllipse = (cx, cy, rx, ry, rotDeg, fill, strokeAlpha=0.46) => {
-    const strokeCol = 'rgba(0,0,0,0.85)';
-    const hiFill = 'rgba(255,255,255,0.08)';
-    const hiRx = rx * 0.82;
-    const hiRy = ry * 0.82;
-    const hiCy = cy - (ry * 0.08);
+    const strokeCol = 'rgba(0,0,0,0.90)';
     return `
       <ellipse class="petal" cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" transform="rotate(${rotDeg} ${cx} ${cy})"
-        fill="${fill}" stroke="${strokeCol}" stroke-width="2.65" stroke-linejoin="round" opacity="0.98"/>
-      <ellipse class="petalHi" cx="${cx}" cy="${hiCy}" rx="${hiRx}" ry="${hiRy}" transform="rotate(${rotDeg} ${cx} ${cy})"
-        fill="${hiFill}" stroke="none" opacity="1"/>
+        fill="${fill}" stroke="${strokeCol}" stroke-width="3.40" stroke-linejoin="round" opacity="0.99"/>
     `;
   };
+
 
   const leafPathEl = (d, fill) =>
     `<path d="${d}" fill="${fill}" stroke="var(--strokeLeaf)" stroke-width="1.7" stroke-linejoin="round"/>`;
@@ -5582,6 +5664,17 @@ if (DOM.uHillGuidesOn) DOM.uHillGuidesOn.addEventListener("change", applyUiToSta
       CACHED.transformsDirty = true;
     });
   }
+
+  if (DOM.uColorGrade){
+    DOM.uColorGrade.addEventListener("change", () => {
+      setColorGradeMode_(DOM.uColorGrade.value || "subtle");
+      buildBands();
+      CACHED.transformsDirty = true;
+    });
+  }
+  // Initialize grade mode UI + state
+  try{ setColorGradeMode_(__llColorGradeMode); }catch(e){}
+
   // Debug Hide button is wired in the debug panel bootstrap.
   document.addEventListener("keydown", (e) => {
     const tag = (e.target?.tagName || "").toUpperCase();
@@ -9345,7 +9438,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 window.__PHASEA_DISABLE_BRX__ = true;
 if (window.__PHASEA_DISABLE_BRX__) {
   (function(){
-    const VERSION='v99.3.52_ColorGradeSceneCoherence';
+    const VERSION='v99.3.53_ColorGradeModes_PetalHiFix';
     // Install a stub so any callers don't crash
     const stub = {
       version: VERSION,
