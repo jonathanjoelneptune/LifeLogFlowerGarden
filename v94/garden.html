@@ -12,7 +12,7 @@
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v99.3.57_FullCirclePetals
+  v99.3.59_ScreenSaverDimParam_Fix
     + Add scale-compensated back-row slot spread to prevent horizontal clumping
   v99.3.29_TodayPoll_FrostySkyboxesNight
     + Add canonical data-week-key on each flowerWrap (alias of weekId)
@@ -121,7 +121,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v99.3.46_Polish_ScreenSaver';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v99.3.59_ScreenSaverDimParam_Fix';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -1321,6 +1321,19 @@ body.wireframeMode .flowerSvg line {
       overflow: hidden;
       text-overflow: ellipsis;
     }
+
+
+/* ScreenSaver dim overlay (URL param) */
+.ssDimOverlay{
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1200ms linear;
+  z-index: 999999;
+}
+
 </style>
 
 <style id="llUtilNoteStyles">
@@ -1944,9 +1957,9 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.3.57_FullCirclePetals.html</span><br>
-Version: <span id="__bannerVersion">v99.3.57_FullCirclePetals</span><br>
-P26-02-24T21:12:36.957249Z</div>
+File: <span id="__bannerFileName">garden_v99.3.59_ScreenSaverDimParam_Fix.html</span><br>
+Version: <span id="__bannerVersion">v99.3.59_ScreenSaverDimParam_Fix</span><br>
+Created: <span id="__bannerCreated">2026-02-25T06:23:02Z</span></div>
 <script>
 (function(){
   try{
@@ -1961,7 +1974,7 @@ P26-02-24T21:12:36.957249Z</div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.3.57_FullCirclePetals loaded", new Date().toISOString());
+  console.log("[VERSION] v99.3.59_ScreenSaverDimParam_Fix loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -2830,6 +2843,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
 <div class="wrap">
 <div class="stage" id="stage">
   <div id="gridOverlay" class="gridOverlay" style="display:none"></div>
+  <div id="ssDimOverlay" class="ssDimOverlay" aria-hidden="true"></div>
   <div class="bg">
     <div class="skyGrad" id="skyGrad"></div>
     <div class="sunGlow" id="sunGlow"></div>
@@ -7912,7 +7926,9 @@ const __LL_SCREENSAVER = {
   token: 0,
   lastSlotId: '',
   startedOnce: false,
-  stopOnMove: false
+  stopOnMove: false,
+  dim: 0,
+
 };;
 
 // Expose screensaver state so other handlers can gate hotkeys
@@ -7943,12 +7959,34 @@ function __llReadScreenSaverParams_(){
     const alwaysRun = __llParseBoolParam_(qs.get('ssAlways')) || __llParseBoolParam_(qs.get('ssAlwaysRun')) || __llParseBoolParam_(qs.get('alwaysRun'));
     const stopOnMove = __llParseBoolParam_(qs.get('ssMove')) || __llParseBoolParam_(qs.get('ssStopOnMove')) || __llParseBoolParam_(qs.get('stopOnMove'));
 
+const dimRaw = qs.get('ssDim') || qs.get('ssDimm') || qs.get('dim') || qs.get('ssDimmer') || '';
+let dim = 0;
+if (dimRaw != null && String(dimRaw).length){
+  const sDim = String(dimRaw).trim().toLowerCase();
+  if (__llParseBoolParam_(sDim)) dim = 0.25;
+  else {
+    const f = parseFloat(sDim);
+    if (Number.isFinite(f)) dim = f;
+  }
+}
+
     if (enable) { __LL_SCREENSAVER.enabled = true; __LL_SCREENSAVER.alwaysRun = true; }
     if (Number.isFinite(openMs) && openMs > 0) __LL_SCREENSAVER.openMs = Math.max(250, Math.min(openMs, 10*60*1000));
     if (Number.isFinite(waitMs) && waitMs >= 0) __LL_SCREENSAVER.waitMs = Math.max(0, Math.min(waitMs, 10*60*1000));
     if (Number.isFinite(startDelayMs) && startDelayMs >= 0) __LL_SCREENSAVER.startDelayMs = Math.max(0, Math.min(startDelayMs, 10*60*1000));
     if (stopOnMove) __LL_SCREENSAVER.stopOnMove = true;
     if (alwaysRun) __LL_SCREENSAVER.alwaysRun = true;
+    if (Number.isFinite(dim) && dim > 0) __LL_SCREENSAVER.dim = Math.max(0, Math.min(dim, 0.85));
+  }catch(e){}
+}
+
+function __llApplyScreenSaverDim_(on){
+  try{
+    const el = document.getElementById("ssDimOverlay");
+    if (!el) return;
+    const d = (__LL_SCREENSAVER && Number.isFinite(__LL_SCREENSAVER.dim)) ? __LL_SCREENSAVER.dim : 0;
+    if (!d || d <= 0){ el.style.opacity = "0"; return; }
+    el.style.opacity = on ? String(d) : "0";
   }catch(e){}
 }
 
@@ -7976,6 +8014,7 @@ function __llPickRandomWrap_(list){
 function __llStopScreenSaver_(why){
   try{
     __LL_SCREENSAVER.enabled = false;
+    try{ __llApplyScreenSaverDim_(false); }catch(e){}
     __LL_SCREENSAVER.token = (__LL_SCREENSAVER.token|0) + 1; // invalidate pending callbacks
     if (__LL_SCREENSAVER.timerA) { clearTimeout(__LL_SCREENSAVER.timerA); __LL_SCREENSAVER.timerA = null; }
     if (__LL_SCREENSAVER.timerB) { clearTimeout(__LL_SCREENSAVER.timerB); __LL_SCREENSAVER.timerB = null; }
@@ -8034,6 +8073,7 @@ function __llStartScreenSaver_(why){
     __LL_SCREENSAVER.token = (__LL_SCREENSAVER.token|0) + 1;
     const tok = __LL_SCREENSAVER.token;
     __LL_SCREENSAVER.enabled = true;
+    try{ __llApplyScreenSaverDim_(true); }catch(e){}
     __LL_SCREENSAVER.startedOnce = true;
     if (typeof dbg_ === 'function') dbg_(`Screensaver: START (${why || 'url'}) open=${__LL_SCREENSAVER.openMs}ms wait=${__LL_SCREENSAVER.waitMs}ms`);
     // small delay to ensure initial render/export apply settles
@@ -8046,6 +8086,7 @@ __llReadScreenSaverParams_();
 if (__LL_SCREENSAVER.enabled){
   // Start after initial UI init cycle; this is conservative and avoids racing export apply/rebuild.
   window.addEventListener('load', ()=>{
+    if (__LL_SCREENSAVER.enabled){ try{ __llApplyScreenSaverDim_(true); }catch(e){} }
     if (__LL_SCREENSAVER.enabled && !__LL_SCREENSAVER.startedOnce) __llStartScreenSaver_('url');
   }, { once: true });
 }
@@ -10075,7 +10116,7 @@ const LS_KEY = "LL_V94_HOST_CFG";
     window.__LL_EXPORT = { payload, byDate, byWeek, stats: { rowCount: payload.rows.length, minDate, maxDate, rowsWithDayLevel } };
     usingExport = true;
     window.__llForceTodayAfterExport_ = true;
-window.setGardenDataSourceLabel_("GardenExport");
+(typeof window.setGardenDataSourceLabel_==="function" ? window.setGardenDataSourceLabel_("GardenExport") : void 0);
     // Option C: after applying online export, defer focus-to-today until week models exist
     if(typeof __llDeferFocusTodayAfterOnlineExport_ === "function"){
       setTimeout(__llDeferFocusTodayAfterOnlineExport_, 0);
@@ -10784,7 +10825,7 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
   })();
 
   if(execUrl) {
-    window.setGardenDataSourceLabel_("GardenExport (loading...)");
+    (typeof window.setGardenDataSourceLabel_==="function" ? window.setGardenDataSourceLabel_("GardenExport (loading...)") : void 0);
     if(btnReload) {
       // classic path: re-use existing UI wiring if present
       btnReload.click();
@@ -10818,20 +10859,20 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
             })
             .catch((e)=>{
               log("[export] load failed: " + (e && e.message ? e.message : String(e)));
-              window.setGardenDataSourceLabel_("Offline (export error)");
+              (typeof window.setGardenDataSourceLabel_==="function" ? window.setGardenDataSourceLabel_("Offline (export error)") : void 0);
             });
         }catch(e){
           log("[export] load failed: " + (e && e.message ? e.message : String(e)));
-          window.setGardenDataSourceLabel_("Offline (export error)");
+          (typeof window.setGardenDataSourceLabel_==="function" ? window.setGardenDataSourceLabel_("Offline (export error)") : void 0);
         }
       })();
     } else {
       log("Exec URL present but export loader is not available; falling back to Offline.");
-      window.setGardenDataSourceLabel_("Offline (placeholder)");
+      (typeof window.setGardenDataSourceLabel_==="function" ? window.setGardenDataSourceLabel_("Offline (placeholder)") : void 0);
     }
   } else {
     log("Offline mode. Provide exec URL to load real GardenExport data.");
-    window.setGardenDataSourceLabel_("Offline (placeholder)");
+    (typeof window.setGardenDataSourceLabel_==="function" ? window.setGardenDataSourceLabel_("Offline (placeholder)") : void 0);
   }
 }
 
