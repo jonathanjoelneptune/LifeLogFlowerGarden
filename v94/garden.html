@@ -12,7 +12,7 @@
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v99.3.65_EvenSlotsAlways_NaturalBias_SmoothNoPop
+  v99.3.68_EvenSlots_NaturalBias_NoMidScrollRebuild_Fixed
     + Add scale-compensated back-row slot spread to prevent horizontal clumping
   v99.3.29_TodayPoll_FrostySkyboxesNight
     + Add canonical data-week-key on each flowerWrap (alias of weekId)
@@ -121,7 +121,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v99.3.65_EvenSlotsAlways_NaturalBias_SmoothNoPop';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v99.3.68_EvenSlots_NaturalBias_NoMidScrollRebuild_Fixed';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -326,7 +326,7 @@ console.log("[v99.3.28_TodayPoll_ApplyUpdateAndDebug] loaded", new Date().toISOS
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v99.3.65_EvenSlotsAlways_NaturalBias_SmoothNoPop.html</title>
+<title>garden_v99.3.68_EvenSlots_NaturalBias_NoMidScrollRebuild_Fixed.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -1910,7 +1910,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v99.3.65_EvenSlotsAlways_NaturalBias_SmoothNoPop.html • v99.3.65_EvenSlotsAlways_NaturalBias_SmoothNoPop • Built: 2026-02-25T07:38:50Z UTC</div>
+  <div id="llPinkBanner">garden_v99.3.68_EvenSlots_NaturalBias_NoMidScrollRebuild_Fixed.html • v99.3.68_EvenSlots_NaturalBias_NoMidScrollRebuild_Fixed • Built: 2026-02-25T07:38:50Z UTC</div>
 
 
 <script>
@@ -1957,8 +1957,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.3.65_EvenSlotsAlways_NaturalBias_SmoothNoPop.html</span><br>
-Version: <span id="__bannerVersion">v99.3.65_EvenSlotsAlways_NaturalBias_SmoothNoPop</span><br>
+File: <span id="__bannerFileName">garden_v99.3.68_EvenSlots_NaturalBias_NoMidScrollRebuild_Fixed.html</span><br>
+Version: <span id="__bannerVersion">v99.3.68_EvenSlots_NaturalBias_NoMidScrollRebuild_Fixed</span><br>
 Created: 2026-02-25T07:38:50Z</span></div>
 <script>
 (function(){
@@ -1974,7 +1974,7 @@ Created: 2026-02-25T07:38:50Z</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.3.65_EvenSlotsAlways_NaturalBias_SmoothNoPop loaded", new Date().toISOString());
+  console.log("[VERSION] v99.3.68_EvenSlots_NaturalBias_NoMidScrollRebuild_Fixed loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -2938,7 +2938,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   </div>
 
   <div class="util hidden" id="util">
-    <div class="utilTitle">LifeLog Garden Walk v99.3.65_EvenSlotsAlways_NaturalBias_SmoothNoPop</div>
+    <div class="utilTitle">LifeLog Garden Walk v99.3.68_EvenSlots_NaturalBias_NoMidScrollRebuild_Fixed</div>
     <div class="utilSub">Scroll to walk through weeks. Press H to hide/show this panel.</div>
 	    <div class="row">
 	      <label>Wireframe</label>
@@ -4693,7 +4693,7 @@ function refreshFrontGrass(){
 // ============================================
 
 // ============================================
-// v99.3.65_EvenSlotsAlways_NaturalBias_SmoothNoPop: keep back-row flowers horizontally de-clumped
+// v99.3.68_EvenSlots_NaturalBias_NoMidScrollRebuild_Fixed: keep back-row flowers horizontally de-clumped
 // ============================================
 const __LL_BACK_SPREAD_MAX_BEHIND = 5;    // reach near-full spread quickly (about 4-6 rows back)
 const __LL_BACK_SPREAD_EDGE_PAD   = 0.006; // keep a tiny inset so nothing clips at extreme edges
@@ -4714,6 +4714,7 @@ function __llLerp_(a,b,t){ return a + (b-a)*t; }
 // Slot positions:
 //   x = (k + W/2) / (7*W)   -> when k=W*d, x=(d+0.5)/7 (canonical day center)
 const __LL_EVEN_MAX_WEEKS = 7;
+const __LL_EVEN_NEARFRONT_BLEND_BEHIND = 1.35; // rows: 0..~1.35 blends from day-centers to even slots
 
 function updateBandSlotSpread_(band, behind, s){
   if (!band) return;
@@ -4730,13 +4731,10 @@ function updateBandSlotSpread_(band, behind, s){
   if (band.__llSpreadKey === key) return;
   band.__llSpreadKey = key;
 
-  // Front row: keep perfectly aligned to day markers
-  if ((behind || 0) < 1e-6){
-    for (let d=0; d<7 && d<slots.length; d++){
-      slots[d].style.left = (((d + 0.5) / 7) * 100).toFixed(3) + "%";
-    }
-    return;
-  }
+  // Near-front blend: avoid "pop" when a week transitions from front row into the even-slot grid.
+  // b=0 -> exact day centers; b>=BLEND -> fully even-slot behavior.
+  const __b0 = Math.max(0, behind || 0);
+  const __tBlend = __llClamp01_(__b0 / __LL_EVEN_NEARFRONT_BLEND_BEHIND);
 
   const N = 7 * W;
   const centerR = Math.floor(W / 2);
@@ -4770,7 +4768,7 @@ const a  = b - r0;
   const maxJit = step * 0.06; // subtle, avoid edge clipping
 
   // Edges: keep everything on-screen.
-  const edgePad = 0.010; // 2% inset
+  const edgePad = 0.006; // inset (tighter edges)
 
   for (let d=0; d<7 && d<slots.length; d++){
     const k0 = (W * d) + (centerR + sideSign * m0);
@@ -4785,7 +4783,11 @@ const a  = b - r0;
     desired0 += (rr0()*2 - 1) * maxJit;
     desired1 += (rr1()*2 - 1) * maxJit;
 
-    let desired = __llLerp_(desired0, desired1, a);
+    const desiredEven = __llLerp_(desired0, desired1, a);
+
+    // Blend from strict day-centers (front-like) into even-slot layout to prevent popping when scrolling backward.
+    const desiredDay = (d + 0.5) / 7;
+    let desired = __llLerp_(desiredDay, desiredEven, __tBlend);
 
     desired = Math.max(edgePad, Math.min(1 - edgePad, desired));
 
@@ -4809,36 +4811,46 @@ function applyTransforms(tNow){
 
   DOM.weeksStack.style.transform = `translate3d(${bobX.toFixed(1)}px, ${(bobY + state.horizon).toFixed(1)}px, 0px) rotate(${state.bank.toFixed(2)}deg)`;
 
-  const frontIndex = Math.max(0, Math.round(frontF));
+  const frontIndexVisual = Math.max(0, Math.round(frontF));
 
   // v99.3.62: Even-slot spacing always-on (Option A)
   try{ window.__llEvenSlotsWCurrent = __LL_EVEN_MAX_WEEKS; }catch(e){}
-  if (frontIndex !== lastFrontIndex){
-    const prevFront = lastFrontIndex;
-    __llLastRowDir = (prevFront < 0) ? 0 : (frontIndex > prevFront ? +1 : -1);
-    lastFrontIndex = frontIndex;
-    try{ syncRenderedWeeks_(frontIndex); }catch(e){}
-    try { if (typeof hideSkyBoxes_ === 'function') hideSkyBoxes_('row change', __llLastRowDir); if (typeof dbg_==='function') dbg_(`Row change -> keep selection (hide boxes) dir=${__llLastRowDir}`); } catch(e) {}
-    try{ setTimeout(()=>{ try{ rebindSelectionToVisibleWrap_('row change'); }catch(e){} }, 0); }catch(e) {}
-    updateFrontText(frontIndex);
-// v99.3.28_TodayPoll_ApplyUpdateAndDebug: Keep the hill back-row preview synchronized with the currently-front week.
-try{
-  if (DOM.uBackRowsOn && DOM.uBackRowsOn.checked){
-    if ((frontIndex|0) !== (lastBackRowsFrontIndex|0)){
-      lastBackRowsFrontIndex = (frontIndex|0);
-      try{ if(typeof dbg_==="function") dbg_(`[BRX] sync frontIndex=${frontIndex}`); }catch(e){}
-      try{ window.__backRowsLastFrontIndex = (frontIndex|0); }catch(e){}
-      try{ if(window.BRX && typeof BRX.syncFrontIndex==='function'){ BRX.syncFrontIndex(frontIndex); } }catch(e){}
-    }
-  }
-}catch(e){}
 
-    // v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: Lazy render bands near the front
-    /* v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: all bands are rendered; no lazy re-render needed here */
+  // v99.3.68: prevent mid-scroll rebuild/pop when many rows are present.
+  // Only "commit" a new frontIndex (and run expensive sync/selection work) when we're close to settled.
+  const __llSettleEps = 0.10;
+  const __llIsSettled = Math.abs(currentOffset - targetIndex) <= __llSettleEps;
+
+  if (__llIsSettled && frontIndexVisual !== lastFrontIndex){
+    const prevFront = lastFrontIndex;
+    __llLastRowDir = (prevFront < 0) ? 0 : (frontIndexVisual > prevFront ? +1 : -1);
+    lastFrontIndex = frontIndexVisual;
+
+    try{ syncRenderedWeeks_(frontIndexVisual); }catch(e){}
+    try{
+      if (typeof hideSkyBoxes_ === 'function') hideSkyBoxes_('row change', __llLastRowDir);
+      if (typeof dbg_==='function') dbg_(`Row change -> keep selection (hide boxes) dir=${__llLastRowDir}`);
+    }catch(e){}
+    try{ setTimeout(()=>{ try{ rebindSelectionToVisibleWrap_('row change'); }catch(e){} }, 0); }catch(e){}
+
+    updateFrontText(frontIndexVisual);
+
+    // Keep the hill back-row preview synchronized with the currently-front week,
+    // but also only when settled to avoid a mid-scroll snap.
+    try{
+      if (DOM.uBackRowsOn && DOM.uBackRowsOn.checked){
+        if ((frontIndexVisual|0) !== (lastBackRowsFrontIndex|0)){
+          lastBackRowsFrontIndex = (frontIndexVisual|0);
+          try{ if(typeof dbg_==="function") dbg_(`[BRX] sync frontIndex=${frontIndexVisual}`); }catch(e){}
+          try{ window.__backRowsLastFrontIndex = (frontIndexVisual|0); }catch(e){}
+          try{ if(window.BRX && typeof BRX.syncFrontIndex==='function'){ BRX.syncFrontIndex(frontIndexVisual); } }catch(e){}
+        }
+      }
+    }catch(e){}
+
     const fs = document.getElementById('frontSpotlight');
     if (fs) fs.classList.add('on');
   }
-
   const depthY = state.depthY;
   const staggerStrength = state.staggerStrength;
   const yawPx = state.yaw * 3.0;
@@ -9597,7 +9609,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 window.__PHASEA_DISABLE_BRX__ = true;
 if (window.__PHASEA_DISABLE_BRX__) {
   (function(){
-    const VERSION='v99.3.65_EvenSlotsAlways_NaturalBias_SmoothNoPop';
+    const VERSION='v99.3.68_EvenSlots_NaturalBias_NoMidScrollRebuild_Fixed';
     // Install a stub so any callers don't crash
     const stub = {
       version: VERSION,
