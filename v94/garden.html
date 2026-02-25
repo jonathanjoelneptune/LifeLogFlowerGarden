@@ -12,7 +12,7 @@
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v99.3.59_ScreenSaverDimParam_Fix
+  v99.3.60_ScreenSaverDimParam_WideSpread
     + Add scale-compensated back-row slot spread to prevent horizontal clumping
   v99.3.29_TodayPoll_FrostySkyboxesNight
     + Add canonical data-week-key on each flowerWrap (alias of weekId)
@@ -121,7 +121,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v99.3.59_ScreenSaverDimParam_Fix';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v99.3.60_ScreenSaverDimParam_WideSpread';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -326,7 +326,7 @@ console.log("[v99.3.28_TodayPoll_ApplyUpdateAndDebug] loaded", new Date().toISOS
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v99.3.57_FullCirclePetals.html</title>
+<title>garden_v99.3.60_ScreenSaverDimParam_WideSpread.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -1910,7 +1910,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v99.3.57_FullCirclePetals.html • v99.3.57_FullCirclePetals • Built: 2026-02-24T19:55:45.776 UTC 06:18 UTC</div>
+  <div id="llPinkBanner">garden_v99.3.60_ScreenSaverDimParam_WideSpread.html • v99.3.60_ScreenSaverDimParam_WideSpread • Built: 2026-02-24T19:55:45.776 UTC 06:18 UTC</div>
 
 
 <script>
@@ -1957,8 +1957,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.3.59_ScreenSaverDimParam_Fix.html</span><br>
-Version: <span id="__bannerVersion">v99.3.59_ScreenSaverDimParam_Fix</span><br>
+File: <span id="__bannerFileName">garden_v99.3.60_ScreenSaverDimParam_WideSpread.html</span><br>
+Version: <span id="__bannerVersion">v99.3.60_ScreenSaverDimParam_WideSpread</span><br>
 Created: <span id="__bannerCreated">2026-02-25T06:23:02Z</span></div>
 <script>
 (function(){
@@ -1974,7 +1974,7 @@ Created: <span id="__bannerCreated">2026-02-25T06:23:02Z</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.3.59_ScreenSaverDimParam_Fix loaded", new Date().toISOString());
+  console.log("[VERSION] v99.3.60_ScreenSaverDimParam_WideSpread loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -2938,7 +2938,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   </div>
 
   <div class="util hidden" id="util">
-    <div class="utilTitle">LifeLog Garden Walk v99.3.57_FullCirclePetals</div>
+    <div class="utilTitle">LifeLog Garden Walk v99.3.60_ScreenSaverDimParam_WideSpread</div>
     <div class="utilSub">Scroll to walk through weeks. Press H to hide/show this panel.</div>
 	    <div class="row">
 	      <label>Wireframe</label>
@@ -4693,61 +4693,76 @@ function refreshFrontGrass(){
 // ============================================
 
 // ============================================
-// v99.3.57_FullCirclePetals: keep back-row flowers horizontally de-clumped
+// v99.3.60_ScreenSaverDimParam_WideSpread: keep back-row flowers horizontally de-clumped
 // ============================================
-const __LL_BACK_SPREAD_MAX_BEHIND = 12;   // rows behind where we reach full edge spread
-const __LL_BACK_SPREAD_EDGE_PAD   = 0.03; // 3% inset from the edges to avoid clipping
+const __LL_BACK_SPREAD_MAX_BEHIND = 5;    // reach near-full spread quickly (about 4-6 rows back)
+const __LL_BACK_SPREAD_EDGE_PAD   = 0.012; // keep a tiny inset so nothing clips at extreme edges
 
 function __llClamp01_(v){ return v < 0 ? 0 : (v > 1 ? 1 : v); }
 function __llLerp_(a,b,t){ return a + (b-a)*t; }
 
-// Updates the 7 day slots in a band so they keep filling the view width even when the band is scaled down.
+// Wider, more organic back-row spreading:
+// - pushes Monday/Sunday toward edges sooner
+// - allows cross-day drift so back rows fill gaps (not locked to day columns)
+// - deterministic jitter (no shimmer)
 function updateBandSlotSpread_(band, behind, s){
   if (!band) return;
 
   // Cache so we do not rewrite styles every frame if nothing meaningfully changed
-  const key = (behind < 0.05) ? "front" : ("b" + (Math.round(behind*100)/100) + "|s" + (Math.round(s*1000)/1000));
+  const key = (behind < 0.02) ? "front" : ("b" + (Math.round(behind*100)/100) + "|s" + (Math.round(s*1000)/1000));
   if (band.__llSpreadKey === key) return;
   band.__llSpreadKey = key;
 
   const slots = band.querySelectorAll(".flowerSlot");
   if (!slots || slots.length < 7) return;
 
-  // As behind increases, expand anchors outward until Monday/Sunday approach the edges
-  const tSpread  = __llClamp01_((behind - 0.25) / __LL_BACK_SPREAD_MAX_BEHIND);
-  const leftEdge = __LL_BACK_SPREAD_EDGE_PAD;
-  const rightEdge= 1 - __LL_BACK_SPREAD_EDGE_PAD;
+  // Spread ramps up quickly as rows move backward
+  const tSpread  = __llClamp01_(behind / __LL_BACK_SPREAD_MAX_BEHIND);
 
-  // Stable per-week jitter to reduce visible “columns”
+  const leftEdge  = __LL_BACK_SPREAD_EDGE_PAD;
+  const rightEdge = 1 - __LL_BACK_SPREAD_EDGE_PAD;
+
   const weekIso = (band._weekData && band._weekData.iso) ? String(band._weekData.iso)
               : (band.dataset.weekId || band.dataset.weekKey || band.dataset.weekIndex || "wk");
 
   const colSpan = (rightEdge - leftEdge) / 6;
-  const maxJit  = colSpan * 0.18 * tSpread; // subtle, grows with distance
+
+  // Whole-band drift helps break the “columns” look (still deterministic per week)
+  const rrBand = mulberry32(hash32FromString("bandShift_" + weekIso));
+  const bandShift = (rrBand()*2 - 1) * (colSpan * 0.35) * tSpread;
+
+  // Per-day jitter (stronger than before, but still stable)
+  const maxJitMid = colSpan * 0.65 * tSpread;  // interior days
+  const maxJitEdge= colSpan * 0.18 * tSpread;  // keep edges more anchored
 
   for (let d=0; d<7 && d<slots.length; d++){
-    const base = (d + 0.5) / 7;                       // canonical slot center
-    const edge = __llLerp_(leftEdge, rightEdge, d/6); // edge-to-edge anchors
+    const base = (d + 0.5) / 7;                  // canonical slot center
+    const edge = __llLerp_(leftEdge, rightEdge, d / 6); // edge-to-edge anchors
 
     // Blend from canonical -> edge anchors as row moves back
     let desired = __llLerp_(base, edge, tSpread);
 
-    // Organic jitter (do not jitter Monday/Sunday so edges stay clean)
-    if (d !== 0 && d !== 6 && maxJit > 0){
-      const rr = mulberry32(hash32FromString("spread_" + weekIso + "_" + d));
-      desired += (rr()*2 - 1) * maxJit;
-    }
+    // Deterministic jitter + drift so days can bleed into neighbors at distance
+    const rr = mulberry32(hash32FromString("spread_" + weekIso + "_" + d));
+    const maxJ = (d===0 || d===6) ? maxJitEdge : maxJitMid;
+    desired += (rr()*2 - 1) * maxJ;
+    desired += bandShift;
 
-    desired = Math.max(0.01, Math.min(0.99, desired));
+    // Keep within a reasonable range
+    desired = Math.max(0.002, Math.min(0.998, desired));
 
     // Compensate for the band’s scale() around center:
     // final = 0.5 + s*(pre - 0.5)  =>  pre = 0.5 + (final - 0.5)/s
     const invS = 1 / Math.max(0.001, s);
-    const pre  = 0.5 + (desired - 0.5) * invS;
+    let pre  = 0.5 + (desired - 0.5) * invS;
+
+    // Allow slight overshoot pre-scale (it will be pulled back by scale), but clamp hard if extreme
+    pre = Math.max(-0.35, Math.min(1.35, pre));
 
     slots[d].style.left = (pre * 100).toFixed(3) + "%";
   }
 }
+
 
 
 function applyTransforms(tNow){
@@ -9543,7 +9558,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 window.__PHASEA_DISABLE_BRX__ = true;
 if (window.__PHASEA_DISABLE_BRX__) {
   (function(){
-    const VERSION='v99.3.57_FullCirclePetals';
+    const VERSION='v99.3.60_ScreenSaverDimParam_WideSpread';
     // Install a stub so any callers don't crash
     const stub = {
       version: VERSION,
