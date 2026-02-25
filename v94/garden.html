@@ -12,7 +12,7 @@
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v99.3.61_EvenSlotsUtilityPanel
+  v99.3.63_EvenSlotsAlways_SmoothSymmetric
     + Add scale-compensated back-row slot spread to prevent horizontal clumping
   v99.3.29_TodayPoll_FrostySkyboxesNight
     + Add canonical data-week-key on each flowerWrap (alias of weekId)
@@ -121,7 +121,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v99.3.61_EvenSlotsUtilityPanel';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v99.3.63_EvenSlotsAlways_SmoothSymmetric';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -326,7 +326,7 @@ console.log("[v99.3.28_TodayPoll_ApplyUpdateAndDebug] loaded", new Date().toISOS
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v99.3.61_EvenSlotsUtilityPanel.html</title>
+<title>garden_v99.3.63_EvenSlotsAlways_SmoothSymmetric.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -1334,63 +1334,6 @@ body.wireframeMode .flowerSvg line {
   z-index: 999999;
 }
 
-
-
-/* Utility panel (layout + screensaver settings) */
-#llUtilBtn{
-  position: fixed;
-  right: 10px;
-  bottom: 86px; /* above week buttons */
-  z-index: 99999;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  border: 1px solid rgba(0,0,0,0.18);
-  background: rgba(255,255,255,0.86);
-  box-shadow: 0 8px 18px rgba(0,0,0,0.18);
-  cursor: pointer;
-  font: 700 18px/40px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  color: #222;
-}
-#llUtilBtn:active{ transform: translateY(1px); }
-
-#llUtilPanel{
-  position: fixed;
-  right: 10px;
-  bottom: 132px;
-  z-index: 99999;
-  width: 320px;
-  max-width: calc(100vw - 20px);
-  border-radius: 14px;
-  border: 1px solid rgba(0,0,0,0.18);
-  background: rgba(255,255,255,0.92);
-  box-shadow: 0 12px 26px rgba(0,0,0,0.22);
-  padding: 10px 12px;
-  display: none;
-}
-#llUtilPanel.open{ display: block; }
-#llUtilPanel h3{
-  margin: 0 0 8px 0;
-  font: 800 12px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #222;
-}
-.llUtilRow{ display: flex; align-items: center; gap: 8px; margin: 8px 0; }
-.llUtilRow label{ flex: 1; font: 600 12px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color: #222; }
-.llUtilRow input[type="checkbox"]{ width: 16px; height: 16px; }
-.llUtilRow input[type="range"]{ flex: 1; }
-.llUtilSmall{ font-size: 11px; opacity: 0.78; margin-top: 2px; }
-.llUtilBtnRow{ display:flex; justify-content:flex-end; margin-top:10px; }
-#llUtilCloseBtn{
-  border: 1px solid rgba(0,0,0,0.2);
-  background: rgba(255,255,255,0.9);
-  border-radius: 10px;
-  padding: 6px 10px;
-  font: 700 12px/1 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  cursor: pointer;
-}
-
 </style>
 
 <style id="llUtilNoteStyles">
@@ -1967,7 +1910,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v99.3.61_EvenSlotsUtilityPanel.html • v99.3.61_EvenSlotsUtilityPanel • Built: 2026-02-24T19:55:45.776 UTC 06:18 UTC</div>
+  <div id="llPinkBanner">garden_v99.3.63_EvenSlotsAlways_SmoothSymmetric.html • v99.3.63_EvenSlotsAlways_SmoothSymmetric • Built: 2026-02-25T07:16:51Z UTC</div>
 
 
 <script>
@@ -2014,9 +1957,9 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.3.61_EvenSlotsUtilityPanel.html</span><br>
-Version: <span id="__bannerVersion">v99.3.61_EvenSlotsUtilityPanel</span><br>
-Created: <span id="__bannerCreated">2026-02-25T06:23:02Z</span></div>
+File: <span id="__bannerFileName">garden_v99.3.63_EvenSlotsAlways_SmoothSymmetric.html</span><br>
+Version: <span id="__bannerVersion">v99.3.63_EvenSlotsAlways_SmoothSymmetric</span><br>
+Created: P26-02-25T07:16:51Z</span></div>
 <script>
 (function(){
   try{
@@ -2031,7 +1974,7 @@ Created: <span id="__bannerCreated">2026-02-25T06:23:02Z</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.3.61_EvenSlotsUtilityPanel loaded", new Date().toISOString());
+  console.log("[VERSION] v99.3.63_EvenSlotsAlways_SmoothSymmetric loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -2995,7 +2938,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   </div>
 
   <div class="util hidden" id="util">
-    <div class="utilTitle">LifeLog Garden Walk v99.3.61_EvenSlotsUtilityPanel</div>
+    <div class="utilTitle">LifeLog Garden Walk v99.3.63_EvenSlotsAlways_SmoothSymmetric</div>
     <div class="utilSub">Scroll to walk through weeks. Press H to hide/show this panel.</div>
 	    <div class="row">
 	      <label>Wireframe</label>
@@ -4750,7 +4693,7 @@ function refreshFrontGrass(){
 // ============================================
 
 // ============================================
-// v99.3.61_EvenSlotsUtilityPanel: keep back-row flowers horizontally de-clumped
+// v99.3.63_EvenSlotsAlways_SmoothSymmetric: keep back-row flowers horizontally de-clumped
 // ============================================
 const __LL_BACK_SPREAD_MAX_BEHIND = 5;    // reach near-full spread quickly (about 4-6 rows back)
 const __LL_BACK_SPREAD_EDGE_PAD   = 0.012; // keep a tiny inset so nothing clips at extreme edges
@@ -4762,140 +4705,112 @@ function __llLerp_(a,b,t){ return a + (b-a)*t; }
 // - pushes Monday/Sunday toward edges sooner
 // - allows cross-day drift so back rows fill gaps (not locked to day columns)
 // - deterministic jitter (no shimmer)
-function updateBandSlotWideSpread_(band, behind, s){
-  if (!band) return;
+// Even-slot distribution (Option A, always-on):
+// For W visible weeks (front + (W-1) behind), we create N=7*W uniform horizontal slots.
+// We choose the slot grid offset so that the FRONT week lands EXACTLY on the canonical day centers.
+// Mapping:
+//   r = behindIdx (0=front, 1=one week back, ...)
+//   k = W*d + r   (interleaves back rows between day centers)
+// Slot positions:
+//   x = (k + W/2) / (7*W)   -> when k=W*d, x=(d+0.5)/7 (canonical day center)
+const __LL_EVEN_MAX_WEEKS = 7;
 
-  const key = (behind < 0.02) ? "front" : ("b" + (Math.round(behind*100)/100) + "|s" + (Math.round(s*1000)/1000));
-  if (band.__llSpreadKey === key) return;
-  band.__llSpreadKey = key;
+function updateBandSlotSpread_(band, behind, s){
+  if (!band) return;
 
   const slots = band.querySelectorAll(".flowerSlot");
   if (!slots || slots.length < 7) return;
 
-  const tSpread  = __llClamp01_(behind / __LL_BACK_SPREAD_MAX_BEHIND);
-  const leftEdge  = __LL_BACK_SPREAD_EDGE_PAD;
-  const rightEdge = 1 - __LL_BACK_SPREAD_EDGE_PAD;
+  const W = (typeof window.__llEvenSlotsWCurrent === "number" && isFinite(window.__llEvenSlotsWCurrent))
+    ? Math.max(2, Math.min(__LL_EVEN_MAX_WEEKS, window.__llEvenSlotsWCurrent|0))
+    : __LL_EVEN_MAX_WEEKS;
 
-  const weekIso = (band._weekData && band._weekData.iso) ? String(band._weekData.iso)
-              : (band.dataset.weekId || band.dataset.weekKey || band.dataset.weekIndex || "wk");
+  // Cache so we do not rewrite styles every frame if nothing meaningfully changed
+  const key = "evenA|w"+W+"|b"+(Math.round((behind||0)*1000)/1000)+"|s"+(Math.round((s||1)*1000)/1000);
+  if (band.__llSpreadKey === key) return;
+  band.__llSpreadKey = key;
 
-  const colSpan = (rightEdge - leftEdge) / 6;
-
-  const rrBand = mulberry32(hash32FromString("bandShift_" + weekIso));
-  const bandShift = (rrBand()*2 - 1) * (colSpan * 0.35) * tSpread;
-
-  const maxJitMid = colSpan * 0.65 * tSpread;
-  const maxJitEdge= colSpan * 0.18 * tSpread;
-
-  for (let d=0; d<7 && d<slots.length; d++){
-    const base = (d + 0.5) / 7;
-    const edge = __llLerp_(leftEdge, rightEdge, d / 6);
-
-    let desired = __llLerp_(base, edge, tSpread);
-
-    const rr = mulberry32(hash32FromString("spread_" + weekIso + "_" + d));
-    const maxJ = (d===0 || d===6) ? maxJitEdge : maxJitMid;
-    desired += (rr()*2 - 1) * maxJ;
-    desired += bandShift;
-
-    desired = Math.max(0.002, Math.min(0.998, desired));
-
-    const invS = 1 / Math.max(0.001, s);
-    let pre  = 0.5 + (desired - 0.5) * invS;
-    pre = Math.max(-0.35, Math.min(1.35, pre));
-    slots[d].style.left = (pre * 100).toFixed(3) + "%";
+  // Front row: keep perfectly aligned to day markers
+  if ((behind || 0) < 1e-6){
+    for (let d=0; d<7 && d<slots.length; d++){
+      slots[d].style.left = (((d + 0.5) / 7) * 100).toFixed(3) + "%";
+    }
+    return;
   }
-}
 
-// Option A: Even slot packing for back rows.
-// Front row remains pinned to day centers.
-// Back rows map into 7×W evenly spaced anchors across the width, so gaps disappear.
-function updateBandSlotEvenSlots_(band, behind, behindIdx, s, visibleWeeks){
-  if (!band) return;
-  const slots = band.querySelectorAll(".flowerSlot");
-  if (!slots || slots.length < 7) return;
-
-  const W = Math.max(1, visibleWeeks|0);
-  const idx = Math.max(0, behindIdx|0);
-
-  // Cache
-  const key = "even|W" + W + "|i" + idx + "|s" + (Math.round(s*1000)/1000) + "|b" + (Math.round(behind*100)/100);
-  if (band.__llSpreadKey === key) return;
-  band.__llSpreadKey = key;
-
-  const pad = 0.03; // edge inset
   const N = 7 * W;
-  const span = (1 - 2*pad);
+  const centerR = Math.floor(W / 2);
 
+  // Build / cache an alternating left-right offset list around center:
+  // qList[0]=0, qList[1]=+1, qList[2]=-1, qList[3]=+2, qList[4]=-2, ...
+  // This guarantees we spread both left and right of each day center (fixes "no left spread").
+  if (!window.__llEvenSlotsQList || window.__llEvenSlotsQListW !== W){
+    const q = [0];
+    for (let step=1; q.length < W; step++){
+      q.push(+step);
+      if (q.length < W) q.push(-step);
+    }
+    // Clamp any offsets that exceed available range (for small W)
+    const maxQ = centerR;
+    for (let i=0; i<q.length; i++){
+      q[i] = Math.max(-maxQ, Math.min(+maxQ, q[i]));
+    }
+    window.__llEvenSlotsQList = q;
+    window.__llEvenSlotsQListW = W;
+  }
+
+  const qList = window.__llEvenSlotsQList;
+
+  // Smooth motion during scroll:
+  // Use fractional behind to interpolate between neighboring offset ranks,
+  // so flowers glide instead of "jump" when behind crosses an integer.
+  const b = Math.max(0, behind || 0);
+  const r0 = Math.max(0, Math.min(W-1, Math.floor(b)));
+  const r1 = Math.max(0, Math.min(W-1, r0 + 1));
+  const a  = (r1 === r0) ? 0 : (b - r0);
+
+  const q0 = qList[r0];
+  const q1 = qList[r1];
+
+  // Deterministic tiny jitter (keeps from looking too "grid"), stable per week/day/rank.
   const weekIso = (band._weekData && band._weekData.iso) ? String(band._weekData.iso)
               : (band.dataset.weekId || band.dataset.weekKey || band.dataset.weekIndex || "wk");
+  const step = 1 / Math.max(1, N);
+  const maxJit = step * 0.08; // subtle (smaller than v99.3.62 to avoid edge clipping)
 
-  // Ramp-in so the first couple rows still feel day-column aligned.
-  const ramp = __llClamp01_((behind - 0.6) / 2.2);
+  // Edges: keep everything on-screen, symmetrical.
+  const edgePad = 0.020; // 2% inset
 
   for (let d=0; d<7 && d<slots.length; d++){
-    const base = (d + 0.5) / 7; // day centers
-    const k = idx*7 + d;
-    const a = (k + 0.5) / N;
-    let desired = pad + a * span;
+    // Uniform slot indices, centered so day-centers have neighbors on BOTH sides.
+    const k0 = (W * d) + (centerR + q0);
+    const k1 = (W * d) + (centerR + q1);
 
-    // Blend keeps semantics for near rows
-    desired = __llLerp_(base, desired, ramp);
+    let desired0 = (k0 + 0.5) / N;
+    let desired1 = (k1 + 0.5) / N;
 
-    // Small deterministic jitter so it is not a perfect grid
-    const rr = mulberry32(hash32FromString("even_" + weekIso + "_" + d));
-    const jitter = (rr()*2 - 1) * (span / Math.max(1, N)) * 0.18;
-    desired += jitter * __llClamp01_(behind / 3);
+    // jitter per rank, then interpolate to keep motion smooth
+    const rr0 = mulberry32(hash32FromString("evenSlotA_" + weekIso + "_" + r0 + "_" + d));
+    const rr1 = mulberry32(hash32FromString("evenSlotA_" + weekIso + "_" + r1 + "_" + d));
+    desired0 += (rr0()*2 - 1) * maxJit;
+    desired1 += (rr1()*2 - 1) * maxJit;
 
-    desired = Math.max(0.002, Math.min(0.998, desired));
+    let desired = __llLerp_(desired0, desired1, a);
 
-    const invS = 1 / Math.max(0.001, s);
-    let pre = 0.5 + (desired - 0.5) * invS;
-    pre = Math.max(-0.35, Math.min(1.35, pre));
+    // hard clamp to on-screen area
+    desired = Math.max(edgePad, Math.min(1 - edgePad, desired));
+
+    // Compensate for the band’s scale() around center:
+    const invS = 1 / Math.max(0.001, s || 1);
+    let pre  = 0.5 + (desired - 0.5) * invS;
+
+    // Clamp pre as well so scaled groups do not drift off-screen
+    pre = Math.max(edgePad, Math.min(1 - edgePad, pre));
+
     slots[d].style.left = (pre * 100).toFixed(3) + "%";
   }
 }
 
-// Backward compatible wrapper
-function updateBandSlotSpread_(band, behind, s, behindIdx, visibleWeeks){
-  if (__LL_LAYOUT && __LL_LAYOUT.evenSlots && behindIdx != null && visibleWeeks != null){
-    updateBandSlotEvenSlots_(band, behind, behindIdx, s, visibleWeeks);
-  }else{
-    updateBandSlotWideSpread_(band, behind, s);
-  }
-}
-
-
-function __llUpdateLayoutDebugOverlay_(visibleWeeks){
-  try{
-    const ov = document.getElementById("gridOverlay");
-    if (!ov) return;
-    if (!(__LL_LAYOUT && __LL_LAYOUT.debug && __LL_LAYOUT.evenSlots)){
-      ov.style.display = "none";
-      ov.innerHTML = "";
-      return;
-    }
-    const W = Math.max(1, visibleWeeks|0);
-    const N = 7 * W;
-    const pad = 0.03;
-    const span = (1 - 2*pad);
-
-    ov.style.display = "block";
-    ov.style.pointerEvents = "none";
-    ov.style.position = "absolute";
-    ov.style.inset = "0";
-    ov.style.zIndex = "999998";
-
-    // Build vertical lines for anchors
-    let html = "";
-    for (let k=0; k<N; k++){
-      const x = (pad + ((k + 0.5) / N) * span) * 100;
-      const isDayCenter = (k < 7); // front week day centers are not these, but keep a visual reference
-      html += `<div style="position:absolute;left:${x.toFixed(3)}%;top:0;bottom:0;width:1px;background:rgba(255,255,0,${isDayCenter?0.18:0.10});"></div>`;
-    }
-    ov.innerHTML = html;
-  }catch(e){}
-}
 
 
 function applyTransforms(tNow){
@@ -4907,34 +4822,14 @@ function applyTransforms(tNow){
   DOM.weeksStack.style.transform = `translate3d(${bobX.toFixed(1)}px, ${(bobY + state.horizon).toFixed(1)}px, 0px) rotate(${state.bank.toFixed(2)}deg)`;
 
   const frontIndex = Math.max(0, Math.round(frontF));
+
+  // v99.3.62: Even-slot spacing always-on (Option A)
+  try{ window.__llEvenSlotsWCurrent = __LL_EVEN_MAX_WEEKS; }catch(e){}
   if (frontIndex !== lastFrontIndex){
     const prevFront = lastFrontIndex;
     __llLastRowDir = (prevFront < 0) ? 0 : (frontIndex > prevFront ? +1 : -1);
     lastFrontIndex = frontIndex;
     try{ syncRenderedWeeks_(frontIndex); }catch(e){}
-
-  // Even slot layout: compute how many week-bands are visible behind the front.
-  // This becomes W in the 7×W anchor grid.
-  let __llVisibleWeeksCount = 1;
-  try{
-    if (__LL_LAYOUT && __LL_LAYOUT.evenSlots){
-      let maxIdx = 0;
-      for (let wi=0; wi<bands.length; wi++){
-        const b = bands[wi];
-        if (!b) continue;
-        if (b.style && b.style.display === "none") continue;
-        const dist2 = (wi - frontF);
-        if (dist2 <= 0){
-          const behind2 = -dist2;
-          const bi = Math.floor(behind2 + 1e-6);
-          if (bi > maxIdx) maxIdx = bi;
-        }
-      }
-      __llVisibleWeeksCount = Math.max(1, maxIdx + 1);
-    }
-  }catch(e){}
-  try{ __llUpdateLayoutDebugOverlay_(__llVisibleWeeksCount); }catch(e){}
-
     try { if (typeof hideSkyBoxes_ === 'function') hideSkyBoxes_('row change', __llLastRowDir); if (typeof dbg_==='function') dbg_(`Row change -> keep selection (hide boxes) dir=${__llLastRowDir}`); } catch(e) {}
     try{ setTimeout(()=>{ try{ rebindSelectionToVisibleWrap_('row change'); }catch(e){} }, 0); }catch(e) {}
     updateFrontText(frontIndex);
@@ -4985,11 +4880,10 @@ try{
 
     if (dist <= 0){
       const behind = -dist;
-      // behindIdx computed above
 
 // Rolling-hill illusion (v89): hide a "valley" band behind the near rows,
 if (DOM.uBackRowsOn && DOM.uBackRowsOn.checked) {
-  // behindIdx computed above
+  const behindIdx = Math.floor(behind + 1e-6); // 0=front, 1=one row behind, ...
   const VALLEY_HIDE_FROM = 15; // rows 16+ disappear (0-based behind indices 15+); keep full 15-week history visible
   const VALLEY_HIDE_TO   = 15;
   const FAR_FROM         = 15; // 16+ are rendered on the hill instead of in-band
@@ -5023,7 +4917,7 @@ if (DOM.uBackRowsOn && DOM.uBackRowsOn.checked) {
       band.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0px) scale(${s.toFixed(3)})`;
 
       
-      try{ updateBandSlotSpread_(band, behind, s, behindIdx, __llVisibleWeeksCount); }catch(e){}
+      try{ updateBandSlotSpread_(band, behind, s); }catch(e){}
 if (gband){
         gband.style.setProperty("--grassFlip", String(grassFlip));
         let grassFade = behind >= 2 ? 0 : behind > 1 ? 1 - easeSmooth(behind - 1) : 1;
@@ -5044,7 +4938,7 @@ if (gband){
       band.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0px) scale(${s.toFixed(3)})`;
 
       
-      try{ updateBandSlotSpread_(band, 0, 1, null, null); }catch(e){}
+      try{ updateBandSlotSpread_(band, 0, 1); }catch(e){}
 if (gband){
         gband.style.setProperty("--grassFlip", String(grassFlip));
         gband.style.opacity = (o*0.86).toFixed(3);
@@ -8152,47 +8046,6 @@ if (dimRaw != null && String(dimRaw).length){
   }catch(e){}
 }
 
-
-// ============================================
-// Layout mode: Even slots for back rows (Option A)
-// URL params:
-//   evenSlots=1 | layout=even
-//   layoutDebug=1
-// Runtime: utility panel toggles are persisted in localStorage.
-// ============================================
-const __LL_LAYOUT = {
-  evenSlots: false,
-  debug: false
-};
-window.__LL_LAYOUT = __LL_LAYOUT;
-
-function __llReadLayoutParams_(){
-  try{
-    if (typeof URLSearchParams === 'undefined') return;
-    const qs = new URLSearchParams(window.location.search || '');
-    const layout = (qs.get('layout') || qs.get('layoutMode') || '').toLowerCase();
-    const even = __llParseBoolParam_(qs.get('evenSlots')) || __llParseBoolParam_(qs.get('even')) || (layout === 'even' || layout === 'evenslots');
-    const dbg  = __llParseBoolParam_(qs.get('layoutDebug')) || __llParseBoolParam_(qs.get('debugLayout'));
-    if (even) __LL_LAYOUT.evenSlots = true;
-    if (dbg) __LL_LAYOUT.debug = true;
-  }catch(e){}
-}
-
-function __llLoadLayoutPrefs_(){
-  try{
-    const a = localStorage.getItem('LLG_LAYOUT_EVEN');
-    const b = localStorage.getItem('LLG_LAYOUT_DEBUG');
-    if (a != null && String(a).length) __LL_LAYOUT.evenSlots = __llParseBoolParam_(a);
-    if (b != null && String(b).length) __LL_LAYOUT.debug = __llParseBoolParam_(b);
-  }catch(e){}
-}
-function __llSaveLayoutPrefs_(){
-  try{
-    localStorage.setItem('LLG_LAYOUT_EVEN', __LL_LAYOUT.evenSlots ? '1' : '0');
-    localStorage.setItem('LLG_LAYOUT_DEBUG', __LL_LAYOUT.debug ? '1' : '0');
-  }catch(e){}
-}
-
 function __llApplyScreenSaverDim_(on){
   try{
     const el = document.getElementById("ssDimOverlay");
@@ -8296,8 +8149,6 @@ function __llStartScreenSaver_(why){
 
 // URL-driven enable + start (after DOM is interactive)
 __llReadScreenSaverParams_();
-__llLoadLayoutPrefs_();
-__llReadLayoutParams_();
 if (__LL_SCREENSAVER.enabled){
   // Start after initial UI init cycle; this is conservative and avoids racing export apply/rebuild.
   window.addEventListener('load', ()=>{
@@ -9758,7 +9609,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 window.__PHASEA_DISABLE_BRX__ = true;
 if (window.__PHASEA_DISABLE_BRX__) {
   (function(){
-    const VERSION='v99.3.61_EvenSlotsUtilityPanel';
+    const VERSION='v99.3.63_EvenSlotsAlways_SmoothSymmetric';
     // Install a stub so any callers don't crash
     const stub = {
       version: VERSION,
@@ -11089,106 +10940,6 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
     log("Offline mode. Provide exec URL to load real GardenExport data.");
     (typeof window.setGardenDataSourceLabel_==="function" ? window.setGardenDataSourceLabel_("Offline (placeholder)") : void 0);
   }
-  // Utility panel controls (layout + screensaver dim)
-  try{
-    const utilBtn = $("llUtilBtn");
-    const utilPanel = $("llUtilPanel");
-    const utilClose = $("llUtilCloseBtn");
-    const uEven = $("uEvenSlots");
-    const uDbg  = $("uLayoutDebug");
-    const uDimEn= $("uSsDimEnable");
-    const uDimRg= $("uSsDimRange");
-    const uDimVal= $("uSsDimVal");
-
-    function setDimLabel(v){
-      if (!uDimVal) return;
-      const pct = Math.round(Math.max(0, Math.min(0.85, v)) * 100);
-      uDimVal.textContent = pct + "%";
-    }
-
-    function refreshUtilUI(){
-      if (uEven) uEven.checked = !!(__LL_LAYOUT && __LL_LAYOUT.evenSlots);
-      if (uDbg)  uDbg.checked  = !!(__LL_LAYOUT && __LL_LAYOUT.debug);
-      if (uDimEn) uDimEn.checked = !!(__LL_SCREENSAVER && (__LL_SCREENSAVER.dim > 0));
-      if (uDimRg){
-        const v = (__LL_SCREENSAVER && Number.isFinite(__LL_SCREENSAVER.dim)) ? __LL_SCREENSAVER.dim : 0;
-        uDimRg.value = String(v || 0);
-        setDimLabel(v || 0);
-      }
-    }
-
-    function openUtil(v){
-      if (!utilPanel) return;
-      utilPanel.classList.toggle("open", !!v);
-      if (!!v) refreshUtilUI();
-    }
-
-    if (utilBtn){
-      utilBtn.addEventListener("click", ()=>openUtil(!(utilPanel && utilPanel.classList.contains("open"))));
-    }
-    if (utilClose){
-      utilClose.addEventListener("click", ()=>openUtil(false));
-    }
-
-    if (uEven){
-      uEven.addEventListener("change", ()=>{
-        __LL_LAYOUT.evenSlots = !!uEven.checked;
-        __llSaveLayoutPrefs_();
-        try{ scheduleRender_ && scheduleRender_(); }catch(e){}
-      });
-    }
-    if (uDbg){
-      uDbg.addEventListener("change", ()=>{
-        __LL_LAYOUT.debug = !!uDbg.checked;
-        __llSaveLayoutPrefs_();
-        try{ __llUpdateLayoutDebugOverlay_(1); }catch(e){}
-        try{ scheduleRender_ && scheduleRender_(); }catch(e){}
-      });
-    }
-
-    if (uDimEn){
-      uDimEn.addEventListener("change", ()=>{
-        const on = !!uDimEn.checked;
-        const current = (__LL_SCREENSAVER && Number.isFinite(__LL_SCREENSAVER.dim)) ? __LL_SCREENSAVER.dim : 0;
-        const next = on ? (current > 0 ? current : 0.25) : 0;
-        __LL_SCREENSAVER.dim = next;
-        try{ localStorage.setItem("LLG_SS_DIM", String(next)); }catch(e){}
-        try{ __llApplyScreenSaverDim_(window.__llIsScreensaverActive__ && window.__llIsScreensaverActive__()); }catch(e){}
-        refreshUtilUI();
-      });
-    }
-    if (uDimRg){
-      uDimRg.addEventListener("input", ()=>{
-        const v = parseFloat(uDimRg.value || "0") || 0;
-        __LL_SCREENSAVER.dim = Math.max(0, Math.min(0.85, v));
-        try{ localStorage.setItem("LLG_SS_DIM", String(__LL_SCREENSAVER.dim)); }catch(e){}
-        setDimLabel(__LL_SCREENSAVER.dim);
-        if (uDimEn) uDimEn.checked = (__LL_SCREENSAVER.dim > 0);
-        try{ __llApplyScreenSaverDim_(window.__llIsScreensaverActive__ && window.__llIsScreensaverActive__()); }catch(e){}
-      });
-    }
-
-    // Load stored dim value if present and URL did not override
-    try{
-      const stored = localStorage.getItem("LLG_SS_DIM");
-      if (stored != null && String(stored).length){
-        const f = parseFloat(stored);
-        if (Number.isFinite(f) && f >= 0 && (!(__LL_SCREENSAVER.dim > 0))) {
-          __LL_SCREENSAVER.dim = Math.max(0, Math.min(0.85, f));
-        }
-      }
-    }catch(e){}
-
-    // URL param to open the utility panel
-    try{
-      const qs2 = (typeof URLSearchParams !== "undefined") ? new URLSearchParams(window.location.search || "") : null;
-      if (qs2 && __llParseBoolParam_(qs2.get("util"))){
-        openUtil(true);
-      }
-    }catch(e){}
-
-  }catch(e){}
-
 }
 
   if(document.readyState === "loading"){
@@ -11210,42 +10961,6 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
   } catch(e){}
 })();
 </script>
-
-
-
-<!-- Utility controls (toggle via gear button) -->
-<button id="llUtilBtn" type="button" aria-label="Open utility panel">⚙</button>
-<div id="llUtilPanel" role="dialog" aria-label="LifeLog Garden Utility Panel">
-  <h3>Utility</h3>
-
-  <div class="llUtilRow">
-    <input id="uEvenSlots" type="checkbox">
-    <label for="uEvenSlots">Even slot layout for back rows</label>
-  </div>
-  <div class="llUtilSmall">Back rows distribute into 7×W evenly spaced slots. Front row stays pinned to day centers.</div>
-
-  <div class="llUtilRow">
-    <input id="uLayoutDebug" type="checkbox">
-    <label for="uLayoutDebug">Layout debug overlay</label>
-  </div>
-
-  <div style="height:10px"></div>
-
-  <div class="llUtilRow">
-    <input id="uSsDimEnable" type="checkbox">
-    <label for="uSsDimEnable">Screensaver dim</label>
-  </div>
-
-  <div class="llUtilRow">
-    <label for="uSsDimRange" style="flex:0 0 120px;">Dim amount</label>
-    <input id="uSsDimRange" type="range" min="0" max="0.85" step="0.05" value="0.25">
-    <div id="uSsDimVal" style="width:52px;text-align:right;font:700 12px/1 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;">25%</div>
-  </div>
-
-  <div class="llUtilBtnRow">
-    <button id="llUtilCloseBtn" type="button">Close</button>
-  </div>
-</div>
 
 
 <!-- Week navigation buttons (Advance 1 week using existing scroll logic, hold to repeat) -->
