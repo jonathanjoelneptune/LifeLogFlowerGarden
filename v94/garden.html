@@ -13,7 +13,7 @@
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v99.3.73_Phase1_NavigationSelectionRefactor
+  v99.3.75_Phase3_StateConfigConsolidation
     + Consolidate duplicate Photo Reel skybox CSS into one block
     + Merge duplicate selection-ring state rules
     + Remove redundant early wireframe CSS copy
@@ -126,7 +126,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v99.3.73_Phase1_NavigationSelectionRefactor';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v99.3.75_Phase3_StateConfigConsolidation';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -254,7 +254,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 function renderBackRows(){ /* disabled */ }
 
 (function(){
-  const VERSION = 'v99.3.73_Phase1_NavigationSelectionRefactor';
+  const VERSION = 'v99.3.75_Phase3_StateConfigConsolidation';
 
   // ---- Canonical version globals ----
   window.APP_VERSION = VERSION;
@@ -318,7 +318,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v99.3.73_Phase1_NavigationSelectionRefactor.html</title>
+<title>garden_v99.3.75_Phase3_StateConfigConsolidation.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -1873,7 +1873,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v99.3.73_Phase1_NavigationSelectionRefactor.html • v99.3.73_Phase1_NavigationSelectionRefactor • Built: 2026-03-10T15:28:40Z UTC</div>
+  <div id="llPinkBanner">garden_v99.3.75_Phase3_StateConfigConsolidation.html • v99.3.75_Phase3_StateConfigConsolidation • Built: 2026-03-10T15:28:40Z UTC</div>
 
 
 <script>
@@ -1887,8 +1887,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.3.73_Phase1_NavigationSelectionRefactor.html</span><br>
-Version: <span id="__bannerVersion">v99.3.73_Phase1_NavigationSelectionRefactor</span><br>
+File: <span id="__bannerFileName">garden_v99.3.75_Phase3_StateConfigConsolidation.html</span><br>
+Version: <span id="__bannerVersion">v99.3.75_Phase3_StateConfigConsolidation</span><br>
 Created: 2026-03-10T15:28:40Z</span></div>
 <script>
 (function(){
@@ -1904,7 +1904,7 @@ Created: 2026-03-10T15:28:40Z</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.3.73_Phase1_NavigationSelectionRefactor loaded", new Date().toISOString());
+  console.log("[VERSION] v99.3.75_Phase3_StateConfigConsolidation loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -2868,7 +2868,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   </div>
 
   <div class="util hidden" id="util">
-    <div class="utilTitle">LifeLog Garden Walk v99.3.73_Phase1_NavigationSelectionRefactor</div>
+    <div class="utilTitle">LifeLog Garden Walk v99.3.75_Phase3_StateConfigConsolidation</div>
     <div class="utilSub">Scroll to walk through weeks. Press H to hide/show this panel.</div>
 	    <div class="row">
 	      <label>Wireframe</label>
@@ -3124,6 +3124,9 @@ function applyCloudTuning_(){
 let CACHED = {
   grassOpacity: 0.86,
   transformsDirty: true,
+  structureDirty: false,
+  visualDirty: false,
+  visualRefreshGrass: false,
   lastOffset: -1
 };
 
@@ -3525,7 +3528,7 @@ function weekLevelFromIso(isoStr){
 // ============================================
 // Season
 // ============================================
-let seasonOverride = "auto";
+
 
 function seasonForMonth(m){
   if (m === 12 || m === 1 || m === 2) return "winter";
@@ -3709,7 +3712,7 @@ const monthC = (MONTH_COLORS[month] || "#C7D4E2");
   let leafFillB = darken(stemCore, 0.12);
   let leafVein = darken(stemCore, 0.28);
 
-  const seasonKey = (seasonOverride === "auto") ? seasonForMonth(month) : seasonOverride;
+  const seasonKey = (__rt.visual.seasonOverride === "auto") ? seasonForMonth(month) : __rt.visual.seasonOverride;
   leafFillA = applySeasonToLeaf(leafFillA, seasonKey);
   leafFillB = applySeasonToLeaf(leafFillB, seasonKey);
   leafVein = applySeasonToLeaf(leafVein, seasonKey);
@@ -4225,7 +4228,7 @@ const stemColors = stemColorsForMonthIndex_(monthIndex);
 window.__LL = window.__LL || {};
 window.__LL.getEpoch = () => ({ dateKey: GARDEN_EPOCH_DATEKEY, epochMon: new Date(__EPOCH_MON__) });
 window.__LL.weekIndexFromDate = (d)=> weekIndexFromDate_(d instanceof Date ? d : new Date(d));
-window.__LL.getFocusWeekIndex = ()=> (typeof lastFrontIndex === 'number' ? lastFrontIndex : todayWeekIndex_());
+window.__LL.getFocusWeekIndex = ()=> (typeof __rt.nav.lastFrontIndex === 'number' ? __rt.nav.lastFrontIndex : todayWeekIndex_());
 
 
 // ============================================
@@ -4244,6 +4247,24 @@ let GRASS_PARALLAX = 0.35;
 let GRASS_Y_OFFSET = 52;
 let GRASS_FRONT_CLAMP = true;
 
+const LL_CONFIG = window.__LL_CONFIG = Object.freeze({
+  grass: {
+    scaleLocked: 0.62,
+    baseHeightPx: 420
+  },
+  motion: {
+    easing: 0.16,
+    snapEpsilon: 0.002,
+    offsetDirtyEpsilon: 0.001
+  },
+  nav: {
+    backRowsRefreshGuard: -9999
+  },
+  visual: {
+    defaultSeasonOverride: "auto"
+  }
+});
+
 const state = {
   staggerStrength: 0.70,
   depthY: 110,
@@ -4255,11 +4276,23 @@ const state = {
   flowerHByDay: [1,1,1,1,1,1,1]
 };
 
-let targetIndex = 0;
-let currentOffset = 0;
-let lastWheelAt = 0;
-let lastFrontIndex = -1;
-let lastBackRowsFrontIndex = -9999; // v99.3.28_TodayPoll_ApplyUpdateAndDebug: back-row preview refresh guard
+const __rt = window.__LL_RUNTIME = window.__LL_RUNTIME || {
+  camera: state,
+  nav: {
+    targetIndex: 0,
+    currentOffset: 0,
+    lastWheelAt: 0,
+    lastFrontIndex: -1,
+    lastBackRowsFrontIndex: LL_CONFIG.nav.backRowsRefreshGuard
+  },
+  visual: {
+    seasonOverride: LL_CONFIG.visual.defaultSeasonOverride
+  },
+  ui: {
+    colorGradeMode: null
+  }
+};
+__rt.camera = state;
 
 // ===== Phase 1 NAV API (single movement pipeline entry) =====
 window.__LL = window.__LL || {};
@@ -4269,11 +4302,11 @@ function __llClampWeekIndex_(idx){
 }
 function __llCommitWeekNav_(nextIdx, opts){
   opts = opts || {};
-  const prev = targetIndex|0;
+  const prev = __rt.nav.targetIndex|0;
   const next = __llClampWeekIndex_(nextIdx);
-  targetIndex = next;
+  __rt.nav.targetIndex = next;
   if (opts.snap){
-    currentOffset = next;
+    __rt.nav.currentOffset = next;
   }
   if (next === 0 && prev > 0 && opts.triggerCue !== false){
     try{ triggerEpochClampCue_(opts.reason || 'nav:epoch'); }catch(e){}
@@ -4283,7 +4316,7 @@ function __llCommitWeekNav_(nextIdx, opts){
     try{ applyTransforms((typeof performance !== 'undefined' && performance.now) ? performance.now() : undefined); }catch(e){}
   }
   if (opts.syncWeeks && typeof syncRenderedWeeks_ === 'function'){
-    try{ syncRenderedWeeks_(targetIndex, false); }catch(e){}
+    try{ syncRenderedWeeks_(__rt.nav.targetIndex, false); }catch(e){}
   }
   return next;
 }
@@ -4294,7 +4327,7 @@ window.__LL.navSetWeekIndex = function(idx, opts){
 window.__LL.navNudgeWeek = function(delta){
   try{
     const step = (delta|0) < 0 ? +1 : -1; // matches ArrowUp/ArrowDown behavior
-    return __llCommitWeekNav_((targetIndex|0) + step, { snap:true, applyNow:true, syncWeeks:true, reason:'nav:button' });
+    return __llCommitWeekNav_((__rt.nav.targetIndex|0) + step, { snap:true, applyNow:true, syncWeeks:true, reason:'nav:button' });
   }catch(e){
     console.warn('[NAV] navNudgeWeek failed', e);
   }
@@ -4307,12 +4340,74 @@ window.__LL.navGoToToday = function(){
     console.warn('[NAV] navGoToToday failed', e);
   }
 };
+
+window.__LL.getRuntimeState = function(){ return __rt; };
+window.__LL.getConfig = function(){ return LL_CONFIG; };
+
 // =========================================================
 
 
 // Time of day state
 const todState = { mode: "realtime", manualMinutes: 720, playRate: 0 };
 let lastTodTick = 0;
+
+// ============================================
+// Phase 2 RENDER API (separate structure rebuild from visual refresh)
+// ============================================
+function requestTransformRefresh_(){
+  CACHED.transformsDirty = true;
+}
+function requestStructuralRebuild_(opts){
+  opts = opts || {};
+  CACHED.structureDirty = true;
+  if (opts.refreshGrass) CACHED.visualRefreshGrass = true;
+  CACHED.transformsDirty = true;
+}
+function requestBandVisualRefresh_(opts){
+  opts = opts || {};
+  CACHED.visualDirty = true;
+  if (opts.refreshGrass) CACHED.visualRefreshGrass = true;
+  CACHED.transformsDirty = true;
+}
+function refreshRenderedBandVisuals_(){
+  try{
+    for (const rec of __llRenderedWeeks.values()){
+      const band = rec && rec.band;
+      if (!band) continue;
+      band.textContent = '';
+      band.dataset.rendered = '';
+      renderBandFlowers(band);
+    }
+    const focusWeekIndex = Math.max(0, Math.round(__rt.nav.currentOffset));
+    try{ updateFrontText(focusWeekIndex|0); }catch(e){}
+    try{ updateRowInteractivity_(focusWeekIndex|0); }catch(e){}
+    try{ rebindSelectionToVisibleWrap_('visual refresh'); }catch(e){}
+  }catch(e){
+    console.warn('[RENDER] visual refresh failed', e);
+  }
+}
+function flushRenderQueue_(tNow){
+  if (CACHED.structureDirty){
+    CACHED.structureDirty = false;
+    buildBands();
+    if (CACHED.visualRefreshGrass){
+      try{ refreshFrontGrass(); }catch(e){}
+      CACHED.visualRefreshGrass = false;
+    }
+    CACHED.visualDirty = false;
+    CACHED.transformsDirty = true;
+    return;
+  }
+  if (CACHED.visualDirty){
+    CACHED.visualDirty = false;
+    refreshRenderedBandVisuals_();
+    if (CACHED.visualRefreshGrass){
+      try{ refreshFrontGrass(); }catch(e){}
+      CACHED.visualRefreshGrass = false;
+    }
+    CACHED.transformsDirty = true;
+  }
+}
 
 // ============================================
 // v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: OPTIMIZED buildBands with DocumentFragment
@@ -4335,8 +4430,8 @@ function buildBands(){
 
   // Initialize focus to "today" (relative to the Garden Epoch).
   const tIdx = todayWeekIndex_();
-  targetIndex = tIdx;
-  currentOffset = tIdx;
+  __rt.nav.targetIndex = tIdx;
+  __rt.nav.currentOffset = tIdx;
 
   // Render the initial window around today.
   syncRenderedWeeks_(tIdx, /*fullRebuild=*/true);
@@ -4442,8 +4537,8 @@ if(window.__llForceTodayAfterExport_ && fullRebuild){
     const tIdx = __llComputeFocusWeekIndexForToday_();
     if(typeof tIdx === "number" && isFinite(tIdx)){
       focusWeekIndex = tIdx;
-      try{ targetIndex = tIdx; }catch(e){}
-      try{ currentOffset = tIdx; }catch(e){}
+      try{ __rt.nav.targetIndex = tIdx; }catch(e){}
+      try{ __rt.nav.currentOffset = tIdx; }catch(e){}
     }
   }catch(e){}
   window.__llForceTodayAfterExport_ = false;
@@ -4644,7 +4739,7 @@ function refreshFrontGrass(){
 // ============================================
 
 // ============================================
-// v99.3.73_Phase1_NavigationSelectionRefactor: keep back-row flowers horizontally de-clumped
+// v99.3.75_Phase3_StateConfigConsolidation: keep back-row flowers horizontally de-clumped
 // ============================================
 const __LL_BACK_SPREAD_MAX_BEHIND = 5;    // reach near-full spread quickly (about 4-6 rows back)
 const __LL_BACK_SPREAD_EDGE_PAD   = 0.006; // keep a tiny inset so nothing clips at extreme edges
@@ -4755,7 +4850,7 @@ const a  = b - r0;
 
 
 function applyTransforms(tNow){
-  const frontF = currentOffset;
+  const frontF = __rt.nav.currentOffset;
   const t = tNow * 0.001;
   const bobX = Math.sin(t * 0.12) * 0.6;
   const bobY = Math.sin(t * 0.09) * 0.8;
@@ -4770,12 +4865,12 @@ function applyTransforms(tNow){
   // v99.3.68: prevent mid-scroll rebuild/pop when many rows are present.
   // Only "commit" a new frontIndex (and run expensive sync/selection work) when we're close to settled.
   const __llSettleEps = 0.10;
-  const __llIsSettled = Math.abs(currentOffset - targetIndex) <= __llSettleEps;
+  const __llIsSettled = Math.abs(__rt.nav.currentOffset - __rt.nav.targetIndex) <= __llSettleEps;
 
-  if (__llIsSettled && frontIndexVisual !== lastFrontIndex){
-    const prevFront = lastFrontIndex;
+  if (__llIsSettled && frontIndexVisual !== __rt.nav.lastFrontIndex){
+    const prevFront = __rt.nav.lastFrontIndex;
     __llLastRowDir = (prevFront < 0) ? 0 : (frontIndexVisual > prevFront ? +1 : -1);
-    lastFrontIndex = frontIndexVisual;
+    __rt.nav.lastFrontIndex = frontIndexVisual;
 
     try{ syncRenderedWeeks_(frontIndexVisual); }catch(e){}
     try{
@@ -4790,8 +4885,8 @@ function applyTransforms(tNow){
     // but also only when settled to avoid a mid-scroll snap.
     try{
       if (DOM.uBackRowsOn && DOM.uBackRowsOn.checked){
-        if ((frontIndexVisual|0) !== (lastBackRowsFrontIndex|0)){
-          lastBackRowsFrontIndex = (frontIndexVisual|0);
+        if ((frontIndexVisual|0) !== (__rt.nav.lastBackRowsFrontIndex|0)){
+          __rt.nav.lastBackRowsFrontIndex = (frontIndexVisual|0);
           try{ if(typeof dbg_==="function") dbg_(`[BRX] sync frontIndex=${frontIndexVisual}`); }catch(e){}
           try{ window.__backRowsLastFrontIndex = (frontIndexVisual|0); }catch(e){}
           try{ if(window.BRX && typeof BRX.syncFrontIndex==='function'){ BRX.syncFrontIndex(frontIndexVisual); } }catch(e){}
@@ -4907,7 +5002,7 @@ function updateFrontText(focusWeekIndex){
   const mon = meta2.weekMon;
 
   const activeSeason = seasonForMonth(mon.getMonth()+1);
-  const seasonKey = (seasonOverride !== "auto") ? seasonOverride : activeSeason;
+  const seasonKey = (__rt.visual.seasonOverride !== "auto") ? __rt.visual.seasonOverride : activeSeason;
   setForegroundGrassTintForSeason(seasonKey);
 
   for (let i=0;i<7;i++){
@@ -4949,13 +5044,13 @@ function triggerEpochClampCue_(reason){
 function onWheel(e){
   e.preventDefault();
   const now = performance.now();
-  if (window.__llIgnoreWheelUntilMs_ && now < window.__llIgnoreWheelUntilMs_) { lastWheelAt = now; return; }
-  if (now - lastWheelAt < 55) return;
-  lastWheelAt = now;
+  if (window.__llIgnoreWheelUntilMs_ && now < window.__llIgnoreWheelUntilMs_) { __rt.nav.lastWheelAt = now; return; }
+  if (now - __rt.nav.lastWheelAt < 55) return;
+  __rt.nav.lastWheelAt = now;
 
   // Natural scroll: wheel-down goes "back in time" (toward epoch), wheel-up goes forward.
   const dir = e.deltaY > 0 ? -1 : +1;
-  __llCommitWeekNav_((targetIndex|0) + dir, { snap:false, applyNow:false, syncWeeks:false, reason:'wheel:epoch' });
+  __llCommitWeekNav_((__rt.nav.targetIndex|0) + dir, { snap:false, applyNow:false, syncWeeks:false, reason:'wheel:epoch' });
 }
 
 // ============================================
@@ -5475,9 +5570,9 @@ try{
 // UI Wiring
 // ============================================
 
-// v99.3.28_TodayPoll_ApplyUpdateAndDebug: compute the current front week index from currentOffset (do not rely on lastFrontIndex during init)
+// v99.3.28_TodayPoll_ApplyUpdateAndDebug: compute the current front week index from __rt.nav.currentOffset (do not rely on __rt.nav.lastFrontIndex during init)
 function getFrontIndexNow_(){
-  const frontF = currentOffset;
+  const frontF = __rt.nav.currentOffset;
   return Math.max(0, Math.round(frontF));
 }
 
@@ -5531,9 +5626,7 @@ function applyUiToState(){
 
   // Grass height locked to v99.3.28_TodayPoll_ApplyUpdateAndDebug look
   // (Keep CSS defaults as fallback, but override here for consistency)
-  const grassScaleLocked = 0.62;
-  const grassBaseHLocked = 420; // px baseline
-  setVar("--grassBandH", `${Math.round(grassBaseHLocked * grassScaleLocked)}px`);
+  setVar("--grassBandH", `${Math.round(LL_CONFIG.grass.baseHeightPx * LL_CONFIG.grass.scaleLocked)}px`);
 
   if (DOM.uStagger) state.staggerStrength = Number(DOM.uStagger.value) / 100;
   if (DOM.uDepthY) state.depthY = Number(DOM.uDepthY.value);
@@ -5726,23 +5819,21 @@ if (DOM.uHillGuidesOn) DOM.uHillGuidesOn.addEventListener("change", applyUiToSta
 
   if (DOM.uSeason){
     DOM.uSeason.addEventListener("change", () => {
-      seasonOverride = DOM.uSeason.value || "auto";
-      if (DOM.vSeason) DOM.vSeason.textContent = (seasonOverride === "auto") ? "Auto" : (seasonOverride[0].toUpperCase() + seasonOverride.slice(1));
-      buildBands();
-      refreshFrontGrass();
-      CACHED.transformsDirty = true;
+      __rt.visual.seasonOverride = DOM.uSeason.value || "auto";
+      if (DOM.vSeason) DOM.vSeason.textContent = (__rt.visual.seasonOverride === "auto") ? "Auto" : (__rt.visual.seasonOverride[0].toUpperCase() + __rt.visual.seasonOverride.slice(1));
+      requestBandVisualRefresh_({ refreshGrass:true });
     });
   }
 
   if (DOM.uColorGrade){
     DOM.uColorGrade.addEventListener("change", () => {
       setColorGradeMode_(DOM.uColorGrade.value || "subtle");
-      buildBands();
-      CACHED.transformsDirty = true;
+      __rt.ui.colorGradeMode = __llColorGradeMode;
+      requestBandVisualRefresh_();
     });
   }
   // Initialize grade mode UI + state
-  try{ setColorGradeMode_(__llColorGradeMode); }catch(e){}
+  try{ setColorGradeMode_(__llColorGradeMode); __rt.ui.colorGradeMode = __llColorGradeMode; }catch(e){}
 
   // Debug Hide button is wired in the debug panel bootstrap.
   document.addEventListener("keydown", (e) => {
@@ -5760,7 +5851,7 @@ if (e.key === "ArrowUp" || e.key === "ArrowDown"){
   e.preventDefault();
   const dir = (e.key === "ArrowDown") ? -1 : +1;
   const step = e.shiftKey ? 7 : 1;
-  __llCommitWeekNav_((targetIndex|0) + (dir * step), { snap:true, applyNow:true, syncWeeks:false, reason:'keys:epoch' });
+  __llCommitWeekNav_((__rt.nav.targetIndex|0) + (dir * step), { snap:true, applyNow:true, syncWeeks:false, reason:'keys:epoch' });
   return;
 }
   });
@@ -5770,11 +5861,13 @@ if (e.key === "ArrowUp" || e.key === "ArrowDown"){
 // v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: OPTIMIZED Main Loop with dirty flag
 // ============================================
 function tick(tNow){
-  const offsetChanged = Math.abs(targetIndex - currentOffset) > 0.001;
+  flushRenderQueue_(tNow);
+
+  const offsetChanged = Math.abs(__rt.nav.targetIndex - __rt.nav.currentOffset) > LL_CONFIG.motion.offsetDirtyEpsilon;
 
   if (offsetChanged){
-    currentOffset += (targetIndex - currentOffset) * 0.16;
-    if (Math.abs(targetIndex - currentOffset) < 0.002) currentOffset = targetIndex;
+    __rt.nav.currentOffset += (__rt.nav.targetIndex - __rt.nav.currentOffset) * LL_CONFIG.motion.easing;
+    if (Math.abs(__rt.nav.targetIndex - __rt.nav.currentOffset) < LL_CONFIG.motion.snapEpsilon) __rt.nav.currentOffset = __rt.nav.targetIndex;
     CACHED.transformsDirty = true;
   }
 
@@ -7607,7 +7700,7 @@ window.addEventListener('resize', ()=>{
     const level = ds.level || (typeof getWrapLevel_ === 'function' ? getWrapLevel_(wrap) : '') || '';
     const id = ds.id || '';
     const wi = parseInt(weekIndex,10);
-    const rowType = (isFinite(wi) && typeof lastFrontIndex === 'number' && wi !== (lastFrontIndex|0)) ? 'back' : 'front';
+    const rowType = (isFinite(wi) && typeof __rt.nav.lastFrontIndex === 'number' && wi !== (__rt.nav.lastFrontIndex|0)) ? 'back' : 'front';
     return { dateKey, weekKey, weekIndex, dayIndex, slotId, level, id, rowType };
   }
   function fmtSelPayload_(wrap){
@@ -7761,7 +7854,7 @@ document.addEventListener('click', (ev) => {
   // v99.3.28_TodayPoll_ApplyUpdateAndDebug: Only the current active row is selectable.
   try{
     const wi = wrap ? parseInt(wrap.dataset.weekIndex||'-1',10) : -1;
-    const active = (typeof lastFrontIndex === 'number') ? (lastFrontIndex|0) : todayWeekIndex_();
+    const active = (typeof __rt.nav.lastFrontIndex === 'number') ? (__rt.nav.lastFrontIndex|0) : todayWeekIndex_();
     if (!wrap || !isFinite(wi) || wi !== active){
       if (typeof dbg_ === 'function') dbg_(`Selection ignored (inactive row) wi=${wi} active=${active}`);
       return;
@@ -7809,7 +7902,7 @@ document.addEventListener('keydown', (ev) => {
 
 function __llGetSelectableFrontRowWraps_(){
   try{
-    const fi = (typeof lastFrontIndex !== 'undefined') ? lastFrontIndex : null;
+    const fi = (typeof __rt.nav.lastFrontIndex !== 'undefined') ? __rt.nav.lastFrontIndex : null;
     if (fi === null || fi === undefined) return [];
     return (flowerWrapEls || [])
       .filter(w => w && w.isConnected && w.dataset && String(w.dataset.weekIndex) === String(fi) && (w.dataset.dateKey || w.dataset.datekey))
@@ -8392,7 +8485,7 @@ function syncEnvelopeOverlay_(){
   if (!__llEnvRects) return;
 
   const tNow = (performance.now()||0)*0.001;
-  const off = (typeof currentOffset === 'number') ? currentOffset : 0;
+  const off = (typeof __rt.nav.currentOffset === 'number') ? __rt.nav.currentOffset : 0;
   const frac = off - Math.floor(off);
 
   const wob = Math.sin((off*0.65) + tNow*0.40) * 2.0;
@@ -8688,7 +8781,7 @@ try {
     }
 
     const tNow = (performance.now()||0)*0.001;
-    const off = (typeof currentOffset === 'number') ? currentOffset : 0;
+    const off = (typeof __rt.nav.currentOffset === 'number') ? __rt.nav.currentOffset : 0;
     const frac = off - Math.floor(off);
     const wob = Math.sin((off*0.65) + tNow*0.40) * 2.0;
 
@@ -9514,14 +9607,14 @@ window.applySelectedAdornments = applySelectedAdornments;
 
 
 <script>
-// v99.3.73_Phase1_NavigationSelectionRefactor: unified BRX/back-row hard-disable controller.
+// v99.3.75_Phase3_StateConfigConsolidation: unified BRX/back-row hard-disable controller.
 (function(){
   try{
     window.__PHASEA_DISABLE_BRX__ = true;
     window.__LL_DISABLE_BACKHILL__ = true;
     window.BRX_DISABLE_LEGACY_BACKROWS = true;
 
-    const VERSION = 'v99.3.73_Phase1_NavigationSelectionRefactor';
+    const VERSION = 'v99.3.75_Phase3_StateConfigConsolidation';
     const hideLegacyGroups = () => {
       ['backRowsG','gridWeeksG','hillGuidesG','gridOverlayG','gridWeeksOverlay','brxHillPngG','brxHillDbgG']
         .forEach(id => {
@@ -9743,14 +9836,14 @@ const LS_KEY = "LL_V94_HOST_CFG";
         const desired = (typeof todayWeekIndex_ === "function") ? todayWeekIndex_() : fi;
 
         window.__llIgnoreWheelUntilMs_ = performance.now() + 2500;
-        try { lastFrontIndex = desired; } catch(e) {}
+        try { __rt.nav.lastFrontIndex = desired; } catch(e) {}
 
         // Hard snap the scroll/offset state so visuals and UI labels match immediately.
         try{
           if(typeof S === "object" && S){
-            S.targetIndex = desired;
+            __rt.nav.targetIndex = desired;
             S.targetScrollY = desired;
-            S.currentOffset = desired;
+            __rt.nav.currentOffset = desired;
             S.vel = 0;
             S.lastTs = 0;
           }
@@ -9764,10 +9857,10 @@ const LS_KEY = "LL_V94_HOST_CFG";
     window.setTimeout(() => {
       try {
         const t = todayWeekIndex_();
-        S.targetIndex = t;
-        S.currentOffset = t;
+        __rt.nav.targetIndex = t;
+        __rt.nav.currentOffset = t;
         // Force a sync even if the index did not appear to change.
-        S.lastFrontIndex = -999999;
+        __rt.nav.lastFrontIndex = -999999;
         if (typeof window.__LL_syncRenderedWeeks_ === "function") {
           window.__LL_syncRenderedWeeks_(t, true);
         } else if (typeof syncRenderedWeeks_ === "function") {
