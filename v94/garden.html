@@ -13,7 +13,7 @@
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v99.3.75_Phase3_StateConfigConsolidation
+  v99.3.77_Phase4_SystemHardeningFix
     + Consolidate duplicate Photo Reel skybox CSS into one block
     + Merge duplicate selection-ring state rules
     + Remove redundant early wireframe CSS copy
@@ -126,7 +126,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v99.3.75_Phase3_StateConfigConsolidation';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v99.3.77_Phase4_SystemHardeningFix';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -254,7 +254,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 function renderBackRows(){ /* disabled */ }
 
 (function(){
-  const VERSION = 'v99.3.75_Phase3_StateConfigConsolidation';
+  const VERSION = 'v99.3.77_Phase4_SystemHardeningFix';
 
   // ---- Canonical version globals ----
   window.APP_VERSION = VERSION;
@@ -318,7 +318,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v99.3.75_Phase3_StateConfigConsolidation.html</title>
+<title>garden_v99.3.77_Phase4_SystemHardeningFix.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -1873,7 +1873,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v99.3.75_Phase3_StateConfigConsolidation.html • v99.3.75_Phase3_StateConfigConsolidation • Built: 2026-03-10T15:28:40Z UTC</div>
+  <div id="llPinkBanner">garden_v99.3.77_Phase4_SystemHardeningFix.html • v99.3.77_Phase4_SystemHardeningFix • Built: 2026-03-10T15:28:40Z UTC</div>
 
 
 <script>
@@ -1887,8 +1887,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.3.75_Phase3_StateConfigConsolidation.html</span><br>
-Version: <span id="__bannerVersion">v99.3.75_Phase3_StateConfigConsolidation</span><br>
+File: <span id="__bannerFileName">garden_v99.3.77_Phase4_SystemHardeningFix.html</span><br>
+Version: <span id="__bannerVersion">v99.3.77_Phase4_SystemHardeningFix</span><br>
 Created: 2026-03-10T15:28:40Z</span></div>
 <script>
 (function(){
@@ -1904,7 +1904,7 @@ Created: 2026-03-10T15:28:40Z</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.3.75_Phase3_StateConfigConsolidation loaded", new Date().toISOString());
+  console.log("[VERSION] v99.3.77_Phase4_SystemHardeningFix loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -2510,7 +2510,7 @@ window.__LL_hillTopAtX_fill = function(x, yTopGuess, yBottom){
 <!-- Debug Panel -->
 <div aria-hidden="false" id="dbgPanel">
   <div class="hdr">
-    <div class="t">LifeLog DEBUG v99.3.28_TodayPoll_ApplyUpdateAndDebug (press D)</div>
+    <div class="t">LifeLog DEBUG v99.3.77_Phase4_SystemHardeningFix (press D)</div>
     <div class="btns">
       <button id="dbgCopy" type="button">Copy</button>
       <button id="dbgClear" type="button">Clear</button>
@@ -2868,7 +2868,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   </div>
 
   <div class="util hidden" id="util">
-    <div class="utilTitle">LifeLog Garden Walk v99.3.75_Phase3_StateConfigConsolidation</div>
+    <div class="utilTitle">LifeLog Garden Walk v99.3.77_Phase4_SystemHardeningFix</div>
     <div class="utilSub">Scroll to walk through weeks. Press H to hide/show this panel.</div>
 	    <div class="row">
 	      <label>Wireframe</label>
@@ -3048,7 +3048,7 @@ function wrapLLDBGStep_(){
     }
   }catch(e){}
 }
-dbg_('v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: Main script starting');
+dbg_('v99.3.77_Phase4_SystemHardeningFix.0: Main script starting');
 
 // ============================================
 // Constants
@@ -4739,7 +4739,7 @@ function refreshFrontGrass(){
 // ============================================
 
 // ============================================
-// v99.3.75_Phase3_StateConfigConsolidation: keep back-row flowers horizontally de-clumped
+// v99.3.77_Phase4_SystemHardeningFix: keep back-row flowers horizontally de-clumped
 // ============================================
 const __LL_BACK_SPREAD_MAX_BEHIND = 5;    // reach near-full spread quickly (about 4-6 rows back)
 const __LL_BACK_SPREAD_EDGE_PAD   = 0.006; // keep a tiny inset so nothing clips at extreme edges
@@ -8884,11 +8884,26 @@ for (let seg=0; seg<3; seg++) {
 
 
 // Hook: refresh back PNG HTML layer whenever envelope overlay syncs.
-// syncEnvelopeOverlay_ is defined later in the file, so install via a short poll.
+// syncEnvelopeOverlay_ is defined later in the file, so install via a bounded lifecycle-managed retry.
 (function installBackPngHtmlHooks_(){
   if (window.__llBackPngWrapped) return;
+  const SYS = window.__LL_SYS__ || {};
+  const sysListen = (target, type, fn, opts) => {
+    if (SYS && typeof SYS.listen === 'function') return SYS.listen(target, type, fn, opts);
+    if (target && typeof target.addEventListener === 'function') {
+      target.addEventListener(type, fn, opts);
+      return () => { try { target.removeEventListener(type, fn, opts); } catch(_){} };
+    }
+    return null;
+  };
+  const sysTimeout = (fn, ms) => (SYS && typeof SYS.timeout === 'function') ? SYS.timeout(fn, ms) : setTimeout(fn, ms);
+  const sysClearTimeout = (id) => {
+    if (SYS && typeof SYS.clearTimeout === 'function') return SYS.clearTimeout(id);
+    clearTimeout(id);
+  };
   let tries = 0;
-  const t = setInterval(() => {
+  let timer = null;
+  const tryInstall = () => {
     tries++;
     if (typeof syncEnvelopeOverlay_ === 'function' && !window.__llBackPngWrapped){
       window.__llBackPngWrapped = true;
@@ -8897,18 +8912,20 @@ for (let seg=0; seg<3; seg++) {
         __origSyncEnvelopeOverlay.apply(this, arguments);
         requestBackPngHtmlSync_('syncEnvelopeOverlay');
       };
-      clearInterval(t);
-      // Kick once after hook install
+      if (timer) sysClearTimeout(timer);
       requestBackPngHtmlSync_('hookInstall');
       return;
     }
-    if (tries > 200) clearInterval(t); // ~10s max
-  }, 50);
+    if (tries < 200){
+      timer = sysTimeout(tryInstall, 50);
+    }
+  };
 
   // Also refresh on resize and after initial load settles.
-  window.addEventListener('resize', () => requestBackPngHtmlSync_('resize'));
-  window.addEventListener('load', () => setTimeout(() => requestBackPngHtmlSync_('load'), 250));
+  sysListen(window, 'resize', () => requestBackPngHtmlSync_('resize'));
+  sysListen(window, 'load', () => sysTimeout(() => requestBackPngHtmlSync_('load'), 250));
   requestBackPngHtmlSync_('init');
+  tryInstall();
 })();
 
 function ensureBackPngPoolBuilt_(){
@@ -9085,7 +9102,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.__LL_LAST_PTR_X__ = window.innerWidth/2;
   window.__LL_LAST_PTR_Y__ = window.innerHeight/2;
   window.addEventListener('pointermove', (ev)=>{ window.__LL_LAST_PTR_X__ = ev.clientX; window.__LL_LAST_PTR_Y__ = ev.clientY; }, {passive:true});
-dbg_('v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: DOMContentLoaded');
+dbg_('v99.3.77_Phase4_SystemHardeningFix.0: DOMContentLoaded');
 
   cacheDomRefs();
   try{ wrapLLDBGStep_(); }catch(e){}
@@ -9231,7 +9248,7 @@ window.__LL_BACKROWS_ANCHOR_MATCHED = true; // prevent later global overrides
   }catch(e){}
 
 
-  dbg_('v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: Initialization complete');
+  dbg_('v99.3.77_Phase4_SystemHardeningFix.0: Initialization complete');
 });
 })();
 
@@ -9567,7 +9584,8 @@ window.applySelectedAdornments = applySelectedAdornments;
   }
 
   // Hook into existing render loop patterns.
-  // Many builds call `window.__renderHooks` or run `renderAll()` on row changes; we add light polling.
+  // Many builds call `window.__renderHooks` or run `renderAll()` on row changes; keep a light, visibility-aware poller.
+  const SYS = window.__LL_SYS__ || { timeout:(fn,ms)=>setTimeout(fn,ms), isPageVisible:()=>true };
   let lastOn = null;
   function tick() {
     const on = isGridOn();
@@ -9576,8 +9594,8 @@ window.applySelectedAdornments = applySelectedAdornments;
       render();
     }
     // if on, refresh at low rate to follow viewBox changes / zoom / resize
-    if (on) render();
-    setTimeout(tick, 500);
+    if (on && SYS.isPageVisible()) render();
+    SYS.timeout(tick, on ? 500 : 800);
   }
   tick();
 })();
@@ -9595,26 +9613,43 @@ window.applySelectedAdornments = applySelectedAdornments;
 // ---- BRX guard: keep legacy backRowsG hidden ----
 (function(){
   try {
+    const SYS = window.__LL_SYS__ || { observe:(o,t,opts)=>o.observe(t,opts) };
     const hideLegacy = () => {
       const g = document.getElementById('backRowsG');
       if (g) g.style.display = 'none';
     };
     hideLegacy();
-    new MutationObserver(hideLegacy).observe(document.documentElement, {subtree:true, childList:true, attributes:true, attributeFilter:['style','class']});
+    SYS.observe(new MutationObserver(hideLegacy), document.documentElement, {subtree:true, childList:true, attributes:true, attributeFilter:['style','class']});
   } catch(e){}
 })();
 </script>
 
 
 <script>
-// v99.3.75_Phase3_StateConfigConsolidation: unified BRX/back-row hard-disable controller.
+// v99.3.77_Phase4_SystemHardeningFix lifecycle manager
+(function(){
+  if (window.__LL_SYS__) return;
+  const SYS = { timeouts:new Set(), intervals:new Set(), observers:new Set(), listeners:[] };
+  SYS.timeout = function(fn, ms){ const id = setTimeout(()=>{ SYS.timeouts.delete(id); try{ fn(); }catch(e){} }, ms); SYS.timeouts.add(id); return id; };
+  SYS.interval = function(fn, ms){ const id = setInterval(fn, ms); SYS.intervals.add(id); return id; };
+  SYS.clearTimeout = function(id){ try{ clearTimeout(id); }catch(e){} SYS.timeouts.delete(id); };
+  SYS.clearInterval = function(id){ try{ clearInterval(id); }catch(e){} SYS.intervals.delete(id); };
+  SYS.observe = function(observer, target, opts){ try{ observer.observe(target, opts); SYS.observers.add(observer); }catch(e){} return observer; };
+  SYS.listen = function(target, type, fn, opts){ try{ target.addEventListener(type, fn, opts); SYS.listeners.push([target,type,fn,opts]); }catch(e){} return fn; };
+  SYS.isPageVisible = function(){ try{ return !document.hidden; }catch(e){ return true; } };
+  window.__LL_SYS__ = SYS;
+})();
+</script>
+
+<script>
+// v99.3.77_Phase4_SystemHardeningFix: unified BRX/back-row hard-disable controller.
 (function(){
   try{
     window.__PHASEA_DISABLE_BRX__ = true;
     window.__LL_DISABLE_BACKHILL__ = true;
     window.BRX_DISABLE_LEGACY_BACKROWS = true;
 
-    const VERSION = 'v99.3.75_Phase3_StateConfigConsolidation';
+    const VERSION = 'v99.3.77_Phase4_SystemHardeningFix';
     const hideLegacyGroups = () => {
       ['backRowsG','gridWeeksG','hillGuidesG','gridOverlayG','gridWeeksOverlay','brxHillPngG','brxHillDbgG']
         .forEach(id => {
@@ -9647,10 +9682,11 @@ window.applySelectedAdornments = applySelectedAdornments;
     window.BRX = stub;
     window.BRX_HILLPNG_renderAll = noopFalse;
 
+    const SYS = window.__LL_SYS__ || { listen:(t,ty,fn,opts)=>t.addEventListener(ty,fn,opts), timeout:(fn,ms)=>setTimeout(fn,ms) };
     hideLegacyGroups();
-    window.addEventListener('load', hideLegacyGroups, { once:true });
-    setTimeout(hideLegacyGroups, 250);
-    setTimeout(hideLegacyGroups, 900);
+    SYS.listen(window, 'load', hideLegacyGroups, { once:true });
+    SYS.timeout(hideLegacyGroups, 250);
+    SYS.timeout(hideLegacyGroups, 900);
 
     try{ console.log('DBGSTEP DBGSTEP [BRX disabled]', {version:VERSION}); }catch(e){}
   } catch(e) {}
@@ -9658,22 +9694,6 @@ window.applySelectedAdornments = applySelectedAdornments;
 </script>
 
 
-<script>
-// BRX PATCH: if user sets window.__BRX_PNG_URL after load, re-init BRXPNG once
-(() => {
-  let last = window.__BRX_PNG_URL;
-  setInterval(() => {
-    const cur = window.__BRX_PNG_URL;
-    if (cur && cur !== last) {
-      last = cur;
-      try {
-        if (window.BRXPNG && typeof window.BRXPNG.setPngUrl === 'function') window.BRXPNG.setPngUrl(cur);
-        window.render && window.render({reason:'png:url-change'});
-      } catch(e) { console.warn('[BRX] png url change handling failed', e); }
-    }
-  }, 500);
-})();
-</script>
 
 <script>
 // v99.3.28_TodayPoll_ApplyUpdateAndDebug Inspector (I): logs slot metadata under cursor without depending on existing debug wiring
@@ -10454,7 +10474,7 @@ function proxyFetchExport_(targetUrl){
       loop_();
       return;
     }
-    setTimeout(startWhenReady, 500);
+    (window.__LL_SYS__ && window.__LL_SYS__.timeout ? window.__LL_SYS__.timeout : setTimeout)(startWhenReady, 500);
   };
   startWhenReady();
 })();
