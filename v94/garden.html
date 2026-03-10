@@ -13,7 +13,7 @@
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v99.3.92_SkyColorDance
+  v99.3.93_RicherSkyContrast
     + Consolidate duplicate Photo Reel skybox CSS into one block
     + Merge duplicate selection-ring state rules
     + Remove redundant early wireframe CSS copy
@@ -126,7 +126,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v99.3.92_SkyColorDance';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v99.3.93_RicherSkyContrast';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -254,7 +254,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 function renderBackRows(){ /* disabled */ }
 
 (function(){
-  const VERSION = 'v99.3.92_SkyColorDance';
+  const VERSION = 'v99.3.93_RicherSkyContrast';
 
   // ---- Canonical version globals ----
   window.APP_VERSION = VERSION;
@@ -318,7 +318,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v99.3.92_SkyColorDance.html</title>
+<title>garden_v99.3.93_RicherSkyContrast.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -2070,7 +2070,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v99.3.92_SkyColorDance.html • v99.3.92_SkyColorDance • Built: 2026-03-10T17:22:00Z UTC</div>
+  <div id="llPinkBanner">garden_v99.3.93_RicherSkyContrast.html • v99.3.93_RicherSkyContrast • Built: 2026-03-10T17:22:00Z UTC</div>
 
 
 <script>
@@ -2084,8 +2084,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.3.92_SkyColorDance.html</span><br>
-Version: <span id="__bannerVersion">v99.3.92_SkyColorDance</span><br>
+File: <span id="__bannerFileName">garden_v99.3.93_RicherSkyContrast.html</span><br>
+Version: <span id="__bannerVersion">v99.3.93_RicherSkyContrast</span><br>
 Created: 2026-03-10T17:22:00Z</span></div>
 <script>
 (function(){
@@ -2101,7 +2101,7 @@ Created: 2026-03-10T17:22:00Z</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.3.92_SkyColorDance loaded", new Date().toISOString());
+  console.log("[VERSION] v99.3.93_RicherSkyContrast loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -2707,7 +2707,7 @@ window.__LL_hillTopAtX_fill = function(x, yTopGuess, yBottom){
 <!-- Debug Panel -->
 <div aria-hidden="false" id="dbgPanel">
   <div class="hdr">
-    <div class="t">LifeLog DEBUG v99.3.92_SkyColorDance (press D)</div>
+    <div class="t">LifeLog DEBUG v99.3.93_RicherSkyContrast (press D)</div>
     <div class="btns">
       <button id="dbgCopy" type="button">Copy</button>
       <button id="dbgClear" type="button">Clear</button>
@@ -3069,7 +3069,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   </div>
 
   <div class="util hidden" id="util">
-    <div class="utilTitle">LifeLog Garden Walk v99.3.92_SkyColorDance</div>
+    <div class="utilTitle">LifeLog Garden Walk v99.3.93_RicherSkyContrast</div>
     <div class="utilSub">Scroll to walk through weeks. Press H to hide/show this panel.</div>
 	    <div class="row">
 	      <label>Wireframe</label>
@@ -3249,7 +3249,7 @@ function wrapLLDBGStep_(){
     }
   }catch(e){}
 }
-dbg_('v99.3.92_SkyColorDance.0: Main script starting');
+dbg_('v99.3.93_RicherSkyContrast.0: Main script starting');
 
 // ============================================
 // Constants
@@ -4996,7 +4996,7 @@ function refreshFrontGrass(){
 // ============================================
 
 // ============================================
-// v99.3.92_SkyColorDance: keep back-row flowers horizontally de-clumped
+// v99.3.93_RicherSkyContrast: keep back-row flowers horizontally de-clumped
 // ============================================
 const __LL_BACK_SPREAD_MAX_BEHIND = 5;    // reach near-full spread quickly (about 4-6 rows back)
 const __LL_BACK_SPREAD_EDGE_PAD   = 0.006; // keep a tiny inset so nothing clips at extreme edges
@@ -5593,12 +5593,12 @@ function stepManualClock(){
   if (todState.manualMinutes < 0) todState.manualMinutes += 1440;
 }
 
-function paletteDawn(){ return { skyA:"#6679C9", skyB:"#DDB0C6", skyC:"#FFD7A8", sunOpacity:0.34, gardenBright:1.09, gardenSat:1.03, stars:false }; }
-function paletteMorning(){ return { skyA:"#78B2EC", skyB:"#AADBFF", skyC:"#EDF8FF", sunOpacity:0.24, gardenBright:1.12, gardenSat:1.02, stars:false }; }
-function paletteAfternoon(){ return { skyA:"#5F97E6", skyB:"#8FCAFF", skyC:"#D9F1FF", sunOpacity:0.18, gardenBright:1.10, gardenSat:1.01, stars:false }; }
-function paletteEvening(){ return { skyA:"#7E84C0", skyB:"#E7B184", skyC:"#F7D891", sunOpacity:0.32, gardenBright:1.05, gardenSat:1.02, stars:false }; }
-function paletteSunset(){ return { skyA:"#6E73B6", skyB:"#D8A7B7", skyC:"#F7C18E", sunOpacity:0.28, gardenBright:1.03, gardenSat:0.99, stars:false }; }
-function paletteNight(){ return { skyA:"#0C1533", skyB:"#1A2550", skyC:"#0A1128", sunOpacity:0.00, gardenBright:0.92, gardenSat:0.93, stars:true }; }
+function paletteDawn(){ return { skyA:"#7484D8", skyB:"#E2B1C9", skyC:"#FFD99D", sunOpacity:0.38, gardenBright:1.11, gardenSat:1.05, stars:false }; }
+function paletteMorning(){ return { skyA:"#6EAEEB", skyB:"#A5DBFF", skyC:"#F2FAFF", sunOpacity:0.28, gardenBright:1.13, gardenSat:1.04, stars:false }; }
+function paletteAfternoon(){ return { skyA:"#4F8FE6", skyB:"#7FC6FF", skyC:"#D6F0FF", sunOpacity:0.22, gardenBright:1.11, gardenSat:1.03, stars:false }; }
+function paletteEvening(){ return { skyA:"#6F80C8", skyB:"#E7B16F", skyC:"#FFD990", sunOpacity:0.38, gardenBright:1.07, gardenSat:1.04, stars:false }; }
+function paletteSunset(){ return { skyA:"#5F69BF", skyB:"#DFA0BF", skyC:"#FFC27D", sunOpacity:0.34, gardenBright:1.06, gardenSat:1.02, stars:false }; }
+function paletteNight(){ return { skyA:"#09122E", skyB:"#16244F", skyC:"#0A1330", sunOpacity:0.00, gardenBright:0.93, gardenSat:0.95, stars:true }; }
 
 function blendPal(a,b,t){
   return {
@@ -5684,12 +5684,12 @@ function todSkyMotionProfileSolar_(m){
   const preSunset = Math.max(t.noon, t.sunset - 90);
 
   const profiles = {
-    dawn:      { phase:'dawn',      d1:0.15, d2:0.10, d3:0.08, bloom:0.16, dur1:64, dur2:78, dur3:52, bloomDur:34 },
-    morning:   { phase:'morning',   d1:0.08, d2:0.05, d3:0.04, bloom:0.06, dur1:78, dur2:92, dur3:58, bloomDur:40 },
-    afternoon: { phase:'afternoon', d1:0.09, d2:0.06, d3:0.05, bloom:0.05, dur1:82, dur2:96, dur3:60, bloomDur:44 },
-    evening:   { phase:'evening',   d1:0.13, d2:0.10, d3:0.08, bloom:0.14, dur1:66, dur2:80, dur3:50, bloomDur:36 },
-    sunset:    { phase:'sunset',    d1:0.20, d2:0.16, d3:0.12, bloom:0.22, dur1:52, dur2:66, dur3:42, bloomDur:28 },
-    night:     { phase:'night',     d1:0.04, d2:0.03, d3:0.02, bloom:0.02, dur1:92, dur2:110, dur3:76, bloomDur:52 }
+    dawn:      { phase:'dawn',      d1:0.18, d2:0.12, d3:0.10, bloom:0.20, dur1:64, dur2:78, dur3:52, bloomDur:34 },
+    morning:   { phase:'morning',   d1:0.10, d2:0.07, d3:0.05, bloom:0.09, dur1:78, dur2:92, dur3:58, bloomDur:40 },
+    afternoon: { phase:'afternoon', d1:0.12, d2:0.08, d3:0.06, bloom:0.08, dur1:82, dur2:96, dur3:60, bloomDur:44 },
+    evening:   { phase:'evening',   d1:0.18, d2:0.13, d3:0.10, bloom:0.20, dur1:66, dur2:80, dur3:50, bloomDur:36 },
+    sunset:    { phase:'sunset',    d1:0.26, d2:0.20, d3:0.15, bloom:0.30, dur1:52, dur2:66, dur3:42, bloomDur:28 },
+    night:     { phase:'night',     d1:0.05, d2:0.035, d3:0.025, bloom:0.03, dur1:92, dur2:110, dur3:76, bloomDur:52 }
   };
 
   const lerpProfile = (a,b,k)=>({
@@ -5709,10 +5709,10 @@ function todSkyMotionProfileSolar_(m){
 
 function applySkyDance_(p, motion){
   if (!DOM.stage) return;
-  const driftA = mixHex(p.skyA, p.skyB, 0.46);
-  const driftB = mixHex(p.skyB, p.skyC, 0.54);
-  const warmLift = mixHex(p.skyC, (motion.phase === 'night' ? '#7E90D8' : '#FFF0BE'), motion.phase === 'sunset' ? 0.48 : motion.phase === 'evening' ? 0.42 : motion.phase === 'dawn' ? 0.34 : 0.26);
-  const bloomColor = mixHex(p.skyC, (motion.phase === 'night' ? '#4C68B8' : '#FFE0A3'), motion.phase === 'sunset' ? 0.58 : motion.phase === 'evening' ? 0.52 : motion.phase === 'dawn' ? 0.40 : 0.30);
+  const driftA = mixHex(p.skyA, p.skyB, motion.phase === 'sunset' ? 0.40 : motion.phase === 'evening' ? 0.43 : 0.46);
+  const driftB = mixHex(p.skyB, p.skyC, motion.phase === 'sunset' ? 0.60 : motion.phase === 'evening' ? 0.58 : 0.54);
+  const warmLift = mixHex(p.skyC, (motion.phase === 'night' ? '#8CA1F0' : '#FFF1A8'), motion.phase === 'sunset' ? 0.60 : motion.phase === 'evening' ? 0.54 : motion.phase === 'dawn' ? 0.40 : 0.32);
+  const bloomColor = mixHex(p.skyC, (motion.phase === 'night' ? '#5872CC' : '#FFD889'), motion.phase === 'sunset' ? 0.72 : motion.phase === 'evening' ? 0.62 : motion.phase === 'dawn' ? 0.48 : 0.38);
 
   DOM.stage.style.setProperty('--skyDriftA', driftA);
   DOM.stage.style.setProperty('--skyDriftB', driftB);
@@ -9488,7 +9488,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.__LL_LAST_PTR_X__ = window.innerWidth/2;
   window.__LL_LAST_PTR_Y__ = window.innerHeight/2;
   window.addEventListener('pointermove', (ev)=>{ window.__LL_LAST_PTR_X__ = ev.clientX; window.__LL_LAST_PTR_Y__ = ev.clientY; }, {passive:true});
-dbg_('v99.3.92_SkyColorDance.0: DOMContentLoaded');
+dbg_('v99.3.93_RicherSkyContrast.0: DOMContentLoaded');
 
   cacheDomRefs();
   try{ wrapLLDBGStep_(); }catch(e){}
@@ -9634,7 +9634,7 @@ window.__LL_BACKROWS_ANCHOR_MATCHED = true; // prevent later global overrides
   }catch(e){}
 
 
-  dbg_('v99.3.92_SkyColorDance.0: Initialization complete');
+  dbg_('v99.3.93_RicherSkyContrast.0: Initialization complete');
 });
 })();
 
@@ -10012,7 +10012,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 
 
 <script>
-// v99.3.92_SkyColorDance lifecycle manager
+// v99.3.93_RicherSkyContrast lifecycle manager
 (function(){
   if (window.__LL_SYS__) return;
   const SYS = { timeouts:new Set(), intervals:new Set(), observers:new Set(), listeners:[] };
@@ -10028,14 +10028,14 @@ window.applySelectedAdornments = applySelectedAdornments;
 </script>
 
 <script>
-// v99.3.92_SkyColorDance: unified BRX/back-row hard-disable controller.
+// v99.3.93_RicherSkyContrast: unified BRX/back-row hard-disable controller.
 (function(){
   try{
     window.__PHASEA_DISABLE_BRX__ = true;
     window.__LL_DISABLE_BACKHILL__ = true;
     window.BRX_DISABLE_LEGACY_BACKROWS = true;
 
-    const VERSION = 'v99.3.92_SkyColorDance';
+    const VERSION = 'v99.3.93_RicherSkyContrast';
     const hideLegacyGroups = () => {
       ['backRowsG','gridWeeksG','hillGuidesG','gridOverlayG','gridWeeksOverlay','brxHillPngG','brxHillDbgG']
         .forEach(id => {
