@@ -13,7 +13,7 @@
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v99.3.82_DSTCalendarWeekFix
+  v99.3.83_PhotoReelSkyboxTargetFix
     + Consolidate duplicate Photo Reel skybox CSS into one block
     + Merge duplicate selection-ring state rules
     + Remove redundant early wireframe CSS copy
@@ -126,7 +126,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v99.3.82_DSTCalendarWeekFix';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v99.3.83_PhotoReelSkyboxTargetFix';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -254,7 +254,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 function renderBackRows(){ /* disabled */ }
 
 (function(){
-  const VERSION = 'v99.3.82_DSTCalendarWeekFix';
+  const VERSION = 'v99.3.83_PhotoReelSkyboxTargetFix';
 
   // ---- Canonical version globals ----
   window.APP_VERSION = VERSION;
@@ -318,7 +318,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v99.3.82_DSTCalendarWeekFix.html</title>
+<title>garden_v99.3.83_PhotoReelSkyboxTargetFix.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -1813,9 +1813,17 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 <style id="llPhotoReelSkyboxCleanup">
 /* --- Photo Reel skybox cleanup: transparent card, outline only, full-bleed reel --- */
 .llSkyBox[data-idx="3"],
+.llSkyBox[data-skybox-idx="3"],
+.llSkyBox.llPhotoReelBox,
 .llSkyBox[data-idx="3"] *,
+.llSkyBox[data-skybox-idx="3"] *,
+.llSkyBox.llPhotoReelBox *,
 .llSkyBox[data-idx="3"] .card,
-.llSkyBox[data-idx="3"] .body{
+.llSkyBox[data-skybox-idx="3"] .card,
+.llSkyBox.llPhotoReelBox .card,
+.llSkyBox[data-idx="3"] .body,
+.llSkyBox[data-skybox-idx="3"] .body,
+.llSkyBox.llPhotoReelBox .body{
   background: transparent !important;
   background-image: none !important;
   backdrop-filter: none !important;
@@ -1824,37 +1832,61 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 }
 
 .llSkyBox[data-idx="3"]::before,
+.llSkyBox[data-skybox-idx="3"]::before,
+.llSkyBox.llPhotoReelBox::before,
 .llSkyBox[data-idx="3"]::after,
+.llSkyBox[data-skybox-idx="3"]::after,
+.llSkyBox.llPhotoReelBox::after,
 .llSkyBox[data-idx="3"] .card::before,
+.llSkyBox[data-skybox-idx="3"] .card::before,
+.llSkyBox.llPhotoReelBox .card::before,
 .llSkyBox[data-idx="3"] .card::after,
+.llSkyBox[data-skybox-idx="3"] .card::after,
+.llSkyBox.llPhotoReelBox .card::after,
 .llSkyBox[data-idx="3"] .body::before,
-.llSkyBox[data-idx="3"] .body::after{
+.llSkyBox[data-skybox-idx="3"] .body::before,
+.llSkyBox.llPhotoReelBox .body::before,
+.llSkyBox[data-idx="3"] .body::after,
+.llSkyBox[data-skybox-idx="3"] .body::after,
+.llSkyBox.llPhotoReelBox .body::after{
   content: none !important;
   display: none !important;
 }
 
-.llSkyBox[data-idx="3"]{
+.llSkyBox[data-idx="3"],
+.llSkyBox[data-skybox-idx="3"],
+.llSkyBox.llPhotoReelBox{
   padding: 0 !important;
 }
-.llSkyBox[data-idx="3"] .sub{
+.llSkyBox[data-idx="3"] .sub,
+.llSkyBox[data-skybox-idx="3"] .sub,
+.llSkyBox.llPhotoReelBox .sub{
   display: none !important;
 }
-.llSkyBox[data-idx="3"] .card{
+.llSkyBox[data-idx="3"] .card,
+.llSkyBox[data-skybox-idx="3"] .card,
+.llSkyBox.llPhotoReelBox .card{
   border: 1px solid rgba(255,255,255,0.7) !important;
   border-radius: 14px !important;
 }
-.llSkyBox[data-idx="3"] .body{
+.llSkyBox[data-idx="3"] .body,
+.llSkyBox[data-skybox-idx="3"] .body,
+.llSkyBox.llPhotoReelBox .body{
   padding: 0 !important;
   margin: 0 !important;
   height: 100% !important;
   max-height: none !important;
 }
-.llSkyBox[data-idx="3"] .llReelWrap{
+.llSkyBox[data-idx="3"] .llReelWrap,
+.llSkyBox[data-skybox-idx="3"] .llReelWrap,
+.llSkyBox.llPhotoReelBox .llReelWrap{
   border-radius: 0 !important;
   width: 100% !important;
   height: 100% !important;
 }
-.llSkyBox[data-idx="3"] .llReelFrame{
+.llSkyBox[data-idx="3"] .llReelFrame,
+.llSkyBox[data-skybox-idx="3"] .llReelFrame,
+.llSkyBox.llPhotoReelBox .llReelFrame{
   width: 100% !important;
   height: 100% !important;
   display: block !important;
@@ -1873,7 +1905,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v99.3.82_DSTCalendarWeekFix.html • v99.3.82_DSTCalendarWeekFix • Built: 2026-03-10T15:28:40Z UTC</div>
+  <div id="llPinkBanner">garden_v99.3.83_PhotoReelSkyboxTargetFix.html • v99.3.83_PhotoReelSkyboxTargetFix • Built: 2026-03-10T15:28:40Z UTC</div>
 
 
 <script>
@@ -1887,8 +1919,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.3.82_DSTCalendarWeekFix.html</span><br>
-Version: <span id="__bannerVersion">v99.3.82_DSTCalendarWeekFix</span><br>
+File: <span id="__bannerFileName">garden_v99.3.83_PhotoReelSkyboxTargetFix.html</span><br>
+Version: <span id="__bannerVersion">v99.3.83_PhotoReelSkyboxTargetFix</span><br>
 Created: 2026-03-10T15:28:40Z</span></div>
 <script>
 (function(){
@@ -1904,7 +1936,7 @@ Created: 2026-03-10T15:28:40Z</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.3.82_DSTCalendarWeekFix loaded", new Date().toISOString());
+  console.log("[VERSION] v99.3.83_PhotoReelSkyboxTargetFix loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -2510,7 +2542,7 @@ window.__LL_hillTopAtX_fill = function(x, yTopGuess, yBottom){
 <!-- Debug Panel -->
 <div aria-hidden="false" id="dbgPanel">
   <div class="hdr">
-    <div class="t">LifeLog DEBUG v99.3.82_DSTCalendarWeekFix (press D)</div>
+    <div class="t">LifeLog DEBUG v99.3.83_PhotoReelSkyboxTargetFix (press D)</div>
     <div class="btns">
       <button id="dbgCopy" type="button">Copy</button>
       <button id="dbgClear" type="button">Clear</button>
@@ -2868,7 +2900,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   </div>
 
   <div class="util hidden" id="util">
-    <div class="utilTitle">LifeLog Garden Walk v99.3.82_DSTCalendarWeekFix</div>
+    <div class="utilTitle">LifeLog Garden Walk v99.3.83_PhotoReelSkyboxTargetFix</div>
     <div class="utilSub">Scroll to walk through weeks. Press H to hide/show this panel.</div>
 	    <div class="row">
 	      <label>Wireframe</label>
@@ -3048,7 +3080,7 @@ function wrapLLDBGStep_(){
     }
   }catch(e){}
 }
-dbg_('v99.3.82_DSTCalendarWeekFix.0: Main script starting');
+dbg_('v99.3.83_PhotoReelSkyboxTargetFix.0: Main script starting');
 
 // ============================================
 // Constants
@@ -4789,7 +4821,7 @@ function refreshFrontGrass(){
 // ============================================
 
 // ============================================
-// v99.3.82_DSTCalendarWeekFix: keep back-row flowers horizontally de-clumped
+// v99.3.83_PhotoReelSkyboxTargetFix: keep back-row flowers horizontally de-clumped
 // ============================================
 const __LL_BACK_SPREAD_MAX_BEHIND = 5;    // reach near-full spread quickly (about 4-6 rows back)
 const __LL_BACK_SPREAD_EDGE_PAD   = 0.006; // keep a tiny inset so nothing clips at extreme edges
@@ -6518,6 +6550,8 @@ __llBoxes = titles.map((t,i)=>{
   const b = document.createElement('div');
   b.className = 'llSkyBox';
   b.dataset.idx = String(i);
+  b.setAttribute('data-skybox-idx', String(i));
+  if (i === 3) b.classList.add('llPhotoReelBox');
   b.innerHTML = `
     <div class="sub">${t}</div>
     <div class="body">
@@ -9152,7 +9186,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.__LL_LAST_PTR_X__ = window.innerWidth/2;
   window.__LL_LAST_PTR_Y__ = window.innerHeight/2;
   window.addEventListener('pointermove', (ev)=>{ window.__LL_LAST_PTR_X__ = ev.clientX; window.__LL_LAST_PTR_Y__ = ev.clientY; }, {passive:true});
-dbg_('v99.3.82_DSTCalendarWeekFix.0: DOMContentLoaded');
+dbg_('v99.3.83_PhotoReelSkyboxTargetFix.0: DOMContentLoaded');
 
   cacheDomRefs();
   try{ wrapLLDBGStep_(); }catch(e){}
@@ -9298,7 +9332,7 @@ window.__LL_BACKROWS_ANCHOR_MATCHED = true; // prevent later global overrides
   }catch(e){}
 
 
-  dbg_('v99.3.82_DSTCalendarWeekFix.0: Initialization complete');
+  dbg_('v99.3.83_PhotoReelSkyboxTargetFix.0: Initialization complete');
 });
 })();
 
@@ -9676,7 +9710,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 
 
 <script>
-// v99.3.82_DSTCalendarWeekFix lifecycle manager
+// v99.3.83_PhotoReelSkyboxTargetFix lifecycle manager
 (function(){
   if (window.__LL_SYS__) return;
   const SYS = { timeouts:new Set(), intervals:new Set(), observers:new Set(), listeners:[] };
@@ -9692,14 +9726,14 @@ window.applySelectedAdornments = applySelectedAdornments;
 </script>
 
 <script>
-// v99.3.82_DSTCalendarWeekFix: unified BRX/back-row hard-disable controller.
+// v99.3.83_PhotoReelSkyboxTargetFix: unified BRX/back-row hard-disable controller.
 (function(){
   try{
     window.__PHASEA_DISABLE_BRX__ = true;
     window.__LL_DISABLE_BACKHILL__ = true;
     window.BRX_DISABLE_LEGACY_BACKROWS = true;
 
-    const VERSION = 'v99.3.82_DSTCalendarWeekFix';
+    const VERSION = 'v99.3.83_PhotoReelSkyboxTargetFix';
     const hideLegacyGroups = () => {
       ['backRowsG','gridWeeksG','hillGuidesG','gridOverlayG','gridWeeksOverlay','brxHillPngG','brxHillDbgG']
         .forEach(id => {
