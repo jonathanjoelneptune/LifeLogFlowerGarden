@@ -13,7 +13,7 @@
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v99.3.70_SecondPassCleanup
+  v99.3.72_DeeperRefactorRegenerated
     + Consolidate duplicate Photo Reel skybox CSS into one block
     + Merge duplicate selection-ring state rules
     + Remove redundant early wireframe CSS copy
@@ -126,7 +126,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v99.3.70_SecondPassCleanup';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v99.3.72_DeeperRefactorRegenerated';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -254,7 +254,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 function renderBackRows(){ /* disabled */ }
 
 (function(){
-  const VERSION = 'v99.3.70_SecondPassCleanup';
+  const VERSION = 'v99.3.72_DeeperRefactorRegenerated';
 
   // ---- Canonical version globals ----
   window.APP_VERSION = VERSION;
@@ -318,7 +318,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v99.3.70_SecondPassCleanup.html</title>
+<title>garden_v99.3.72_DeeperRefactorRegenerated.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -1873,7 +1873,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v99.3.70_SecondPassCleanup.html • v99.3.70_SecondPassCleanup • Built: 2026-03-10T15:28:40Z UTC</div>
+  <div id="llPinkBanner">garden_v99.3.72_DeeperRefactorRegenerated.html • v99.3.72_DeeperRefactorRegenerated • Built: 2026-03-10T15:28:40Z UTC</div>
 
 
 <script>
@@ -1887,8 +1887,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.3.70_SecondPassCleanup.html</span><br>
-Version: <span id="__bannerVersion">v99.3.70_SecondPassCleanup</span><br>
+File: <span id="__bannerFileName">garden_v99.3.72_DeeperRefactorRegenerated.html</span><br>
+Version: <span id="__bannerVersion">v99.3.72_DeeperRefactorRegenerated</span><br>
 Created: 2026-03-10T15:28:40Z</span></div>
 <script>
 (function(){
@@ -1904,7 +1904,7 @@ Created: 2026-03-10T15:28:40Z</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.3.70_SecondPassCleanup loaded", new Date().toISOString());
+  console.log("[VERSION] v99.3.72_DeeperRefactorRegenerated loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -2868,7 +2868,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   </div>
 
   <div class="util hidden" id="util">
-    <div class="utilTitle">LifeLog Garden Walk v99.3.70_SecondPassCleanup</div>
+    <div class="utilTitle">LifeLog Garden Walk v99.3.72_DeeperRefactorRegenerated</div>
     <div class="utilSub">Scroll to walk through weeks. Press H to hide/show this panel.</div>
 	    <div class="row">
 	      <label>Wireframe</label>
@@ -4623,7 +4623,7 @@ function refreshFrontGrass(){
 // ============================================
 
 // ============================================
-// v99.3.70_SecondPassCleanup: keep back-row flowers horizontally de-clumped
+// v99.3.72_DeeperRefactorRegenerated: keep back-row flowers horizontally de-clumped
 // ============================================
 const __LL_BACK_SPREAD_MAX_BEHIND = 5;    // reach near-full spread quickly (about 4-6 rows back)
 const __LL_BACK_SPREAD_EDGE_PAD   = 0.006; // keep a tiny inset so nothing clips at extreme edges
@@ -9535,277 +9535,54 @@ window.applySelectedAdornments = applySelectedAdornments;
 
 
 <script>
-// [v99.3.28_TodayPoll_ApplyUpdateAndDebug Phase A] Hard-disable BRX runtime (no interval, no anchors, no PNG renders)
-window.__PHASEA_DISABLE_BRX__ = true;
-if (window.__PHASEA_DISABLE_BRX__) {
-  (function(){
-    const VERSION='v99.3.70_SecondPassCleanup';
-    // Install a stub so any callers don't crash
+// v99.3.72_DeeperRefactorRegenerated: unified BRX/back-row hard-disable controller.
+(function(){
+  try{
+    window.__PHASEA_DISABLE_BRX__ = true;
+    window.__LL_DISABLE_BACKHILL__ = true;
+    window.BRX_DISABLE_LEGACY_BACKROWS = true;
+
+    const VERSION = 'v99.3.72_DeeperRefactorRegenerated';
+    const hideLegacyGroups = () => {
+      ['backRowsG','gridWeeksG','hillGuidesG','gridOverlayG','gridWeeksOverlay','brxHillPngG','brxHillDbgG']
+        .forEach(id => {
+          const el = document.getElementById(id);
+          if (!el) return;
+          try { el.innerHTML = ''; } catch(e) {}
+          try { el.style.display = 'none'; } catch(e) {}
+        });
+      const t = document.getElementById('uBackRowsOn');
+      if (t) { try { t.checked = false; } catch(e) {} }
+      const v = document.getElementById('vBackRowsOn');
+      if (v) { try { v.textContent = 'Off'; } catch(e) {} }
+    };
+
+    const noopFalse = function(){ return false; };
     const stub = {
       version: VERSION,
-      setEnabled: function(){},
-      setDebugAnchors: function(){},
-      render: function(){},
-      renderNow: function(){},
-      clear: function(){},
-      drawAnchors: function(){},
-      clearAnchors: function(){},
+      enabled: false,
+      setEnabled: noopFalse,
+      setDebugAnchors: noopFalse,
+      render: noopFalse,
+      renderNow: noopFalse,
+      syncFrontIndex: noopFalse,
+      stopHeartbeat: noopFalse,
+      clear: function(){ hideLegacyGroups(); return false; },
+      drawAnchors: noopFalse,
+      clearAnchors: noopFalse,
       isEnabled: function(){ return false; }
     };
     window.BRX = stub;
+    window.BRX_HILLPNG_renderAll = noopFalse;
+
+    hideLegacyGroups();
+    window.addEventListener('load', hideLegacyGroups, { once:true });
+    setTimeout(hideLegacyGroups, 250);
+    setTimeout(hideLegacyGroups, 900);
+
     try{ console.log('DBGSTEP DBGSTEP [BRX disabled]', {version:VERSION}); }catch(e){}
-  })();
-} else {
-/*
- * v99.3.28_TodayPoll_ApplyUpdateAndDebug BRX: Hill-SVG PNG-only back rows (single renderer)
- *
- * Fix for: PNGs not drawing because prior attempts were targeting the wrong SVG/layer.
- * In this build, back-row debug anchors and lattice are drawn in #hillSvg and clipped
- * by #hillClipMain. PNGs MUST be rendered into the same #hillSvg to be visible.
- */
-(function(){
-  // Ensure we never hard-crash if something is missing.
-  const DBG_TAG = 'DBGSTEP [BRX89.7.92]';
-
-  // Mini PNG fallback used for back-row anchors (self-contained data URL).
-  // Mini PNG fallback used for back-row anchors (self-contained data URL).
-  // Mini PNG fallback used for back-row anchors (self-contained data URL).
-  const log = (msg, obj) => {
-    try {
-      if (window.dbgStep) window.dbgStep(`${DBG_TAG} ${msg}`, obj||{});
-      else console.log(`${DBG_TAG} ${msg}`, obj||'');
-    } catch(e) {}
-  };
-
-  // Hard-disable any legacy back-row renderers if they exist.
-  try { window.BRX_DISABLE_LEGACY_BACKROWS = true; } catch(e) {}
-
-  function getHillSvg(){
-    return document.getElementById('hillSvg');
-  }
-  function getHillPath(){
-    return document.getElementById('hillMainPath');
-  }
-  function getBackRowsG(){
-    return document.getElementById('backRowsG');
-  }
-  function getHillGuidesG(){
-    return document.getElementById('hillGuidesG');
-  }
-
-  function ensureLayers(){
-    const svg = getHillSvg();
-    const back = getBackRowsG();
-    const guides = getHillGuidesG();
-    if (!svg || !guides) return null;
-
-    // PNG layer
-    let pngG = svg.querySelector('#brxHillPngG');
-    if (!pngG) {
-      pngG = document.createElementNS('http://www.w3.org/2000/svg','g');
-      pngG.setAttribute('id','brxHillPngG');
-      // pngG intentionally NOT clipped: anchor must be inside hill but sprite may extend above
-      // // (patched) no clip-path on pngG
-      pngG.style.pointerEvents = 'none';
-      // Insert into hillGuidesG so it renders above the hill fill but below debug overlays.
-      guides.insertBefore(pngG, guides.firstChild);
-    }
-
-    // Debug layer (dots + lattice) lives in hillGuidesG so it can be toggled cleanly.
-    let dbgG = svg.querySelector('#brxHillDbgG');
-    if (guides && !dbgG) {
-      dbgG = document.createElementNS('http://www.w3.org/2000/svg','g');
-      dbgG.setAttribute('id','brxHillDbgG');
-      // dbgG not clipped
-      // dbgG.setAttribute('clip-path','url(#hillClipMain)');
-      dbgG.style.pointerEvents = 'none';
-      guides.appendChild(dbgG);
-    }
-
-    return {svg, back, pngG, guides, dbgG};
-  }
-
-  // Use SVG geometry for inclusion if available.
-  function pointInHill(x,y){
-    const hill = getHillPath();
-    if (!hill) return false;
-    try {
-      // SVGGeometryElement.isPointInFill is supported in Chromium.
-      const pt = new DOMPoint(x,y);
-      if (typeof hill.isPointInFill === 'function') return !!hill.isPointInFill(pt);
-    } catch(e) {}
-
-    // Fallback: approximate using yHill(x) if earlier function exists.
-    try {
-      if (typeof window.yHill === 'function') return y >= window.yHill(x);
-    } catch(e) {}
-    return false;
-  }
-
-  function computeLattice(){
-    // Prefer the same numbers emitted by the existing gridAnchors logs.
-    const meta = (window.__brxGridAnchorMeta || window.__gridAnchorsMeta || null);
-    const xL = (meta && meta.xL) || 139;
-    const xR = (meta && meta.xR) || 1061;
-    const yBase = (meta && meta.yBase) || 457;
-    const rows = (meta && meta.rows) || 14;
-    const slots = (meta && meta.slots) || 21;
-
-    const rowStep = 18; // visually matches prior debug lattice density
-    const colStep = (xR - xL) / (slots - 1);
-
-    const pts = [];
-    for (let r=0; r<rows; r++){
-      const y = yBase - r*rowStep;
-      const rowOffset = (r % 2) ? (colStep*0.5) : 0;
-      for (let c=0; c<slots; c++){
-        const x = xL + c*colStep + rowOffset;
-        pts.push({x,y,r,c});
-      }
-    }
-    return {xL,xR,yBase,rows,slots,rowStep,colStep,pts};
-  }
-
-  function clearNode(n){
-    if (!n) return;
-    while (n.firstChild) n.removeChild(n.firstChild);
-  }
-
-  function renderPngs(lattice){
-    const layers = ensureLayers();
-    if (!layers) return;
-
-    const pngG = layers.pngG;
-    clearNode(pngG);
-
-    const url = window.BRX_BACK_PNG_URL || window.BRX_BACK_PNG || window.BRX_PNG_URL ||
-      // Safe fallback: a small sunflower-like glyph in a data URI (always loads).
-      "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
-        '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">'
-        + '<circle cx="32" cy="32" r="10" fill="#c9c9c9" stroke="#666" stroke-width="2"/>'
-        + '<circle cx="32" cy="32" r="4" fill="#fff"/>'
-        + '</svg>'
-      );
-
-    // Size in hillSvg units (viewBox 1200x500).
-    const size = (window.BRX_BACK_PNG_SIZE || 18);
-    let drawn = 0;
-
-    for (const p of lattice.pts){
-      if (!pointInHill(p.x, p.y)) continue;
-
-      const img = document.createElementNS('http://www.w3.org/2000/svg','image');
-      img.setAttribute('href', url);
-      img.setAttribute('x', (p.x - size/2).toFixed(2));
-      img.setAttribute('y', (p.y - size/2).toFixed(2));
-      img.setAttribute('width', size);
-      img.setAttribute('height', size);
-      img.setAttribute('preserveAspectRatio','xMidYMid meet');
-      img.style.opacity = '0.95';
-      img.style.imageRendering = 'auto';
-      img.style.pointerEvents = 'none';
-      pngG.appendChild(img);
-      drawn++;
-    }
-
-    log('png render:done', {drawn});
-  }
-
-  function renderDebug(lattice, enabled){
-    const layers = ensureLayers();
-    if (!layers || !layers.dbgG) return;
-
-    const dbgG = layers.dbgG;
-    clearNode(dbgG);
-    if (!enabled) return;
-
-    // Dots
-    let inside = 0;
-    for (const p of lattice.pts){
-      if (!pointInHill(p.x, p.y)) continue;
-      const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
-      c.setAttribute('cx', p.x);
-      c.setAttribute('cy', p.y);
-      c.setAttribute('r', 2.2);
-      c.setAttribute('fill', 'rgba(0,255,120,0.75)');
-      c.setAttribute('stroke', 'rgba(0,0,0,0.35)');
-      c.setAttribute('stroke-width', '0.6');
-      dbgG.appendChild(c);
-      inside++;
-    }
-
-    // Horizontal guides
-    for (let r=0; r<lattice.rows; r++){
-      const y = lattice.yBase - r*lattice.rowStep;
-      const line = document.createElementNS('http://www.w3.org/2000/svg','line');
-      line.setAttribute('x1', lattice.xL);
-      line.setAttribute('y1', y);
-      line.setAttribute('x2', lattice.xR);
-      line.setAttribute('y2', y);
-      line.setAttribute('stroke', 'rgba(255,255,255,0.18)');
-      line.setAttribute('stroke-width', '1');
-      line.setAttribute('stroke-dasharray', '6 6');
-      dbgG.appendChild(line);
-    }
-
-    log('debug render:done', {inside});
-  }
-
-  function isDbgAnchorsOn(){
-    const el = document.getElementById('dbgAnchors') || document.querySelector('input[name="dbgAnchors"]');
-    return !!(el && el.checked);
-  }
-
-  // Main render coordinator
-  let lastKey = '';
-  function renderAll(reason){
-    const lattice = computeLattice();
-    // Key changes if window size/meta changes.
-    const key = `${lattice.xL}|${lattice.xR}|${lattice.yBase}|${lattice.rows}|${lattice.slots}`;
-    const dbgOn = isDbgAnchorsOn();
-
-    // Always re-render PNGs on resize/meta changes, otherwise only when dbg toggles.
-    if (key != lastKey || reason === 'tick' || reason === 'toggle' || reason === 'boot') {
-      renderPngs(lattice);
-      renderDebug(lattice, dbgOn);
-      lastKey = key;
-    }
-  }
-
-  // Expose for legacy hooks
-  window.BRX_HILLPNG_renderAll = renderAll;
-
-  // Hook: when debug checkbox toggles, re-render.
-  function attachToggle(){
-    const el = document.getElementById('dbgAnchors') || document.querySelector('input[name="dbgAnchors"]');
-    if (!el) return;
-    if (el.__brx89Hooked) return;
-    el.__brx89Hooked = true;
-    el.addEventListener('change', () => renderAll('toggle'));
-  }
-
-  // Render after load and on resize.
-  window.addEventListener('load', () => {
-    attachToggle();
-    renderAll('boot');
-  });
-  window.addEventListener('resize', () => {
-    attachToggle();
-    renderAll('resize');
-  });
-
-  // Lightweight poll so row changes etc still update (keeps behavior consistent with BRX heartbeat).
-  setInterval(() => {
-    try {
-      attachToggle();
-      renderAll('tick');
-    } catch(e) {}
-  }, 1200);
-
-  log('installed', {version: VERSION});
+  } catch(e) {}
 })();
-
-}
 </script>
 
 
@@ -9865,161 +9642,6 @@ if (window.__PHASEA_DISABLE_BRX__) {
 })();
 </script>
 
-
-<script>
-// v99.3.28_TodayPoll_ApplyUpdateAndDebug Phase A: BRX hard-disabled (Step 1). Keep code present, but prevent any back-row rendering/heartbeat.
-(function(){
-  try{
-    const disable = () => {
-      const BRX = window.BRX;
-      if (!BRX) return false;
-
-      // Force disabled state
-      BRX.enabled = false;
-      try{ if (typeof BRX.setEnabled === 'function') BRX.setEnabled(false); }catch(e){}
-      try{ if (typeof BRX.stopHeartbeat === 'function') BRX.stopHeartbeat(); }catch(e){}
-      try{ if (typeof BRX.clear === 'function') BRX.clear(); }catch(e){}
-
-      // Prevent re-enabling during Phase A
-      const noop = function(){ BRX.enabled = false; return false; };
-      BRX.setEnabled = noop;
-
-      // Ensure UI toggle starts OFF
-      const t = document.getElementById('uBackRowsOn');
-      if (t){ t.checked = false; }
-      const v = document.getElementById('vBackRowsOn');
-      if (v){ v.textContent = 'Off'; }
-
-      // Hide any legacy hill groups just in case
-      const g = document.getElementById('backRowsG');
-      if (g) g.style.display = 'none';
-      const gw = document.getElementById('gridWeeksG');
-      if (gw) gw.style.display = 'none';
-
-      return true;
-    };
-
-    // Run now and after load (in case BRX installs late)
-    disable();
-    window.addEventListener('load', disable, { once:true });
-    setTimeout(disable, 250);
-    setTimeout(disable, 900);
-  }catch(e){}
-})();
-</script>
-
-
-<script id="phaseA_hardDisconnect_backRowToggles_v92_0_3">
-/*
-  v99.3.28_TodayPoll_ApplyUpdateAndDebug Phase A hard disconnect
-  Goal: Back-row/BRX toggles do nothing (no render, no anchors, no new debug spam).
-  We are NOT removing BRX code yet (next step); we are neutralizing it.
-*/
-(function(){
-  try{
-    // 1) Filter DBGSTEP noise from any BRX remnants (keeps other debug intact)
-    if (!window.__DBGSTEP_FILTERED_FOR_BRX__ && typeof window.DBGSTEP === 'function'){
-      window.__DBGSTEP_FILTERED_FOR_BRX__ = true;
-      const _DBGSTEP = window.DBGSTEP;
-      window.DBGSTEP = function(){
-        try{
-          const a0 = arguments && arguments.length ? arguments[0] : '';
-          if (typeof a0 === 'string' && a0.indexOf('[BRX]') !== -1) return;
-        }catch(e){}
-        return _DBGSTEP.apply(this, arguments);
-      };
-    }
-    // Also shim dbgStep() if present
-    if (typeof window.dbgStep === 'function' && !window.__DBGSTEP_FILTERED_FOR_BRX_DBGSTEP__){
-      window.__DBGSTEP_FILTERED_FOR_BRX_DBGSTEP__ = true;
-      const _dbgStep = window.dbgStep;
-      window.dbgStep = function(label, payload){
-        try{ if (typeof label === 'string' && label.indexOf('[BRX]') !== -1) return; }catch(e){}
-        return _dbgStep.call(this, label, payload);
-      };
-    }
-
-    // 2) Hard-disable BRX entrypoints and clear any visual artifacts
-    function hideLegacyBackGroups(){
-      const ids = ['backRowsG','gridWeeksG','hillGuidesG','gridOverlayG','gridWeeksOverlay'];
-      ids.forEach(id=>{
-        const el = document.getElementById(id);
-        if(!el) return;
-        try{ el.innerHTML = ''; }catch(e){}
-        try{ el.style.display = 'none'; }catch(e){}
-      });
-    }
-    hideLegacyBackGroups();
-
-    // 3) Disconnect toggles: capture, stop propagation, force OFF, update UI labels without logging
-    function forceToggleOff(inputId, valId){
-      const el = document.getElementById(inputId);
-      if(!el) return;
-      // Ensure default off
-      try{ el.checked = false; }catch(e){}
-      const v = valId ? document.getElementById(valId) : null;
-      if(v) v.textContent = 'Off';
-      const lbl = el.parentElement && el.parentElement.querySelector('.toggleLabel');
-      if(lbl) lbl.textContent = 'Off';
-
-      // Capture listener blocks all downstream listeners (including BRX supervisor)
-      el.addEventListener('change', function(ev){
-        try{
-          ev.preventDefault();
-          ev.stopPropagation();
-          ev.stopImmediatePropagation();
-        }catch(e){}
-        // force back to off
-        try{ el.checked = false; }catch(e){}
-        if(v) v.textContent = 'Off';
-        if(lbl) lbl.textContent = 'Off';
-        hideLegacyBackGroups();
-        return false;
-      }, true);
-      el.addEventListener('click', function(ev){
-        try{
-          ev.preventDefault();
-          ev.stopPropagation();
-          ev.stopImmediatePropagation();
-        }catch(e){}
-        try{ el.checked = false; }catch(e){}
-        if(v) v.textContent = 'Off';
-        if(lbl) lbl.textContent = 'Off';
-        hideLegacyBackGroups();
-        return false;
-      }, true);
-    }
-
-    // Match the actual IDs in this build
-    forceToggleOff('uBackRowsOn','vBackRowsOn');
-    forceToggleOff('uDebugAnchorsOn','vDebugAnchorsOn');
-
-    // Some variants used these IDs; safe to attempt
-    forceToggleOff('backRowsToggle', null);
-    forceToggleOff('dbgAnchorsToggle', null);
-
-    // 4) Neutralize legacy functions that can be called by UI / scroll handlers
-    const NOOP = function(){};
-    window.hideBackRowsPreview = NOOP;
-    window.drawDebugAnchors = NOOP;
-
-    // 5) If any supervisor intervals exist, they can continue to run silently.
-    // We keep them harmless by ensuring render/draw are NOOPs and groups are hidden.
-
-  }catch(e){}
-})();
-
-// ===============================
-// v92 Phase A: Back rows fully disabled (hard no-op)
-// Ensures no legacy code path can render or spam logs.
-// ===============================
-(function(){
-  try {
-    window.__backRows_renderUsingAnchors = undefined;
-  } catch(e) {}
-})();
-
-</script>
 
 <script>
 (function(){
