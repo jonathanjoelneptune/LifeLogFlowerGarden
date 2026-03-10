@@ -13,7 +13,7 @@
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v99.3.72_DeeperRefactorRegenerated
+  v99.3.73_Phase1_NavigationSelectionRefactor
     + Consolidate duplicate Photo Reel skybox CSS into one block
     + Merge duplicate selection-ring state rules
     + Remove redundant early wireframe CSS copy
@@ -126,7 +126,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v99.3.72_DeeperRefactorRegenerated';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v99.3.73_Phase1_NavigationSelectionRefactor';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -254,7 +254,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 function renderBackRows(){ /* disabled */ }
 
 (function(){
-  const VERSION = 'v99.3.72_DeeperRefactorRegenerated';
+  const VERSION = 'v99.3.73_Phase1_NavigationSelectionRefactor';
 
   // ---- Canonical version globals ----
   window.APP_VERSION = VERSION;
@@ -318,7 +318,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v99.3.72_DeeperRefactorRegenerated.html</title>
+<title>garden_v99.3.73_Phase1_NavigationSelectionRefactor.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -1873,7 +1873,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v99.3.72_DeeperRefactorRegenerated.html • v99.3.72_DeeperRefactorRegenerated • Built: 2026-03-10T15:28:40Z UTC</div>
+  <div id="llPinkBanner">garden_v99.3.73_Phase1_NavigationSelectionRefactor.html • v99.3.73_Phase1_NavigationSelectionRefactor • Built: 2026-03-10T15:28:40Z UTC</div>
 
 
 <script>
@@ -1887,8 +1887,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.3.72_DeeperRefactorRegenerated.html</span><br>
-Version: <span id="__bannerVersion">v99.3.72_DeeperRefactorRegenerated</span><br>
+File: <span id="__bannerFileName">garden_v99.3.73_Phase1_NavigationSelectionRefactor.html</span><br>
+Version: <span id="__bannerVersion">v99.3.73_Phase1_NavigationSelectionRefactor</span><br>
 Created: 2026-03-10T15:28:40Z</span></div>
 <script>
 (function(){
@@ -1904,7 +1904,7 @@ Created: 2026-03-10T15:28:40Z</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.3.72_DeeperRefactorRegenerated loaded", new Date().toISOString());
+  console.log("[VERSION] v99.3.73_Phase1_NavigationSelectionRefactor loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -2868,7 +2868,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   </div>
 
   <div class="util hidden" id="util">
-    <div class="utilTitle">LifeLog Garden Walk v99.3.72_DeeperRefactorRegenerated</div>
+    <div class="utilTitle">LifeLog Garden Walk v99.3.73_Phase1_NavigationSelectionRefactor</div>
     <div class="utilSub">Scroll to walk through weeks. Press H to hide/show this panel.</div>
 	    <div class="row">
 	      <label>Wireframe</label>
@@ -4261,29 +4261,50 @@ let lastWheelAt = 0;
 let lastFrontIndex = -1;
 let lastBackRowsFrontIndex = -9999; // v99.3.28_TodayPoll_ApplyUpdateAndDebug: back-row preview refresh guard
 
-// ===== NAV BUTTON API (exposed for UI bridge script) =====
+// ===== Phase 1 NAV API (single movement pipeline entry) =====
 window.__LL = window.__LL || {};
+function __llClampWeekIndex_(idx){
+  const maxIdx = (typeof todayWeekIndex_ === 'function') ? (todayWeekIndex_()|0) : 0;
+  return Math.max(0, Math.min(maxIdx, idx|0));
+}
+function __llCommitWeekNav_(nextIdx, opts){
+  opts = opts || {};
+  const prev = targetIndex|0;
+  const next = __llClampWeekIndex_(nextIdx);
+  targetIndex = next;
+  if (opts.snap){
+    currentOffset = next;
+  }
+  if (next === 0 && prev > 0 && opts.triggerCue !== false){
+    try{ triggerEpochClampCue_(opts.reason || 'nav:epoch'); }catch(e){}
+  }
+  CACHED.transformsDirty = true;
+  if (opts.applyNow && typeof applyTransforms === 'function'){
+    try{ applyTransforms((typeof performance !== 'undefined' && performance.now) ? performance.now() : undefined); }catch(e){}
+  }
+  if (opts.syncWeeks && typeof syncRenderedWeeks_ === 'function'){
+    try{ syncRenderedWeeks_(targetIndex, false); }catch(e){}
+  }
+  return next;
+}
+window.__LL.navSetWeekIndex = function(idx, opts){
+  try{ return __llCommitWeekNav_(idx, opts || {}); }
+  catch(e){ console.warn('[NAV] navSetWeekIndex failed', e); }
+};
 window.__LL.navNudgeWeek = function(delta){
   try{
     const step = (delta|0) < 0 ? +1 : -1; // matches ArrowUp/ArrowDown behavior
-    const maxIdx = (typeof todayWeekIndex_ === 'function') ? (todayWeekIndex_()|0) : 0;
-    targetIndex = Math.max(0, Math.min(maxIdx, (targetIndex|0) + step));
-    currentOffset = targetIndex;
-    if(typeof applyTransforms === 'function') applyTransforms();
-    if(typeof syncRenderedWeeks_ === 'function') syncRenderedWeeks_(targetIndex, false);
+    return __llCommitWeekNav_((targetIndex|0) + step, { snap:true, applyNow:true, syncWeeks:true, reason:'nav:button' });
   }catch(e){
-    console.warn("[NAV] navNudgeWeek failed", e);
+    console.warn('[NAV] navNudgeWeek failed', e);
   }
 };
 window.__LL.navGoToToday = function(){
   try{
     const idx = (typeof todayWeekIndex_ === 'function') ? (todayWeekIndex_()|0) : 0;
-    targetIndex = idx;
-    currentOffset = idx;
-    if(typeof applyTransforms === 'function') applyTransforms();
-    if(typeof syncRenderedWeeks_ === 'function') syncRenderedWeeks_(idx, false);
+    return __llCommitWeekNav_(idx, { snap:true, applyNow:true, syncWeeks:true, triggerCue:false, reason:'nav:today' });
   }catch(e){
-    console.warn("[NAV] navGoToToday failed", e);
+    console.warn('[NAV] navGoToToday failed', e);
   }
 };
 // =========================================================
@@ -4623,7 +4644,7 @@ function refreshFrontGrass(){
 // ============================================
 
 // ============================================
-// v99.3.72_DeeperRefactorRegenerated: keep back-row flowers horizontally de-clumped
+// v99.3.73_Phase1_NavigationSelectionRefactor: keep back-row flowers horizontally de-clumped
 // ============================================
 const __LL_BACK_SPREAD_MAX_BEHIND = 5;    // reach near-full spread quickly (about 4-6 rows back)
 const __LL_BACK_SPREAD_EDGE_PAD   = 0.006; // keep a tiny inset so nothing clips at extreme edges
@@ -4934,20 +4955,7 @@ function onWheel(e){
 
   // Natural scroll: wheel-down goes "back in time" (toward epoch), wheel-up goes forward.
   const dir = e.deltaY > 0 ? -1 : +1;
-  const next = targetIndex + dir;
-
-  const maxIdx = todayWeekIndex_(); // clamp forward-most row to the current week
-  if (next < 0){
-    targetIndex = 0;
-    triggerEpochClampCue_('wheel:epoch');
-  }else if (next > maxIdx){
-    targetIndex = maxIdx;
-    
-  }else{
-    targetIndex = next;
-  }
-
-  CACHED.transformsDirty = true;
+  __llCommitWeekNav_((targetIndex|0) + dir, { snap:false, applyNow:false, syncWeeks:false, reason:'wheel:epoch' });
 }
 
 // ============================================
@@ -5752,17 +5760,7 @@ if (e.key === "ArrowUp" || e.key === "ArrowDown"){
   e.preventDefault();
   const dir = (e.key === "ArrowDown") ? -1 : +1;
   const step = e.shiftKey ? 7 : 1;
-  const next = targetIndex + dir * step;
-  const maxIdx = todayWeekIndex_(); // clamp forward-most row to the current week
-  if (next < 0){ targetIndex = 0; triggerEpochClampCue_('keys:epoch'); }
-  else if (next > maxIdx){ targetIndex = maxIdx;  }
-  else targetIndex = next;
-
-  // Snap immediately so the back-row preview updates instantly on key press.
-  currentOffset = targetIndex;
-  CACHED.transformsDirty = true;
-  try { applyTransforms(performance.now()); } catch(err) {}
-
+  __llCommitWeekNav_((targetIndex|0) + (dir * step), { snap:true, applyNow:true, syncWeeks:false, reason:'keys:epoch' });
   return;
 }
   });
@@ -7627,6 +7625,64 @@ window.addEventListener('resize', ()=>{
     return bits.join(' | ');
   }
 
+function __llClearSelectionVisuals_(){
+  document.querySelectorAll('[data-date-key].isSelected,[data-datekey].isSelected')
+    .forEach(el => el.classList.remove('isSelected'));
+  try{ if (__llSelRing) __llSelRing.classList.remove('isOn'); }catch(e){}
+  try{
+    document.querySelectorAll('.llSelHalo').forEach(h => h.remove());
+    document.querySelectorAll('.llSilSelected').forEach(w => w.classList.remove('llSilSelected'));
+    document.querySelectorAll('.hsCore.llHotSelected').forEach(h => h.classList.remove('llHotSelected'));
+    window.__LL_LAST_HS__ = null;
+  }catch(e){}
+}
+function __llBindSelectedWrap_(wrap, reason){
+  if (!wrap) return null;
+  try{ wrap.classList.add('isSelected'); }catch(e){}
+  __llSelectedWrap = wrap;
+  const __selNow = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+  __llLastSelectAtTs = __selNow;
+  __llIgnoreRowClearUntilTs = __selNow + 400;
+  try{
+    const dk = wrap.dataset.dateKey || wrap.dataset.datekey || '';
+    try{ __llSelectedDateKey = dk; }catch(e){}
+    if (typeof dbg_ === 'function'){
+      dbg_(`Flower Selected - ${fmtSelPayload_(wrap)}${reason?` (${reason})`:''}`);
+    }
+  }catch(e){}
+  return wrap;
+}
+function __llScheduleSelectedAdornments_(wrap){
+  try{
+    if (typeof window.applySelectedAdornments === 'function' && wrap){
+      setTimeout(() => window.applySelectedAdornments(wrap), 0);
+    }
+  }catch(e){}
+}
+function __llShowSelectionSkyboxes_(wrap, opts){
+  opts = opts || {};
+  if (!wrap) return;
+  const deferMs = opts.deferMs || 0;
+  if (__llBoxShowTimer){ clearTimeout(__llBoxShowTimer); __llBoxShowTimer = null; }
+  const run = ()=>{
+    try{
+      if (window.__LLDBG__ && __LLDBG__.step) __LLDBG__.step('showTimer:call', { hasSel: !!__llSelectedWrap });
+      showSkyBoxesForWrap_(wrap);
+    }catch(e){
+      try{
+        if (window.__LLDBG__) __LLDBG__.log('ERROR: showSkyBoxesForWrap_ threw: ' + (e && e.message));
+        if (window.__LLDBG__ && e && e.stack) __LLDBG__.log(String(e.stack));
+      }catch(_){}
+    }
+    __llBoxShowTimer = null;
+  };
+  if (deferMs > 0){
+    if (window.__LLDBG__ && __LLDBG__.step) __LLDBG__.step('showTimer:schedule', { hasSel: !!__llSelectedWrap, id: (wrap && wrap.dataset && wrap.dataset.id) || null });
+    __llBoxShowTimer = setTimeout(run, deferMs);
+  }else{
+    run();
+  }
+}
 function clearSelection_(reason, dir){
   const __now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
   if(reason === 'row change' && __now < (__llIgnoreRowClearUntilTs || 0)){
@@ -7649,20 +7705,8 @@ function clearSelection_(reason, dir){
   try{ hideSkyBoxes_(reason || 'clear', dir); }catch(e){}
 
   // Core selection flag
-  document.querySelectorAll('[data-date-key].isSelected,[data-datekey].isSelected')
-    .forEach(el => el.classList.remove('isSelected'));
+  __llClearSelectionVisuals_();
   __llSelectedWrap = null;
-  try{ if (__llSelRing) __llSelRing.classList.remove('isOn'); }catch(e){}
-
-  // Clear Option-A adornments (even if that module's click handler doesn't run)
-  try{
-    // remove halos
-    document.querySelectorAll('.llSelHalo').forEach(h => h.remove());
-    // clear silhouette and hotspot ring classes
-    document.querySelectorAll('.llSilSelected').forEach(w => w.classList.remove('llSilSelected'));
-    document.querySelectorAll('.hsCore.llHotSelected').forEach(h => h.classList.remove('llHotSelected'));
-    window.__LL_LAST_HS__ = null;
-  }catch(e){}
 }
 
 function rebindSelectionToVisibleWrap_(why){
@@ -7686,82 +7730,21 @@ function rebindSelectionToVisibleWrap_(why){
 
 
 function setSelection_(wrap){
-  // Prevent other document-level click handlers from immediately clearing selection
-  // during this same event cycle.
   __llMarkSuppressDocClear_();
   const prev = __llSelectedWrap;
 
-  // If clicking the already-selected flower, do nothing.
   if (prev && wrap && prev === wrap) return;
 
-  // Switching between flowers: fade out current boxes, then fade in new boxes.
-  if (prev && wrap && prev !== wrap){
-    clearSelection_('switch');
-    wrap.classList.add('isSelected');
-    __llSelectedWrap = wrap;
-  const __selNow = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-  __llLastSelectAtTs = __selNow;
-  __llIgnoreRowClearUntilTs = __selNow + 400;
-
-    try{
-      const dk = wrap.dataset.dateKey || wrap.dataset.datekey || '';
-      try{ __llSelectedDateKey = dk; }catch(e){}
-      const lvl = getWrapLevel_(wrap);
-      if (typeof dbg_ === 'function'){
-        dbg_(`Flower Selected - ${fmtSelPayload_(wrap)} (switch)`);
-      }
-    }catch(e){}
-
-    if (__llBoxShowTimer){ clearTimeout(__llBoxShowTimer); __llBoxShowTimer = null; }
-    if (window.__LLDBG__ && __LLDBG__.step) __LLDBG__.step('showTimer:schedule', { hasSel: !!__llSelectedWrap, id: (__llSelectedWrap && __llSelectedWrap.dataset && __llSelectedWrap.dataset.id) || null });
-    __llBoxShowTimer = setTimeout(()=>{
-      try{
-        if (window.__LLDBG__ && __LLDBG__.step) __LLDBG__.step('showTimer:call', { hasSel: !!__llSelectedWrap });
-        showSkyBoxesForWrap_(__llSelectedWrap);
-      }catch(e){
-        if (window.__LLDBG__) __LLDBG__.log('ERROR: showSkyBoxesForWrap_ threw: ' + (e && e.message));
-        if (window.__LLDBG__ && e && e.stack) __LLDBG__.log(String(e.stack));
-      }
-      __llBoxShowTimer = null;
-    }, 240);
-
-    // Allow Option-A adornments (halo/ring) to position after layout
-    try{
-      if (typeof window.applySelectedAdornments === 'function'){
-        setTimeout(() => window.applySelectedAdornments(wrap), 0);
-      }
-    }catch(e){}
-
+  if (!wrap){
+    clearSelection_('clear');
     return;
   }
 
-  // Fresh select or clear
-  clearSelection_(wrap ? 'new selection' : 'clear');
-  if (wrap){
-    wrap.classList.add('isSelected');
-    __llSelectedWrap = wrap;
-    try{
-      const dk = wrap.dataset.dateKey || wrap.dataset.datekey || '';
-      try{ __llSelectedDateKey = dk; }catch(e){}
-      const lvl = getWrapLevel_(wrap);
-      if (typeof dbg_ === 'function'){
-        dbg_(`Flower Selected - ${fmtSelPayload_(wrap)}`);
-      }
-    }catch(e){}
-    try{ 
-      showSkyBoxesForWrap_(wrap);
-    }catch(e){
-      try{
-        logLine('ERROR: showSkyBoxesForWrap_ threw: '+(e && e.message ? e.message : e));
-        if (window.__LLDBG__ && __LLDBG__.step) __LLDBG__.step('show:error', {msg: (e && e.message) ? e.message : String(e), stack: (e && e.stack) ? String(e.stack).split('\\n').slice(0,3).join('\\n') : null});
-      }catch(_){}
-    }
-    try{
-      if (typeof window.applySelectedAdornments === 'function'){
-        setTimeout(() => window.applySelectedAdornments(wrap), 0);
-      }
-    }catch(e){}
-  }
+  const mode = prev && prev !== wrap ? 'switch' : 'new selection';
+  clearSelection_(mode);
+  __llBindSelectedWrap_(wrap, mode === 'switch' ? 'switch' : '');
+  __llShowSelectionSkyboxes_(wrap, { deferMs: mode === 'switch' ? 240 : 0 });
+  __llScheduleSelectedAdornments_(wrap);
 }
 
 
@@ -7824,6 +7807,24 @@ document.addEventListener('keydown', (ev) => {
 });
 
 
+function __llGetSelectableFrontRowWraps_(){
+  try{
+    const fi = (typeof lastFrontIndex !== 'undefined') ? lastFrontIndex : null;
+    if (fi === null || fi === undefined) return [];
+    return (flowerWrapEls || [])
+      .filter(w => w && w.isConnected && w.dataset && String(w.dataset.weekIndex) === String(fi) && (w.dataset.dateKey || w.dataset.datekey))
+      .sort((a,b)=> (parseInt(a.dataset.dayIndex||'0',10) - parseInt(b.dataset.dayIndex||'0',10)));
+  }catch(e){ return []; }
+}
+function __llCycleSelection_(dir){
+  const list = __llGetSelectableFrontRowWraps_();
+  if (!list.length) return null;
+  const cur = (__llSelectedWrap && __llSelectedWrap.isConnected) ? __llSelectedWrap : null;
+  let idx = cur ? list.indexOf(cur) : -1;
+  idx = (dir > 0) ? ((idx < 0) ? 0 : (idx + 1) % list.length) : ((idx < 0) ? (list.length - 1) : (idx - 1 + list.length) % list.length);
+  return list[idx] || null;
+}
+
 // Arrow key cycling (E1): Left/Right to previous/next selectable flower in the current front row
 document.addEventListener('keydown', (ev) => {
   if (ev.key !== 'ArrowLeft' && ev.key !== 'ArrowRight') return;
@@ -7833,36 +7834,14 @@ document.addEventListener('keydown', (ev) => {
   const tag = (t && t.tagName) ? String(t.tagName).toUpperCase() : '';
   if (tag === 'INPUT' || tag === 'TEXTAREA' || (t && t.isContentEditable)) return;
 
-  // Only operate if we have a current front row index available
   try{
-    const fi = (typeof lastFrontIndex !== 'undefined') ? lastFrontIndex : null;
-    if (fi === null || fi === undefined) return;
-
-    // Collect real flowers for this front row (gap-safe)
-    const list = (flowerWrapEls || [])
-      .filter(w => w && w.isConnected && w.dataset && String(w.dataset.weekIndex) === String(fi) && (w.dataset.dateKey || w.dataset.datekey))
-      .sort((a,b)=> (parseInt(a.dataset.dayIndex||'0',10) - parseInt(b.dataset.dayIndex||'0',10)));
-
-    if (!list.length) return;
-
-    const cur = (__llSelectedWrap && __llSelectedWrap.isConnected) ? __llSelectedWrap : null;
-    let idx = cur ? list.indexOf(cur) : -1;
-
-    if (ev.key === 'ArrowRight'){
-      idx = (idx < 0) ? 0 : (idx + 1) % list.length;
-    } else {
-      idx = (idx < 0) ? (list.length - 1) : (idx - 1 + list.length) % list.length;
-    }
-
+    const next = __llCycleSelection_(ev.key === 'ArrowRight' ? +1 : -1);
+    if (!next) return;
     ev.preventDefault();
     ev.stopPropagation();
-
-    const next = list[idx];
-    if (next){
-      setSelection_(next);
-      if (typeof dbg_ === 'function'){
-        dbg_(`Arrow ${ev.key === 'ArrowRight' ? 'Right' : 'Left'} -> select`);
-      }
+    setSelection_(next);
+    if (typeof dbg_ === 'function'){
+      dbg_(`Arrow ${ev.key === 'ArrowRight' ? 'Right' : 'Left'} -> select`);
     }
   }catch(e){}
 });
@@ -9535,14 +9514,14 @@ window.applySelectedAdornments = applySelectedAdornments;
 
 
 <script>
-// v99.3.72_DeeperRefactorRegenerated: unified BRX/back-row hard-disable controller.
+// v99.3.73_Phase1_NavigationSelectionRefactor: unified BRX/back-row hard-disable controller.
 (function(){
   try{
     window.__PHASEA_DISABLE_BRX__ = true;
     window.__LL_DISABLE_BACKHILL__ = true;
     window.BRX_DISABLE_LEGACY_BACKROWS = true;
 
-    const VERSION = 'v99.3.72_DeeperRefactorRegenerated';
+    const VERSION = 'v99.3.73_Phase1_NavigationSelectionRefactor';
     const hideLegacyGroups = () => {
       ['backRowsG','gridWeeksG','hillGuidesG','gridOverlayG','gridWeeksOverlay','brxHillPngG','brxHillDbgG']
         .forEach(id => {
