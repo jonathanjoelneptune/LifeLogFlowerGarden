@@ -13,7 +13,7 @@
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v99.3.77_Phase4_SystemHardeningFix
+  v99.3.82_DSTCalendarWeekFix
     + Consolidate duplicate Photo Reel skybox CSS into one block
     + Merge duplicate selection-ring state rules
     + Remove redundant early wireframe CSS copy
@@ -126,7 +126,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v99.3.77_Phase4_SystemHardeningFix';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v99.3.82_DSTCalendarWeekFix';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -254,7 +254,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 function renderBackRows(){ /* disabled */ }
 
 (function(){
-  const VERSION = 'v99.3.77_Phase4_SystemHardeningFix';
+  const VERSION = 'v99.3.82_DSTCalendarWeekFix';
 
   // ---- Canonical version globals ----
   window.APP_VERSION = VERSION;
@@ -318,7 +318,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v99.3.77_Phase4_SystemHardeningFix.html</title>
+<title>garden_v99.3.82_DSTCalendarWeekFix.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -1873,7 +1873,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v99.3.77_Phase4_SystemHardeningFix.html • v99.3.77_Phase4_SystemHardeningFix • Built: 2026-03-10T15:28:40Z UTC</div>
+  <div id="llPinkBanner">garden_v99.3.82_DSTCalendarWeekFix.html • v99.3.82_DSTCalendarWeekFix • Built: 2026-03-10T15:28:40Z UTC</div>
 
 
 <script>
@@ -1887,8 +1887,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.3.77_Phase4_SystemHardeningFix.html</span><br>
-Version: <span id="__bannerVersion">v99.3.77_Phase4_SystemHardeningFix</span><br>
+File: <span id="__bannerFileName">garden_v99.3.82_DSTCalendarWeekFix.html</span><br>
+Version: <span id="__bannerVersion">v99.3.82_DSTCalendarWeekFix</span><br>
 Created: 2026-03-10T15:28:40Z</span></div>
 <script>
 (function(){
@@ -1904,7 +1904,7 @@ Created: 2026-03-10T15:28:40Z</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.3.77_Phase4_SystemHardeningFix loaded", new Date().toISOString());
+  console.log("[VERSION] v99.3.82_DSTCalendarWeekFix loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -2510,7 +2510,7 @@ window.__LL_hillTopAtX_fill = function(x, yTopGuess, yBottom){
 <!-- Debug Panel -->
 <div aria-hidden="false" id="dbgPanel">
   <div class="hdr">
-    <div class="t">LifeLog DEBUG v99.3.77_Phase4_SystemHardeningFix (press D)</div>
+    <div class="t">LifeLog DEBUG v99.3.82_DSTCalendarWeekFix (press D)</div>
     <div class="btns">
       <button id="dbgCopy" type="button">Copy</button>
       <button id="dbgClear" type="button">Clear</button>
@@ -2868,7 +2868,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   </div>
 
   <div class="util hidden" id="util">
-    <div class="utilTitle">LifeLog Garden Walk v99.3.77_Phase4_SystemHardeningFix</div>
+    <div class="utilTitle">LifeLog Garden Walk v99.3.82_DSTCalendarWeekFix</div>
     <div class="utilSub">Scroll to walk through weeks. Press H to hide/show this panel.</div>
 	    <div class="row">
 	      <label>Wireframe</label>
@@ -3048,7 +3048,7 @@ function wrapLLDBGStep_(){
     }
   }catch(e){}
 }
-dbg_('v99.3.77_Phase4_SystemHardeningFix.0: Main script starting');
+dbg_('v99.3.82_DSTCalendarWeekFix.0: Main script starting');
 
 // ============================================
 // Constants
@@ -3077,19 +3077,21 @@ const WEEK_LEVEL_NAMES = { 1:"Quiet Week", 2:"Gentle Week", 3:"Strong Week", 4:"
 const GARDEN_EPOCH_DATEKEY = "2025-12-15"; 
 // Compute weekIndex (0-based) for today's date relative to GARDEN_EPOCH_DATEKEY.
 function __llComputeFocusWeekIndexForToday_(){
-  // KeepFocusToday: the rendered week window is built around "today".
-  // The local band index for today is PAST_WEEKS_RENDERED (past weeks + current week).
-  // Do NOT return an epoch-based weekIndex here; syncRenderedWeeks_ expects a 0..(bands.length-1) index.
+  // KeepFocusToday must use the garden's absolute epoch-based week index.
+  // Returning a local rendered-slot index here can anchor rebuilds to the wrong week.
   try{
-    const idx = (typeof PAST_WEEKS_RENDERED === "number" && isFinite(PAST_WEEKS_RENDERED)) ? Math.floor(PAST_WEEKS_RENDERED) : 0;
-    // Clamp to band range when available
-    if(typeof bands !== "undefined" && bands && bands.length){
-      return Math.max(0, Math.min(bands.length-1, idx));
+    if (typeof todayWeekIndex_ === "function") {
+      const idx = todayWeekIndex_();
+      if (typeof idx === "number" && isFinite(idx)) return Math.max(0, Math.floor(idx));
     }
-    return Math.max(0, idx);
-  }catch(e){
-    return 0;
-  }
+  }catch(e){}
+  try{
+    if (typeof weekIndexFromDate_ === "function") {
+      const idx = weekIndexFromDate_(new Date());
+      if (typeof idx === "number" && isFinite(idx)) return Math.max(0, Math.floor(idx));
+    }
+  }catch(e){}
+  return 0;
 }
 
 // Monday
@@ -3923,19 +3925,25 @@ function epochMonday_(){
 
 const __EPOCH_MON__ = epochMonday_();
 
-function mondayMsForWeekIndex_(weekIndex) {
-  // weekIndex 0 corresponds to the ISO week containing GARDEN_EPOCH_DATEKEY (Monday-based)
-  const base = __EPOCH_MON__.getTime();
-  return base + (Number(weekIndex) * WEEK_MS);
+function mondayDateForWeekIndex_(weekIndex) {
+  // Build civil calendar Mondays using setDate(), not fixed millisecond week jumps.
+  // This avoids DST rollover bugs where a local week is not exactly 7*24 hours long.
+  const d = new Date(__EPOCH_MON__.getTime());
+  d.setHours(0,0,0,0);
+  d.setDate(d.getDate() + (Number(weekIndex) * 7));
+  d.setHours(0,0,0,0);
+  return d;
 }
 
-// ISO week key like "2026-W04" from a millisecond timestamp.
-// Uses UTC math to avoid local timezone DST edge cases.
-function isoWeekKeyFromMs_(ms) {
-  const d = new Date(ms);
-  // shift to UTC midnight-ish
-  const utc = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
-  // ISO week date algorithm: move to Thursday in current week
+function mondayMsForWeekIndex_(weekIndex) {
+  return mondayDateForWeekIndex_(weekIndex).getTime();
+}
+
+// ISO week key like "2026-W04" from a Date object at local midnight.
+// Uses UTC calendar math based on Y/M/D to avoid local timezone DST edge cases.
+function isoWeekKeyFromDate_(dateObj) {
+  const d = (dateObj instanceof Date) ? new Date(dateObj.getTime()) : new Date(dateObj);
+  const utc = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
   const day = utc.getUTCDay() || 7; // Mon=1..Sun=7
   utc.setUTCDate(utc.getUTCDate() + 4 - day);
   const year = utc.getUTCFullYear();
@@ -3944,10 +3952,17 @@ function isoWeekKeyFromMs_(ms) {
   return `${year}-W${String(week).padStart(2, "0")}`;
 }
 
+function isoWeekKeyFromMs_(ms) {
+  return isoWeekKeyFromDate_(new Date(ms));
+}
+
 function weekIndexFromDate_(dateObj){
   const mon = startOfISOWeekMonday(dateObj);
-  const ms = mon.getTime() - __EPOCH_MON__.getTime();
-  return Math.floor(ms / (7*24*60*60*1000));
+  const epoch = __EPOCH_MON__;
+  const monUtc = Date.UTC(mon.getFullYear(), mon.getMonth(), mon.getDate());
+  const epochUtc = Date.UTC(epoch.getFullYear(), epoch.getMonth(), epoch.getDate());
+  const dayDelta = Math.round((monUtc - epochUtc) / DAY_MS);
+  return Math.floor(dayDelta / 7);
 }
 
 function todayWeekIndex_(){
@@ -3961,9 +3976,10 @@ function todayDayIndexInWeek_(){
 }
 
 function weekModelForIndex_(weekIndex){
-  const mondayMs = mondayMsForWeekIndex_(weekIndex);
+  const mondayDate = mondayDateForWeekIndex_(weekIndex);
+  const mondayMs = mondayDate.getTime();
 
-  const weekKey = isoWeekKeyFromMs_(mondayMs); // "YYYY-Www"
+  const weekKey = isoWeekKeyFromDate_(mondayDate); // "YYYY-Www"
   const parts = weekKey.split('-W');
   const weekYear = parseInt(parts[0], 10);
   const weekNum  = parseInt(parts[1], 10);
@@ -3992,7 +4008,9 @@ function weekModelForIndex_(weekIndex){
     const todayKey = dateKeyFromDate_(new Date());
 const days = [];
   for (let d=0; d<7; d++){
-    const dateObj = new Date(mondayMs + d*86400000);
+    const dateObj = new Date(mondayDate.getTime());
+    dateObj.setDate(mondayDate.getDate() + d);
+    dateObj.setHours(0,0,0,0);
     const dateKey = dateKeyFromDate_(dateObj);
     const monthIndex = dateObj.getMonth();
 
@@ -4557,7 +4575,8 @@ if(window.__llForceTodayAfterExport_ && fullRebuild){
         band.dataset.rendered = "";
         band.innerHTML = "";
         // Recompute week model so dayData is rebuilt from current source
-        band._weekData = weekModelForIndex_(i);
+        const bandWeekIdx = Number.isFinite(Number(band.dataset && band.dataset.weekIndex)) ? Number(band.dataset.weekIndex) : (Number.isFinite(Number(band._weekIdx)) ? Number(band._weekIdx) : i);
+        band._weekData = weekModelForIndex_(bandWeekIdx);
       }
       if (__llRenderedWeeks && typeof __llRenderedWeeks.clear === "function") __llRenderedWeeks.clear();
     }catch(e){
@@ -4628,12 +4647,43 @@ function renderBandFlowers(band){
   for (let d = 0; d < 7; d++){
     const dayData = week.days[d];
     if (!dayData) continue;
-    // Guard: avoid NaN SVG geometry when export data is missing (level must be 1-5)
-    if (!dayData.render || !(Number.isFinite(dayData.level) && dayData.level >= 1 && dayData.level <= 5)) continue;
+
+    // Future days in the active week (and any other non-renderable day slots) should still
+    // exist visually as blank placeholders so the row appears on Monday and fills in through Sunday.
+    const hasRenderableFlower = !!(dayData.render && Number.isFinite(dayData.level) && dayData.level >= 1 && dayData.level <= 5);
 
     const slot = document.createElement("div");
     slot.className = "flowerSlot";
     slot.style.left = (((d + 0.5) / 7) * 100) + "%";
+    slot.dataset.dateKey = dayData.dateKey;
+    slot.dataset.weekIndex = String(weekIdx);
+    slot.dataset.dayIndex = String(d);
+
+    if (!hasRenderableFlower) {
+      slot.classList.add("isPlaceholder");
+      slot.style.pointerEvents = "none";
+
+      const ph = document.createElement("div");
+      ph.className = "flowerPlaceholder";
+      ph.setAttribute("aria-hidden", "true");
+      ph.style.cssText = "position:absolute;left:50%;bottom:10px;transform:translateX(-50%);width:16px;height:16px;border-radius:999px;background:rgba(255,255,255,0.14);box-shadow:0 0 0 1px rgba(255,255,255,0.18) inset, 0 1px 6px rgba(0,0,0,0.14);opacity:0.95;";
+
+      const stem = document.createElement("div");
+      stem.className = "flowerPlaceholderStem";
+      stem.setAttribute("aria-hidden", "true");
+      stem.style.cssText = "position:absolute;left:50%;bottom:0;transform:translateX(-50%);width:4px;height:54px;border-radius:999px;background:linear-gradient(180deg, rgba(148,188,132,0.72), rgba(93,128,84,0.86));opacity:0.82;";
+
+      const tuft = document.createElement("div");
+      tuft.className = "baseTuft";
+      const ts = mulberry32(hash32FromString("baseTuftPlaceholder_" + dayData.uid));
+      tuft.innerHTML = tuftSvg("baseph_" + dayData.uid, 5, 0.82 + ts()*0.28);
+
+      slot.appendChild(stem);
+      slot.appendChild(ph);
+      slot.appendChild(tuft);
+      band.appendChild(slot);
+      continue;
+    }
 
     const r = mulberry32(hash32FromString("wrap_" + dayData.uid));
     const jx = state.alignedRows ? 0 : (r() * 18 - 9);
@@ -4739,7 +4789,7 @@ function refreshFrontGrass(){
 // ============================================
 
 // ============================================
-// v99.3.77_Phase4_SystemHardeningFix: keep back-row flowers horizontally de-clumped
+// v99.3.82_DSTCalendarWeekFix: keep back-row flowers horizontally de-clumped
 // ============================================
 const __LL_BACK_SPREAD_MAX_BEHIND = 5;    // reach near-full spread quickly (about 4-6 rows back)
 const __LL_BACK_SPREAD_EDGE_PAD   = 0.006; // keep a tiny inset so nothing clips at extreme edges
@@ -9102,7 +9152,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.__LL_LAST_PTR_X__ = window.innerWidth/2;
   window.__LL_LAST_PTR_Y__ = window.innerHeight/2;
   window.addEventListener('pointermove', (ev)=>{ window.__LL_LAST_PTR_X__ = ev.clientX; window.__LL_LAST_PTR_Y__ = ev.clientY; }, {passive:true});
-dbg_('v99.3.77_Phase4_SystemHardeningFix.0: DOMContentLoaded');
+dbg_('v99.3.82_DSTCalendarWeekFix.0: DOMContentLoaded');
 
   cacheDomRefs();
   try{ wrapLLDBGStep_(); }catch(e){}
@@ -9248,7 +9298,7 @@ window.__LL_BACKROWS_ANCHOR_MATCHED = true; // prevent later global overrides
   }catch(e){}
 
 
-  dbg_('v99.3.77_Phase4_SystemHardeningFix.0: Initialization complete');
+  dbg_('v99.3.82_DSTCalendarWeekFix.0: Initialization complete');
 });
 })();
 
@@ -9626,7 +9676,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 
 
 <script>
-// v99.3.77_Phase4_SystemHardeningFix lifecycle manager
+// v99.3.82_DSTCalendarWeekFix lifecycle manager
 (function(){
   if (window.__LL_SYS__) return;
   const SYS = { timeouts:new Set(), intervals:new Set(), observers:new Set(), listeners:[] };
@@ -9642,14 +9692,14 @@ window.applySelectedAdornments = applySelectedAdornments;
 </script>
 
 <script>
-// v99.3.77_Phase4_SystemHardeningFix: unified BRX/back-row hard-disable controller.
+// v99.3.82_DSTCalendarWeekFix: unified BRX/back-row hard-disable controller.
 (function(){
   try{
     window.__PHASEA_DISABLE_BRX__ = true;
     window.__LL_DISABLE_BACKHILL__ = true;
     window.BRX_DISABLE_LEGACY_BACKROWS = true;
 
-    const VERSION = 'v99.3.77_Phase4_SystemHardeningFix';
+    const VERSION = 'v99.3.82_DSTCalendarWeekFix';
     const hideLegacyGroups = () => {
       ['backRowsG','gridWeeksG','hillGuidesG','gridOverlayG','gridWeeksOverlay','brxHillPngG','brxHillDbgG']
         .forEach(id => {
