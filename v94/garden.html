@@ -13,7 +13,7 @@
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v99.3.86_WeeklySummaryBannerFadeAndStatsFix
+  v99.3.87_WeeklySummaryBannerLayoutPolish
     + Consolidate duplicate Photo Reel skybox CSS into one block
     + Merge duplicate selection-ring state rules
     + Remove redundant early wireframe CSS copy
@@ -126,7 +126,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v99.3.86_WeeklySummaryBannerFadeAndStatsFix';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v99.3.87_WeeklySummaryBannerLayoutPolish';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -254,7 +254,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 function renderBackRows(){ /* disabled */ }
 
 (function(){
-  const VERSION = 'v99.3.86_WeeklySummaryBannerFadeAndStatsFix';
+  const VERSION = 'v99.3.87_WeeklySummaryBannerLayoutPolish';
 
   // ---- Canonical version globals ----
   window.APP_VERSION = VERSION;
@@ -318,7 +318,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v99.3.86_WeeklySummaryBannerFadeAndStatsFix.html</title>
+<title>garden_v99.3.87_WeeklySummaryBannerLayoutPolish.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -1236,26 +1236,27 @@ body.llHitboxOn .weekBand:not(.isFront) .hsCore { stroke: transparent; fill: tra
 .weekHeader{
   display:block !important;
   position: fixed;
-  top: calc(var(--stagePad, 22px) + 12px);
-  right: var(--stagePad, 22px);
-  z-index: 9999;
-  min-width: 268px;
-  max-width: min(430px, calc(100vw - (var(--stagePad, 22px) * 2)));
-  padding: 14px 16px;
+  top: calc(var(--stagePad, 22px) + 10px);
+  right: calc(var(--stagePad, 22px) + 10px);
+  z-index: 4200;
+  min-width: 360px;
+  max-width: min(980px, calc(100vw - ((var(--stagePad, 22px) + 10px) * 2)));
+  width: max-content;
+  padding: 13px 15px;
   border-radius: 16px;
   background:
     radial-gradient(140% 140% at 30% 18%,
-      rgba(255,255,255,0.50) 0%,
-      rgba(255,255,255,0.26) 44%,
-      rgba(255,255,255,0.12) 100%),
+      rgba(255,255,255,0.34) 0%,
+      rgba(255,255,255,0.16) 44%,
+      rgba(255,255,255,0.07) 100%),
     linear-gradient(180deg,
-      rgba(255,255,255,0.22) 0%,
-      rgba(255,255,255,0.10) 100%),
+      rgba(255,255,255,0.13) 0%,
+      rgba(255,255,255,0.05) 100%),
     linear-gradient(180deg,
-      rgba(var(--llGlassTintRGB, 255,248,236), var(--llGlassTintA, 0.09)) 0%,
+      rgba(var(--llGlassTintRGB, 255,248,236), var(--llGlassTintA, 0.05)) 0%,
       rgba(var(--llGlassTintRGB, 255,248,236), 0.00) 100%);
-  border: 1px solid rgba(255,255,255,0.22);
-  box-shadow: 0 10px 24px rgba(0,0,0,0.14);
+  border: 1px solid rgba(255,255,255,0.18);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.10);
   backdrop-filter: blur(16px) saturate(1.08);
   -webkit-backdrop-filter: blur(16px) saturate(1.08);
   pointer-events: none;
@@ -1264,17 +1265,17 @@ body.llHitboxOn .weekBand:not(.isFront) .hsCore { stroke: transparent; fill: tra
 [data-stars-on="1"] .weekHeader{
   background:
     radial-gradient(140% 140% at 30% 18%,
-      rgba(255,255,255,0.58) 0%,
-      rgba(255,255,255,0.30) 46%,
-      rgba(255,255,255,0.15) 100%),
+      rgba(255,255,255,0.38) 0%,
+      rgba(255,255,255,0.17) 46%,
+      rgba(255,255,255,0.08) 100%),
     linear-gradient(180deg,
-      rgba(255,255,255,0.26) 0%,
-      rgba(255,255,255,0.12) 100%),
+      rgba(255,255,255,0.15) 0%,
+      rgba(255,255,255,0.06) 100%),
     linear-gradient(180deg,
-      rgba(var(--llGlassTintRGB, 226,232,255), var(--llGlassTintA, 0.10)) 0%,
+      rgba(var(--llGlassTintRGB, 226,232,255), var(--llGlassTintA, 0.06)) 0%,
       rgba(var(--llGlassTintRGB, 226,232,255), 0.00) 100%);
-  border-color: rgba(255,255,255,0.26);
-  box-shadow: 0 12px 26px rgba(0,0,0,0.18);
+  border-color: rgba(255,255,255,0.20);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.14);
 }
 .weekHeader .top,
 .weekHeader .mid,
@@ -1289,20 +1290,23 @@ body.llHitboxOn .weekBand:not(.isFront) .hsCore { stroke: transparent; fill: tra
   transform: translateY(-4px);
   filter: blur(1px);
 }
-.weekHeader .top{ font-weight:800; font-size:13px; color:rgba(0,0,0,0.88); white-space:normal; line-height:1.2; }
-.weekHeader .mid{ margin-top:3px; font-size:11px; color:rgba(0,0,0,0.68); white-space:normal; line-height:1.25; }
-.weekHeader .bot{ margin-top:8px; font-size:11px; color:rgba(0,0,0,0.76); white-space:normal; line-height:1.35; }
+.weekHeader .top{ font-weight:800; font-size:13px; color:rgba(0,0,0,0.88); white-space:nowrap; line-height:1.2; }
+.weekHeader .mid{ margin-top:3px; font-size:11px; color:rgba(0,0,0,0.64); white-space:nowrap; line-height:1.2; }
+.weekHeader .mid:empty{ display:none; margin-top:0; }
+.weekHeader .bot{ margin-top:8px; font-size:11px; color:rgba(0,0,0,0.76); line-height:1.2; display:flex; flex-wrap:nowrap; gap:6px; align-items:center; white-space:nowrap; overflow:hidden; }
 .weekHeader .bot .wkPill{
-  display:inline-block;
-  margin-right:6px;
-  margin-bottom:6px;
+  display:inline-flex;
+  align-items:center;
+  margin:0;
   padding:4px 9px;
   border-radius:999px;
-  background:rgba(255,255,255,0.22);
-  border:1px solid rgba(255,255,255,0.24);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.12);
+  background:rgba(255,255,255,0.16);
+  border:1px solid rgba(255,255,255,0.20);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.10);
+  flex:0 0 auto;
 }
-.weekHeader .bot .wkDim{ color:rgba(0,0,0,0.56); }
+.weekHeader .bot .wkDim{ color:rgba(0,0,0,0.52); }
+
 /* top-right weekly summary banner */
 #weekNavButtons{
   position: fixed;
@@ -1975,7 +1979,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v99.3.86_WeeklySummaryBannerFadeAndStatsFix.html • v99.3.86_WeeklySummaryBannerFadeAndStatsFix • Built: 2026-03-10T16:05:00Z UTC</div>
+  <div id="llPinkBanner">garden_v99.3.87_WeeklySummaryBannerLayoutPolish.html • v99.3.87_WeeklySummaryBannerLayoutPolish • Built: 2026-03-10T16:05:00Z UTC</div>
 
 
 <script>
@@ -1989,8 +1993,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.3.86_WeeklySummaryBannerFadeAndStatsFix.html</span><br>
-Version: <span id="__bannerVersion">v99.3.86_WeeklySummaryBannerFadeAndStatsFix</span><br>
+File: <span id="__bannerFileName">garden_v99.3.87_WeeklySummaryBannerLayoutPolish.html</span><br>
+Version: <span id="__bannerVersion">v99.3.87_WeeklySummaryBannerLayoutPolish</span><br>
 Created: 2026-03-10T16:05:00Z</span></div>
 <script>
 (function(){
@@ -2006,7 +2010,7 @@ Created: 2026-03-10T16:05:00Z</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.3.86_WeeklySummaryBannerFadeAndStatsFix loaded", new Date().toISOString());
+  console.log("[VERSION] v99.3.87_WeeklySummaryBannerLayoutPolish loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -2612,7 +2616,7 @@ window.__LL_hillTopAtX_fill = function(x, yTopGuess, yBottom){
 <!-- Debug Panel -->
 <div aria-hidden="false" id="dbgPanel">
   <div class="hdr">
-    <div class="t">LifeLog DEBUG v99.3.86_WeeklySummaryBannerFadeAndStatsFix (press D)</div>
+    <div class="t">LifeLog DEBUG v99.3.87_WeeklySummaryBannerLayoutPolish (press D)</div>
     <div class="btns">
       <button id="dbgCopy" type="button">Copy</button>
       <button id="dbgClear" type="button">Clear</button>
@@ -2970,7 +2974,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   </div>
 
   <div class="util hidden" id="util">
-    <div class="utilTitle">LifeLog Garden Walk v99.3.86_WeeklySummaryBannerFadeAndStatsFix</div>
+    <div class="utilTitle">LifeLog Garden Walk v99.3.87_WeeklySummaryBannerLayoutPolish</div>
     <div class="utilSub">Scroll to walk through weeks. Press H to hide/show this panel.</div>
 	    <div class="row">
 	      <label>Wireframe</label>
@@ -3150,7 +3154,7 @@ function wrapLLDBGStep_(){
     }
   }catch(e){}
 }
-dbg_('v99.3.86_WeeklySummaryBannerFadeAndStatsFix.0: Main script starting');
+dbg_('v99.3.87_WeeklySummaryBannerLayoutPolish.0: Main script starting');
 
 // ============================================
 // Constants
@@ -4897,7 +4901,7 @@ function refreshFrontGrass(){
 // ============================================
 
 // ============================================
-// v99.3.86_WeeklySummaryBannerFadeAndStatsFix: keep back-row flowers horizontally de-clumped
+// v99.3.87_WeeklySummaryBannerLayoutPolish: keep back-row flowers horizontally de-clumped
 // ============================================
 const __LL_BACK_SPREAD_MAX_BEHIND = 5;    // reach near-full spread quickly (about 4-6 rows back)
 const __LL_BACK_SPREAD_EDGE_PAD   = 0.006; // keep a tiny inset so nothing clips at extreme edges
@@ -5218,8 +5222,8 @@ function updateFrontText(focusWeekIndex){
   if (wh) wh.classList.add('is-fading');
   window.clearTimeout(window.__llWeekHeaderFadeTimer__);
   window.__llWeekHeaderFadeTimer__ = window.setTimeout(() => {
-    if (DOM.whTop) DOM.whTop.textContent = `${monthYear} • ${meta2.iso}`;
-    if (DOM.whMid) DOM.whMid.textContent = __llFmtWeekRangeLong_(mon);
+    if (DOM.whTop) DOM.whTop.textContent = `${__llFmtWeekRangeLong_(mon)} • ${meta2.iso}`;
+    if (DOM.whMid) DOM.whMid.textContent = '';
     if (DOM.whBot) DOM.whBot.innerHTML = __llBuildWeeklySummary_(meta2);
     requestAnimationFrame(() => { try{ if (wh) wh.classList.remove('is-fading'); }catch(e){} });
   }, 110);
@@ -9310,7 +9314,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.__LL_LAST_PTR_X__ = window.innerWidth/2;
   window.__LL_LAST_PTR_Y__ = window.innerHeight/2;
   window.addEventListener('pointermove', (ev)=>{ window.__LL_LAST_PTR_X__ = ev.clientX; window.__LL_LAST_PTR_Y__ = ev.clientY; }, {passive:true});
-dbg_('v99.3.86_WeeklySummaryBannerFadeAndStatsFix.0: DOMContentLoaded');
+dbg_('v99.3.87_WeeklySummaryBannerLayoutPolish.0: DOMContentLoaded');
 
   cacheDomRefs();
   try{ wrapLLDBGStep_(); }catch(e){}
@@ -9456,7 +9460,7 @@ window.__LL_BACKROWS_ANCHOR_MATCHED = true; // prevent later global overrides
   }catch(e){}
 
 
-  dbg_('v99.3.86_WeeklySummaryBannerFadeAndStatsFix.0: Initialization complete');
+  dbg_('v99.3.87_WeeklySummaryBannerLayoutPolish.0: Initialization complete');
 });
 })();
 
@@ -9834,7 +9838,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 
 
 <script>
-// v99.3.86_WeeklySummaryBannerFadeAndStatsFix lifecycle manager
+// v99.3.87_WeeklySummaryBannerLayoutPolish lifecycle manager
 (function(){
   if (window.__LL_SYS__) return;
   const SYS = { timeouts:new Set(), intervals:new Set(), observers:new Set(), listeners:[] };
@@ -9850,14 +9854,14 @@ window.applySelectedAdornments = applySelectedAdornments;
 </script>
 
 <script>
-// v99.3.86_WeeklySummaryBannerFadeAndStatsFix: unified BRX/back-row hard-disable controller.
+// v99.3.87_WeeklySummaryBannerLayoutPolish: unified BRX/back-row hard-disable controller.
 (function(){
   try{
     window.__PHASEA_DISABLE_BRX__ = true;
     window.__LL_DISABLE_BACKHILL__ = true;
     window.BRX_DISABLE_LEGACY_BACKROWS = true;
 
-    const VERSION = 'v99.3.86_WeeklySummaryBannerFadeAndStatsFix';
+    const VERSION = 'v99.3.87_WeeklySummaryBannerLayoutPolish';
     const hideLegacyGroups = () => {
       ['backRowsG','gridWeeksG','hillGuidesG','gridOverlayG','gridWeeksOverlay','brxHillPngG','brxHillDbgG']
         .forEach(id => {
