@@ -13,7 +13,7 @@
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v99.3.98_DailyHeadlinesSkybox
+  v99.3.99_DailyHeadlinesBoldLead
     + Consolidate duplicate Photo Reel skybox CSS into one block
     + Merge duplicate selection-ring state rules
     + Remove redundant early wireframe CSS copy
@@ -126,7 +126,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v99.3.98_DailyHeadlinesSkybox';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v99.3.99_DailyHeadlinesBoldLead';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -254,7 +254,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 function renderBackRows(){ /* disabled */ }
 
 (function(){
-  const VERSION = 'v99.3.98_DailyHeadlinesSkybox';
+  const VERSION = 'v99.3.99_DailyHeadlinesBoldLead';
 
   // ---- Canonical version globals ----
   window.APP_VERSION = VERSION;
@@ -318,7 +318,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v99.3.98_DailyHeadlinesSkybox.html</title>
+<title>garden_v99.3.99_DailyHeadlinesBoldLead.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -2059,7 +2059,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 <style>
 
-/* --- v99.3.98_DailyHeadlinesSkybox: Daily Headlines skybox typography --- */
+/* --- v99.3.99_DailyHeadlinesBoldLead: Daily Headlines skybox typography --- */
 .llSkyBox[data-idx="2"] .body{ text-align:left !important; }
 .llSkyBox[data-idx="2"] .body .sbHeadlineLine{
   text-align:left !important;
@@ -2076,7 +2076,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v99.3.98_DailyHeadlinesSkybox.html • v99.3.98_DailyHeadlinesSkybox • Built: 2026-03-10T18:35:00Z UTC</div>
+  <div id="llPinkBanner">garden_v99.3.99_DailyHeadlinesBoldLead.html • v99.3.99_DailyHeadlinesBoldLead • Built: 2026-03-10T18:35:00Z UTC</div>
 
 
 <script>
@@ -2090,8 +2090,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.3.98_DailyHeadlinesSkybox.html</span><br>
-Version: <span id="__bannerVersion">v99.3.98_DailyHeadlinesSkybox</span><br>
+File: <span id="__bannerFileName">garden_v99.3.99_DailyHeadlinesBoldLead.html</span><br>
+Version: <span id="__bannerVersion">v99.3.99_DailyHeadlinesBoldLead</span><br>
 Created: 2026-03-10T18:35:00Z</span></div>
 <script>
 (function(){
@@ -2107,7 +2107,7 @@ Created: 2026-03-10T18:35:00Z</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.3.98_DailyHeadlinesSkybox loaded", new Date().toISOString());
+  console.log("[VERSION] v99.3.99_DailyHeadlinesBoldLead loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -2713,7 +2713,7 @@ window.__LL_hillTopAtX_fill = function(x, yTopGuess, yBottom){
 <!-- Debug Panel -->
 <div aria-hidden="false" id="dbgPanel">
   <div class="hdr">
-    <div class="t">LifeLog DEBUG v99.3.98_DailyHeadlinesSkybox (press D)</div>
+    <div class="t">LifeLog DEBUG v99.3.99_DailyHeadlinesBoldLead (press D)</div>
     <div class="btns">
       <button id="dbgCopy" type="button">Copy</button>
       <button id="dbgClear" type="button">Clear</button>
@@ -3075,7 +3075,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   </div>
 
   <div class="util hidden" id="util">
-    <div class="utilTitle">LifeLog Garden Walk v99.3.98_DailyHeadlinesSkybox</div>
+    <div class="utilTitle">LifeLog Garden Walk v99.3.99_DailyHeadlinesBoldLead</div>
     <div class="utilSub">Scroll to walk through weeks. Press H to hide/show this panel.</div>
 	    <div class="row">
 	      <label>Wireframe</label>
@@ -3255,7 +3255,7 @@ function wrapLLDBGStep_(){
     }
   }catch(e){}
 }
-dbg_('v99.3.98_DailyHeadlinesSkybox.0: Main script starting');
+dbg_('v99.3.99_DailyHeadlinesBoldLead.0: Main script starting');
 
 // ============================================
 // Constants
@@ -5002,7 +5002,7 @@ function refreshFrontGrass(){
 // ============================================
 
 // ============================================
-// v99.3.98_DailyHeadlinesSkybox: keep back-row flowers horizontally de-clumped
+// v99.3.99_DailyHeadlinesBoldLead: keep back-row flowers horizontally de-clumped
 // ============================================
 const __LL_BACK_SPREAD_MAX_BEHIND = 5;    // reach near-full spread quickly (about 4-6 rows back)
 const __LL_BACK_SPREAD_EDGE_PAD   = 0.006; // keep a tiny inset so nothing clips at extreme edges
@@ -7229,7 +7229,13 @@ function updateSkyBoxesFromDay_(day, weekKey) {
     if (!headlineLines.length) {
       setSkyBoxBody_(__llBoxes[2], `<div class="sbLine sbEmpty">${safe("No headlines yet.")}</div>`);
     } else {
-      const headlineHtml = headlineLines.slice(0, 6).map(line => `<div class="sbLine sbHeadlineLine">${safe(line)}</div>`).join("");
+      const headlineHtml = headlineLines.slice(0, 6).map(line => {
+        const parts = String(line).split(/\s-\s(.+)/);
+        if (parts.length >= 3) {
+          return `<div class="sbLine sbHeadlineLine"><strong>${safe(parts[0])}</strong> - ${safe(parts[1])}</div>`;
+        }
+        return `<div class="sbLine sbHeadlineLine">${safe(line)}</div>`;
+      }).join("");
       setSkyBoxBody_(__llBoxes[2], headlineHtml);
     }
   }
@@ -9495,7 +9501,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.__LL_LAST_PTR_X__ = window.innerWidth/2;
   window.__LL_LAST_PTR_Y__ = window.innerHeight/2;
   window.addEventListener('pointermove', (ev)=>{ window.__LL_LAST_PTR_X__ = ev.clientX; window.__LL_LAST_PTR_Y__ = ev.clientY; }, {passive:true});
-dbg_('v99.3.98_DailyHeadlinesSkybox.0: DOMContentLoaded');
+dbg_('v99.3.99_DailyHeadlinesBoldLead.0: DOMContentLoaded');
 
   cacheDomRefs();
   try{ wrapLLDBGStep_(); }catch(e){}
@@ -9641,7 +9647,7 @@ window.__LL_BACKROWS_ANCHOR_MATCHED = true; // prevent later global overrides
   }catch(e){}
 
 
-  dbg_('v99.3.98_DailyHeadlinesSkybox.0: Initialization complete');
+  dbg_('v99.3.99_DailyHeadlinesBoldLead.0: Initialization complete');
 });
 })();
 
@@ -10019,7 +10025,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 
 
 <script>
-// v99.3.98_DailyHeadlinesSkybox lifecycle manager
+// v99.3.99_DailyHeadlinesBoldLead lifecycle manager
 (function(){
   if (window.__LL_SYS__) return;
   const SYS = { timeouts:new Set(), intervals:new Set(), observers:new Set(), listeners:[] };
@@ -10035,14 +10041,14 @@ window.applySelectedAdornments = applySelectedAdornments;
 </script>
 
 <script>
-// v99.3.98_DailyHeadlinesSkybox: unified BRX/back-row hard-disable controller.
+// v99.3.99_DailyHeadlinesBoldLead: unified BRX/back-row hard-disable controller.
 (function(){
   try{
     window.__PHASEA_DISABLE_BRX__ = true;
     window.__LL_DISABLE_BACKHILL__ = true;
     window.BRX_DISABLE_LEGACY_BACKROWS = true;
 
-    const VERSION = 'v99.3.98_DailyHeadlinesSkybox';
+    const VERSION = 'v99.3.99_DailyHeadlinesBoldLead';
     const hideLegacyGroups = () => {
       ['backRowsG','gridWeeksG','hillGuidesG','gridOverlayG','gridWeeksOverlay','brxHillPngG','brxHillDbgG']
         .forEach(id => {
