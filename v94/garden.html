@@ -13,7 +13,7 @@
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v99.3.90_WeeklySummaryBannerBoldPills
+  v99.3.92_SkyColorDance
     + Consolidate duplicate Photo Reel skybox CSS into one block
     + Merge duplicate selection-ring state rules
     + Remove redundant early wireframe CSS copy
@@ -126,7 +126,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v99.3.90_WeeklySummaryBannerBoldPills';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v99.3.92_SkyColorDance';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -254,7 +254,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 function renderBackRows(){ /* disabled */ }
 
 (function(){
-  const VERSION = 'v99.3.90_WeeklySummaryBannerBoldPills';
+  const VERSION = 'v99.3.92_SkyColorDance';
 
   // ---- Canonical version globals ----
   window.APP_VERSION = VERSION;
@@ -318,7 +318,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v99.3.90_WeeklySummaryBannerBoldPills.html</title>
+<title>garden_v99.3.92_SkyColorDance.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -440,6 +440,84 @@ body {
   background:
     linear-gradient(180deg, var(--skyA) 0%, var(--skyB) 45%, var(--skyC) 100%);
   transform: scale(1.06);
+}
+
+.skyColorDance,
+.skyColorDance2,
+.skyColorDance3,
+.skyHorizonBloom{
+  position:absolute;
+  pointer-events:none;
+  z-index:0;
+  inset:-16%;
+  transform: translateZ(0);
+}
+
+.skyColorDance{
+  background:
+    radial-gradient(58% 42% at 18% 22%, color-mix(in srgb, var(--skyDriftA) 92%, transparent) 0%, transparent 72%),
+    radial-gradient(44% 34% at 84% 18%, color-mix(in srgb, var(--skyDriftB) 84%, transparent) 0%, transparent 74%);
+  mix-blend-mode: soft-light;
+  filter: blur(18px) saturate(1.05);
+  opacity: var(--skyDanceOpacity1, 0.12);
+  animation: skyDanceFloatA var(--skyDanceDur1, 54s) ease-in-out infinite alternate;
+}
+
+.skyColorDance2{
+  background:
+    radial-gradient(46% 34% at 70% 44%, color-mix(in srgb, var(--skyDriftC) 82%, transparent) 0%, transparent 72%),
+    radial-gradient(34% 28% at 28% 68%, color-mix(in srgb, var(--skyDriftB) 72%, transparent) 0%, transparent 75%);
+  mix-blend-mode: screen;
+  filter: blur(28px) saturate(1.03);
+  opacity: var(--skyDanceOpacity2, 0.10);
+  animation: skyDanceFloatB var(--skyDanceDur2, 68s) ease-in-out infinite alternate;
+}
+
+.skyColorDance3{
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--skyDriftA) 16%, transparent) 0%,
+      color-mix(in srgb, var(--skyDriftB) 26%, transparent) 34%,
+      color-mix(in srgb, var(--skyDriftC) 34%, transparent) 66%,
+      transparent 100%);
+  mix-blend-mode: soft-light;
+  filter: blur(24px);
+  opacity: var(--skyDanceOpacity3, 0.08);
+  animation: skyDanceBreath var(--skyDanceDur3, 44s) ease-in-out infinite;
+}
+
+.skyHorizonBloom{
+  inset:auto -10% -8% -10%;
+  height: 44%;
+  background:
+    radial-gradient(56% 78% at 50% 96%,
+      color-mix(in srgb, var(--skyBloomColor) 90%, transparent) 0%,
+      color-mix(in srgb, var(--skyBloomColor) 54%, transparent) 28%,
+      color-mix(in srgb, var(--skyBloomColor) 18%, transparent) 54%,
+      transparent 78%);
+  mix-blend-mode: screen;
+  filter: blur(20px) saturate(1.02);
+  opacity: var(--skyBloomOpacity, 0.14);
+  animation: skyBloomPulse var(--skyBloomDur, 32s) ease-in-out infinite;
+}
+
+@keyframes skyDanceFloatA{
+  0%   { transform: translate3d(-1.5%, -1.2%, 0) scale(1.02); }
+  50%  { transform: translate3d(0.8%, 0.6%, 0) scale(1.05); }
+  100% { transform: translate3d(2.2%, 1.1%, 0) scale(1.07); }
+}
+@keyframes skyDanceFloatB{
+  0%   { transform: translate3d(1.6%, -0.8%, 0) scale(1.03); }
+  50%  { transform: translate3d(-0.6%, 0.9%, 0) scale(1.06); }
+  100% { transform: translate3d(-1.9%, 1.7%, 0) scale(1.08); }
+}
+@keyframes skyDanceBreath{
+  0%,100% { transform: scale(1.01); opacity: calc(var(--skyDanceOpacity3, 0.08) * 0.85); }
+  50%     { transform: scale(1.05); opacity: calc(var(--skyDanceOpacity3, 0.08) * 1.18); }
+}
+@keyframes skyBloomPulse{
+  0%,100% { transform: translateY(0%) scale(1.00); opacity: calc(var(--skyBloomOpacity, 0.14) * 0.92); }
+  50%     { transform: translateY(-1.2%) scale(1.04); opacity: calc(var(--skyBloomOpacity, 0.14) * 1.12); }
 }
 
 .sunGlow{ display: none !important; }
@@ -1992,7 +2070,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v99.3.90_WeeklySummaryBannerBoldPills.html • v99.3.90_WeeklySummaryBannerBoldPills • Built: 2026-03-10T17:22:00Z UTC</div>
+  <div id="llPinkBanner">garden_v99.3.92_SkyColorDance.html • v99.3.92_SkyColorDance • Built: 2026-03-10T17:22:00Z UTC</div>
 
 
 <script>
@@ -2006,8 +2084,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.3.90_WeeklySummaryBannerBoldPills.html</span><br>
-Version: <span id="__bannerVersion">v99.3.90_WeeklySummaryBannerBoldPills</span><br>
+File: <span id="__bannerFileName">garden_v99.3.92_SkyColorDance.html</span><br>
+Version: <span id="__bannerVersion">v99.3.92_SkyColorDance</span><br>
 Created: 2026-03-10T17:22:00Z</span></div>
 <script>
 (function(){
@@ -2023,7 +2101,7 @@ Created: 2026-03-10T17:22:00Z</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.3.90_WeeklySummaryBannerBoldPills loaded", new Date().toISOString());
+  console.log("[VERSION] v99.3.92_SkyColorDance loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -2629,7 +2707,7 @@ window.__LL_hillTopAtX_fill = function(x, yTopGuess, yBottom){
 <!-- Debug Panel -->
 <div aria-hidden="false" id="dbgPanel">
   <div class="hdr">
-    <div class="t">LifeLog DEBUG v99.3.90_WeeklySummaryBannerBoldPills (press D)</div>
+    <div class="t">LifeLog DEBUG v99.3.92_SkyColorDance (press D)</div>
     <div class="btns">
       <button id="dbgCopy" type="button">Copy</button>
       <button id="dbgClear" type="button">Clear</button>
@@ -2895,6 +2973,10 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   <div id="ssDimOverlay" class="ssDimOverlay" aria-hidden="true"></div>
   <div class="bg">
     <div class="skyGrad" id="skyGrad"></div>
+    <div class="skyColorDance" id="skyColorDance"></div>
+    <div class="skyColorDance2" id="skyColorDance2"></div>
+    <div class="skyColorDance3" id="skyColorDance3"></div>
+    <div class="skyHorizonBloom" id="skyHorizonBloom"></div>
     <div class="sunGlow" id="sunGlow"></div>
     <div class="stars" id="starsWrap"><canvas id="starsCv"></canvas></div>
     <div class="lightEdgeGlow" id="lightEdgeGlow" aria-hidden="true"></div>
@@ -2987,7 +3069,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   </div>
 
   <div class="util hidden" id="util">
-    <div class="utilTitle">LifeLog Garden Walk v99.3.90_WeeklySummaryBannerBoldPills</div>
+    <div class="utilTitle">LifeLog Garden Walk v99.3.92_SkyColorDance</div>
     <div class="utilSub">Scroll to walk through weeks. Press H to hide/show this panel.</div>
 	    <div class="row">
 	      <label>Wireframe</label>
@@ -3167,7 +3249,7 @@ function wrapLLDBGStep_(){
     }
   }catch(e){}
 }
-dbg_('v99.3.90_WeeklySummaryBannerBoldPills.0: Main script starting');
+dbg_('v99.3.92_SkyColorDance.0: Main script starting');
 
 // ============================================
 // Constants
@@ -4914,7 +4996,7 @@ function refreshFrontGrass(){
 // ============================================
 
 // ============================================
-// v99.3.90_WeeklySummaryBannerBoldPills: keep back-row flowers horizontally de-clumped
+// v99.3.92_SkyColorDance: keep back-row flowers horizontally de-clumped
 // ============================================
 const __LL_BACK_SPREAD_MAX_BEHIND = 5;    // reach near-full spread quickly (about 4-6 rows back)
 const __LL_BACK_SPREAD_EDGE_PAD   = 0.006; // keep a tiny inset so nothing clips at extreme edges
@@ -5511,12 +5593,12 @@ function stepManualClock(){
   if (todState.manualMinutes < 0) todState.manualMinutes += 1440;
 }
 
-function paletteDawn(){ return { skyA:"#1B2A6B", skyB:"#FF6FAE", skyC:"#FFD166", sunOpacity:0.42, gardenBright:1.12, gardenSat:1.12, stars:false }; }
-function paletteMorning(){ return { skyA:"#4AA0FF", skyB:"#7FCBFF", skyC:"#BCEBFF", sunOpacity:0.35, gardenBright:1.14, gardenSat:1.08, stars:false }; }
-function paletteAfternoon(){ return { skyA:"#2F86FF", skyB:"#63B6FF", skyC:"#A7E3FF", sunOpacity:0.28, gardenBright:1.12, gardenSat:1.06, stars:false }; }
-function paletteEvening(){ return { skyA:"#1D2A7A", skyB:"#F49A7A", skyC:"#FFD166", sunOpacity:0.40, gardenBright:1.06, gardenSat:1.10, stars:false }; }
-function paletteSunset(){ return { skyA:"#2B1055", skyB:"#EF476F", skyC:"#F4A261", sunOpacity:0.50, gardenBright:1.04, gardenSat:1.14, stars:false }; }
-function paletteNight(){ return { skyA:"#050914", skyB:"#1D1B3A", skyC:"#0A0A12", sunOpacity:0.00, gardenBright:0.90, gardenSat:0.95, stars:true }; }
+function paletteDawn(){ return { skyA:"#6679C9", skyB:"#DDB0C6", skyC:"#FFD7A8", sunOpacity:0.34, gardenBright:1.09, gardenSat:1.03, stars:false }; }
+function paletteMorning(){ return { skyA:"#78B2EC", skyB:"#AADBFF", skyC:"#EDF8FF", sunOpacity:0.24, gardenBright:1.12, gardenSat:1.02, stars:false }; }
+function paletteAfternoon(){ return { skyA:"#5F97E6", skyB:"#8FCAFF", skyC:"#D9F1FF", sunOpacity:0.18, gardenBright:1.10, gardenSat:1.01, stars:false }; }
+function paletteEvening(){ return { skyA:"#7E84C0", skyB:"#E7B184", skyC:"#F7D891", sunOpacity:0.32, gardenBright:1.05, gardenSat:1.02, stars:false }; }
+function paletteSunset(){ return { skyA:"#6E73B6", skyB:"#D8A7B7", skyC:"#F7C18E", sunOpacity:0.28, gardenBright:1.03, gardenSat:0.99, stars:false }; }
+function paletteNight(){ return { skyA:"#0C1533", skyB:"#1A2550", skyC:"#0A1128", sunOpacity:0.00, gardenBright:0.92, gardenSat:0.93, stars:true }; }
 
 function blendPal(a,b,t){
   return {
@@ -5593,10 +5675,66 @@ function paletteForMinute(m){
   return night;
 }
 
+
+function todSkyMotionProfileSolar_(m){
+  const t = getSolarTimes_();
+  let mm = m;
+  while (mm < t.dawnStart - 30) mm += 1440;
+  const preDawn = t.dawnStart - 30;
+  const preSunset = Math.max(t.noon, t.sunset - 90);
+
+  const profiles = {
+    dawn:      { phase:'dawn',      d1:0.15, d2:0.10, d3:0.08, bloom:0.16, dur1:64, dur2:78, dur3:52, bloomDur:34 },
+    morning:   { phase:'morning',   d1:0.08, d2:0.05, d3:0.04, bloom:0.06, dur1:78, dur2:92, dur3:58, bloomDur:40 },
+    afternoon: { phase:'afternoon', d1:0.09, d2:0.06, d3:0.05, bloom:0.05, dur1:82, dur2:96, dur3:60, bloomDur:44 },
+    evening:   { phase:'evening',   d1:0.13, d2:0.10, d3:0.08, bloom:0.14, dur1:66, dur2:80, dur3:50, bloomDur:36 },
+    sunset:    { phase:'sunset',    d1:0.20, d2:0.16, d3:0.12, bloom:0.22, dur1:52, dur2:66, dur3:42, bloomDur:28 },
+    night:     { phase:'night',     d1:0.04, d2:0.03, d3:0.02, bloom:0.02, dur1:92, dur2:110, dur3:76, bloomDur:52 }
+  };
+
+  const lerpProfile = (a,b,k)=>({
+    phase: (k < 0.5 ? a.phase : b.phase),
+    d1: lerp(a.d1,b.d1,k), d2: lerp(a.d2,b.d2,k), d3: lerp(a.d3,b.d3,k), bloom: lerp(a.bloom,b.bloom,k),
+    dur1: lerp(a.dur1,b.dur1,k), dur2: lerp(a.dur2,b.dur2,k), dur3: lerp(a.dur3,b.dur3,k), bloomDur: lerp(a.bloomDur,b.bloomDur,k)
+  });
+
+  if (mm < t.dawnStart) return lerpProfile(profiles.night, profiles.dawn, smoothstep(preDawn, t.dawnStart, mm));
+  if (mm < t.sunrise) return lerpProfile(profiles.dawn, profiles.morning, smoothstep(t.dawnStart, t.sunrise, mm));
+  if (mm < t.noon) return lerpProfile(profiles.morning, profiles.afternoon, smoothstep(t.sunrise, t.noon, mm));
+  if (mm < preSunset) return lerpProfile(profiles.afternoon, profiles.evening, smoothstep(t.noon, preSunset, mm));
+  if (mm < t.sunset) return lerpProfile(profiles.evening, profiles.sunset, smoothstep(preSunset, t.sunset, mm));
+  if (mm < t.duskEnd) return lerpProfile(profiles.sunset, profiles.night, smoothstep(t.sunset, t.duskEnd, mm));
+  return profiles.night;
+}
+
+function applySkyDance_(p, motion){
+  if (!DOM.stage) return;
+  const driftA = mixHex(p.skyA, p.skyB, 0.46);
+  const driftB = mixHex(p.skyB, p.skyC, 0.54);
+  const warmLift = mixHex(p.skyC, (motion.phase === 'night' ? '#7E90D8' : '#FFF0BE'), motion.phase === 'sunset' ? 0.48 : motion.phase === 'evening' ? 0.42 : motion.phase === 'dawn' ? 0.34 : 0.26);
+  const bloomColor = mixHex(p.skyC, (motion.phase === 'night' ? '#4C68B8' : '#FFE0A3'), motion.phase === 'sunset' ? 0.58 : motion.phase === 'evening' ? 0.52 : motion.phase === 'dawn' ? 0.40 : 0.30);
+
+  DOM.stage.style.setProperty('--skyDriftA', driftA);
+  DOM.stage.style.setProperty('--skyDriftB', driftB);
+  DOM.stage.style.setProperty('--skyDriftC', warmLift);
+  DOM.stage.style.setProperty('--skyBloomColor', bloomColor);
+  DOM.stage.style.setProperty('--skyDanceOpacity1', motion.d1.toFixed(3));
+  DOM.stage.style.setProperty('--skyDanceOpacity2', motion.d2.toFixed(3));
+  DOM.stage.style.setProperty('--skyDanceOpacity3', motion.d3.toFixed(3));
+  DOM.stage.style.setProperty('--skyBloomOpacity', motion.bloom.toFixed(3));
+  DOM.stage.style.setProperty('--skyDanceDur1', motion.dur1.toFixed(1) + 's');
+  DOM.stage.style.setProperty('--skyDanceDur2', motion.dur2.toFixed(1) + 's');
+  DOM.stage.style.setProperty('--skyDanceDur3', motion.dur3.toFixed(1) + 's');
+  DOM.stage.style.setProperty('--skyBloomDur', motion.bloomDur.toFixed(1) + 's');
+  DOM.stage.dataset.skyPhase = motion.phase || '';
+}
+
 function applyTimeOfDayBackground(){
   if (!DOM.stage) return;
   const m = getActiveMinutes();
-  const p = (typeof paletteForMinuteSolar_ === 'function' ? paletteForMinuteSolar_(m) : paletteForMinute(m));
+  const useSolar = (typeof paletteForMinuteSolar_ === 'function');
+  const p = (useSolar ? paletteForMinuteSolar_(m) : paletteForMinute(m));
+  const motion = (typeof todSkyMotionProfileSolar_ === 'function' ? todSkyMotionProfileSolar_(m) : { phase:'day', d1:0.08, d2:0.05, d3:0.04, bloom:0.05, dur1:78, dur2:92, dur3:58, bloomDur:40 });
 
   // Expose current palette for other render logic (flower color grading, glass tinting, etc.)
   window.__LL_PALETTE__ = p;
@@ -5607,6 +5745,7 @@ function applyTimeOfDayBackground(){
   DOM.stage.style.setProperty("--sunOpacity", String(p.sunOpacity));
   DOM.stage.style.setProperty("--gardenBright", String(p.gardenBright));
   DOM.stage.style.setProperty("--gardenSat", String(p.gardenSat));
+  applySkyDance_(p, motion);
 
   DOM.stage.dataset.starsOn = p.stars ? "1" : "0";
   if (DOM.starsWrap) DOM.starsWrap.style.opacity = p.stars ? "1" : "0";
@@ -9349,7 +9488,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.__LL_LAST_PTR_X__ = window.innerWidth/2;
   window.__LL_LAST_PTR_Y__ = window.innerHeight/2;
   window.addEventListener('pointermove', (ev)=>{ window.__LL_LAST_PTR_X__ = ev.clientX; window.__LL_LAST_PTR_Y__ = ev.clientY; }, {passive:true});
-dbg_('v99.3.90_WeeklySummaryBannerBoldPills.0: DOMContentLoaded');
+dbg_('v99.3.92_SkyColorDance.0: DOMContentLoaded');
 
   cacheDomRefs();
   try{ wrapLLDBGStep_(); }catch(e){}
@@ -9495,7 +9634,7 @@ window.__LL_BACKROWS_ANCHOR_MATCHED = true; // prevent later global overrides
   }catch(e){}
 
 
-  dbg_('v99.3.90_WeeklySummaryBannerBoldPills.0: Initialization complete');
+  dbg_('v99.3.92_SkyColorDance.0: Initialization complete');
 });
 })();
 
@@ -9873,7 +10012,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 
 
 <script>
-// v99.3.90_WeeklySummaryBannerBoldPills lifecycle manager
+// v99.3.92_SkyColorDance lifecycle manager
 (function(){
   if (window.__LL_SYS__) return;
   const SYS = { timeouts:new Set(), intervals:new Set(), observers:new Set(), listeners:[] };
@@ -9889,14 +10028,14 @@ window.applySelectedAdornments = applySelectedAdornments;
 </script>
 
 <script>
-// v99.3.90_WeeklySummaryBannerBoldPills: unified BRX/back-row hard-disable controller.
+// v99.3.92_SkyColorDance: unified BRX/back-row hard-disable controller.
 (function(){
   try{
     window.__PHASEA_DISABLE_BRX__ = true;
     window.__LL_DISABLE_BACKHILL__ = true;
     window.BRX_DISABLE_LEGACY_BACKROWS = true;
 
-    const VERSION = 'v99.3.90_WeeklySummaryBannerBoldPills';
+    const VERSION = 'v99.3.92_SkyColorDance';
     const hideLegacyGroups = () => {
       ['backRowsG','gridWeeksG','hillGuidesG','gridOverlayG','gridWeeksOverlay','brxHillPngG','brxHillDbgG']
         .forEach(id => {
