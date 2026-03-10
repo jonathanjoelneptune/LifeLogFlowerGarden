@@ -13,7 +13,7 @@
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v99.3.88_WeeklySummaryBannerMetricColors
+  v99.3.90_WeeklySummaryBannerBoldPills
     + Consolidate duplicate Photo Reel skybox CSS into one block
     + Merge duplicate selection-ring state rules
     + Remove redundant early wireframe CSS copy
@@ -126,7 +126,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v99.3.88_WeeklySummaryBannerMetricColors';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v99.3.90_WeeklySummaryBannerBoldPills';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -254,7 +254,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 function renderBackRows(){ /* disabled */ }
 
 (function(){
-  const VERSION = 'v99.3.88_WeeklySummaryBannerMetricColors';
+  const VERSION = 'v99.3.90_WeeklySummaryBannerBoldPills';
 
   // ---- Canonical version globals ----
   window.APP_VERSION = VERSION;
@@ -318,7 +318,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v99.3.88_WeeklySummaryBannerMetricColors.html</title>
+<title>garden_v99.3.90_WeeklySummaryBannerBoldPills.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -1240,42 +1240,42 @@ body.llHitboxOn .weekBand:not(.isFront) .hsCore { stroke: transparent; fill: tra
   right: calc(var(--stagePad, 22px) + 10px);
   z-index: 4200;
   min-width: 480px;
-  max-width: min(1440px, calc(100vw - ((var(--stagePad, 22px) + 10px) * 2)));
+  max-width: min(1480px, calc(100vw - ((var(--stagePad, 22px) + 10px) * 2)));
   width: max-content;
   padding: 13px 15px;
   border-radius: 16px;
   background:
     radial-gradient(140% 140% at 30% 18%,
-      rgba(255,255,255,0.34) 0%,
-      rgba(255,255,255,0.16) 44%,
-      rgba(255,255,255,0.07) 100%),
+      rgba(255,255,255,0.48) 0%,
+      rgba(255,255,255,0.24) 44%,
+      rgba(255,255,255,0.11) 100%),
     linear-gradient(180deg,
-      rgba(255,255,255,0.13) 0%,
-      rgba(255,255,255,0.05) 100%),
+      rgba(255,255,255,0.18) 0%,
+      rgba(255,255,255,0.08) 100%),
     linear-gradient(180deg,
-      rgba(var(--llGlassTintRGB, 255,248,236), var(--llGlassTintA, 0.05)) 0%,
-      rgba(var(--llGlassTintRGB, 255,248,236), 0.00) 100%);
-  border: 1px solid rgba(255,255,255,0.18);
-  box-shadow: 0 10px 22px rgba(0,0,0,0.10);
-  backdrop-filter: blur(16px) saturate(1.08);
-  -webkit-backdrop-filter: blur(16px) saturate(1.08);
+      rgba(var(--llGlassTintRGB, 255,248,236), var(--llGlassTintA, 0.08)) 0%,
+      rgba(var(--llGlassTintRGB, 255,248,236), 0.01) 100%);
+  border: 1px solid rgba(255,255,255,0.26);
+  box-shadow: 0 14px 28px rgba(0,0,0,0.13), inset 0 1px 0 rgba(255,255,255,0.18);
+  backdrop-filter: blur(18px) saturate(1.10);
+  -webkit-backdrop-filter: blur(18px) saturate(1.10);
   pointer-events: none;
 }
 .stage[data-stars-on="1"] .weekHeader,
 [data-stars-on="1"] .weekHeader{
   background:
     radial-gradient(140% 140% at 30% 18%,
-      rgba(255,255,255,0.38) 0%,
-      rgba(255,255,255,0.17) 46%,
+      rgba(255,255,255,0.54) 0%,
+      rgba(255,255,255,0.24) 46%,
+      rgba(255,255,255,0.10) 100%),
+    linear-gradient(180deg,
+      rgba(255,255,255,0.19) 0%,
       rgba(255,255,255,0.08) 100%),
     linear-gradient(180deg,
-      rgba(255,255,255,0.15) 0%,
-      rgba(255,255,255,0.06) 100%),
-    linear-gradient(180deg,
-      rgba(var(--llGlassTintRGB, 226,232,255), var(--llGlassTintA, 0.06)) 0%,
-      rgba(var(--llGlassTintRGB, 226,232,255), 0.00) 100%);
-  border-color: rgba(255,255,255,0.20);
-  box-shadow: 0 12px 24px rgba(0,0,0,0.14);
+      rgba(var(--llGlassTintRGB, 226,232,255), var(--llGlassTintA, 0.09)) 0%,
+      rgba(var(--llGlassTintRGB, 226,232,255), 0.01) 100%);
+  border-color: rgba(255,255,255,0.28);
+  box-shadow: 0 14px 30px rgba(0,0,0,0.16), inset 0 1px 0 rgba(255,255,255,0.20);
 }
 .weekHeader .top,
 .weekHeader .mid,
@@ -1299,20 +1299,25 @@ body.llHitboxOn .weekBand:not(.isFront) .hsCore { stroke: transparent; fill: tra
   align-items:center;
   gap:4px;
   margin:0;
-  padding:4px 10px;
+  padding:5px 11px;
   border-radius:999px;
-  background:rgba(255,255,255,0.14);
-  border:1px solid rgba(255,255,255,0.20);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.10);
+  background:rgba(255,255,255,0.19);
+  border:1px solid rgba(255,255,255,0.28);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.34),
+    inset 0 -1px 0 rgba(0,0,0,0.06),
+    0 4px 10px rgba(0,0,0,0.10),
+    0 1px 0 rgba(255,255,255,0.08);
   flex:0 0 auto;
   color:rgba(0,0,0,0.84);
+  font-weight:700;
 }
-.weekHeader .bot .wkPill.wkRank1{ background:rgba(255,213,220,0.22); border-color:rgba(204,110,132,0.34); color:rgba(111,42,64,0.94); }
-.weekHeader .bot .wkPill.wkRank2{ background:rgba(255,240,194,0.24); border-color:rgba(213,186,101,0.34); color:rgba(109,88,27,0.94); }
-.weekHeader .bot .wkPill.wkRank3{ background:rgba(255,224,198,0.23); border-color:rgba(215,154,102,0.34); color:rgba(124,73,31,0.94); }
-.weekHeader .bot .wkPill.wkRank4{ background:rgba(207,244,216,0.24); border-color:rgba(105,175,123,0.34); color:rgba(37,103,56,0.94); }
-.weekHeader .bot .wkPill.wkRank5{ background:rgba(210,248,218,0.28); border-color:rgba(224,191,92,0.72); color:rgba(25,97,44,0.96); box-shadow: inset 0 1px 0 rgba(255,255,255,0.16), 0 0 0 1px rgba(244,219,143,0.14); }
-.weekHeader .bot .wkPill.wkNeutral{ background:rgba(255,255,255,0.14); border-color:rgba(255,255,255,0.20); color:rgba(0,0,0,0.80); }
+.weekHeader .bot .wkPill.wkRank1{ background:linear-gradient(180deg, rgba(255,225,230,0.58) 0%, rgba(255,210,220,0.40) 100%); border-color:rgba(204,110,132,0.42); color:rgba(111,42,64,0.96); }
+.weekHeader .bot .wkPill.wkRank2{ background:linear-gradient(180deg, rgba(255,245,208,0.60) 0%, rgba(255,235,186,0.42) 100%); border-color:rgba(213,186,101,0.42); color:rgba(109,88,27,0.96); }
+.weekHeader .bot .wkPill.wkRank3{ background:linear-gradient(180deg, rgba(255,232,208,0.60) 0%, rgba(255,220,194,0.42) 100%); border-color:rgba(215,154,102,0.42); color:rgba(124,73,31,0.96); }
+.weekHeader .bot .wkPill.wkRank4{ background:linear-gradient(180deg, rgba(220,248,227,0.60) 0%, rgba(202,240,211,0.42) 100%); border-color:rgba(105,175,123,0.42); color:rgba(37,103,56,0.96); }
+.weekHeader .bot .wkPill.wkRank5{ background:linear-gradient(180deg, rgba(223,250,228,0.66) 0%, rgba(208,246,216,0.48) 100%); border-color:rgba(224,191,92,0.84); color:rgba(25,97,44,0.98); box-shadow: inset 0 1px 0 rgba(255,255,255,0.38), inset 0 -1px 0 rgba(115,92,20,0.10), 0 5px 12px rgba(0,0,0,0.12), 0 0 0 1px rgba(244,219,143,0.20); }
+.weekHeader .bot .wkPill.wkNeutral{ background:linear-gradient(180deg, rgba(255,255,255,0.24) 0%, rgba(255,255,255,0.14) 100%); border-color:rgba(255,255,255,0.28); color:rgba(0,0,0,0.82); }
 .weekHeader .bot .wkDim{ color:rgba(0,0,0,0.52); }
 
 /* top-right weekly summary banner */
@@ -1987,7 +1992,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v99.3.88_WeeklySummaryBannerMetricColors.html • v99.3.88_WeeklySummaryBannerMetricColors • Built: 2026-03-10T17:05:00Z UTC</div>
+  <div id="llPinkBanner">garden_v99.3.90_WeeklySummaryBannerBoldPills.html • v99.3.90_WeeklySummaryBannerBoldPills • Built: 2026-03-10T17:22:00Z UTC</div>
 
 
 <script>
@@ -2001,9 +2006,9 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.3.88_WeeklySummaryBannerMetricColors.html</span><br>
-Version: <span id="__bannerVersion">v99.3.88_WeeklySummaryBannerMetricColors</span><br>
-Created: 2026-03-10T17:05:00Z</span></div>
+File: <span id="__bannerFileName">garden_v99.3.90_WeeklySummaryBannerBoldPills.html</span><br>
+Version: <span id="__bannerVersion">v99.3.90_WeeklySummaryBannerBoldPills</span><br>
+Created: 2026-03-10T17:22:00Z</span></div>
 <script>
 (function(){
   try{
@@ -2018,7 +2023,7 @@ Created: 2026-03-10T17:05:00Z</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.3.88_WeeklySummaryBannerMetricColors loaded", new Date().toISOString());
+  console.log("[VERSION] v99.3.90_WeeklySummaryBannerBoldPills loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -2624,7 +2629,7 @@ window.__LL_hillTopAtX_fill = function(x, yTopGuess, yBottom){
 <!-- Debug Panel -->
 <div aria-hidden="false" id="dbgPanel">
   <div class="hdr">
-    <div class="t">LifeLog DEBUG v99.3.88_WeeklySummaryBannerMetricColors (press D)</div>
+    <div class="t">LifeLog DEBUG v99.3.90_WeeklySummaryBannerBoldPills (press D)</div>
     <div class="btns">
       <button id="dbgCopy" type="button">Copy</button>
       <button id="dbgClear" type="button">Clear</button>
@@ -2982,7 +2987,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   </div>
 
   <div class="util hidden" id="util">
-    <div class="utilTitle">LifeLog Garden Walk v99.3.88_WeeklySummaryBannerMetricColors</div>
+    <div class="utilTitle">LifeLog Garden Walk v99.3.90_WeeklySummaryBannerBoldPills</div>
     <div class="utilSub">Scroll to walk through weeks. Press H to hide/show this panel.</div>
 	    <div class="row">
 	      <label>Wireframe</label>
@@ -3162,7 +3167,7 @@ function wrapLLDBGStep_(){
     }
   }catch(e){}
 }
-dbg_('v99.3.88_WeeklySummaryBannerMetricColors.0: Main script starting');
+dbg_('v99.3.90_WeeklySummaryBannerBoldPills.0: Main script starting');
 
 // ============================================
 // Constants
@@ -4909,7 +4914,7 @@ function refreshFrontGrass(){
 // ============================================
 
 // ============================================
-// v99.3.88_WeeklySummaryBannerMetricColors: keep back-row flowers horizontally de-clumped
+// v99.3.90_WeeklySummaryBannerBoldPills: keep back-row flowers horizontally de-clumped
 // ============================================
 const __LL_BACK_SPREAD_MAX_BEHIND = 5;    // reach near-full spread quickly (about 4-6 rows back)
 const __LL_BACK_SPREAD_EDGE_PAD   = 0.006; // keep a tiny inset so nothing clips at extreme edges
@@ -9344,7 +9349,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.__LL_LAST_PTR_X__ = window.innerWidth/2;
   window.__LL_LAST_PTR_Y__ = window.innerHeight/2;
   window.addEventListener('pointermove', (ev)=>{ window.__LL_LAST_PTR_X__ = ev.clientX; window.__LL_LAST_PTR_Y__ = ev.clientY; }, {passive:true});
-dbg_('v99.3.88_WeeklySummaryBannerMetricColors.0: DOMContentLoaded');
+dbg_('v99.3.90_WeeklySummaryBannerBoldPills.0: DOMContentLoaded');
 
   cacheDomRefs();
   try{ wrapLLDBGStep_(); }catch(e){}
@@ -9490,7 +9495,7 @@ window.__LL_BACKROWS_ANCHOR_MATCHED = true; // prevent later global overrides
   }catch(e){}
 
 
-  dbg_('v99.3.88_WeeklySummaryBannerMetricColors.0: Initialization complete');
+  dbg_('v99.3.90_WeeklySummaryBannerBoldPills.0: Initialization complete');
 });
 })();
 
@@ -9868,7 +9873,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 
 
 <script>
-// v99.3.88_WeeklySummaryBannerMetricColors lifecycle manager
+// v99.3.90_WeeklySummaryBannerBoldPills lifecycle manager
 (function(){
   if (window.__LL_SYS__) return;
   const SYS = { timeouts:new Set(), intervals:new Set(), observers:new Set(), listeners:[] };
@@ -9884,14 +9889,14 @@ window.applySelectedAdornments = applySelectedAdornments;
 </script>
 
 <script>
-// v99.3.88_WeeklySummaryBannerMetricColors: unified BRX/back-row hard-disable controller.
+// v99.3.90_WeeklySummaryBannerBoldPills: unified BRX/back-row hard-disable controller.
 (function(){
   try{
     window.__PHASEA_DISABLE_BRX__ = true;
     window.__LL_DISABLE_BACKHILL__ = true;
     window.BRX_DISABLE_LEGACY_BACKROWS = true;
 
-    const VERSION = 'v99.3.88_WeeklySummaryBannerMetricColors';
+    const VERSION = 'v99.3.90_WeeklySummaryBannerBoldPills';
     const hideLegacyGroups = () => {
       ['backRowsG','gridWeeksG','hillGuidesG','gridOverlayG','gridWeeksOverlay','brxHillPngG','brxHillDbgG']
         .forEach(id => {
