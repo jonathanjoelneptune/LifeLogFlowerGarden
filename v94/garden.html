@@ -9,10 +9,11 @@
 
 
 
+
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v99.3.68_EvenSlots_NaturalBias_NoMidScrollRebuild_Fixed
+  v99.3.69_SafeCleanup
     + Add scale-compensated back-row slot spread to prevent horizontal clumping
   v99.3.29_TodayPoll_FrostySkyboxesNight
     + Add canonical data-week-key on each flowerWrap (alias of weekId)
@@ -121,7 +122,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v99.3.68_EvenSlots_NaturalBias_NoMidScrollRebuild_Fixed';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v99.3.69_SafeCleanup';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -243,90 +244,77 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 })();
 </script>
 
-  <!-- v99.3.28_TodayPoll_ApplyUpdateAndDebug: grid rows uniform vertically + hill-footprint span (21 slots) -->
+  <!-- Bootstrap cleanup: consolidated version/debug/legacy shims -->
   <script>
-// v99.3.28_TodayPoll_ApplyUpdateAndDebug: Back rows fully disabled in Phase A (no-op stubs)
+// Keep legacy no-op entrypoints available without conflicting reassignments.
 function renderBackRows(){ /* disabled */ }
 
-	
-// ---- Global version (single source of truth) ----
-window.APP_VERSION = '92.0.1';
-window.VERSION = 'v99.3.28_TodayPoll_ApplyUpdateAndDebug';
-window.APP_VERSION_STR = 'v99.3.28_TodayPoll_ApplyUpdateAndDebug';
-window.APP_VERSION = '89.7.100';
-window.VERSION = window.VERSION;
-window.APP_VERSION = window.APP_VERSION;
+(function(){
+  const VERSION = 'v99.3.69_SafeCleanup';
 
-// --- global safe debug helpers (used by UI handlers + BRX supervisor) ---
-	window.dbg = window.dbg || function(msg){ try{ console.log(msg); }catch(e){} };
-	window.DBGSTEP = window.DBGSTEP || function(){ try{ console.log.apply(console, arguments); }catch(e){} };
+  // ---- Canonical version globals ----
+  window.APP_VERSION = VERSION;
+  window.VERSION = VERSION;
+  window.APP_VERSION_STR = VERSION;
 
-	// These are referenced in a few historical builds as bare identifiers.
-	// Define them early so a missing import never hard-crashes rendering.
-	window.__LLDBG__ = window.__LLDBG__ || {};
-	window.__LLDBG__.step = window.__LLDBG__.step || function(label, payload){
-	  try{ window.DBGSTEP('DBGSTEP ' + String(label||''), payload||{}); }catch(e){}
-	};
-	window.__LLDBG__.error = window.__LLDBG__.error || function(label, payload){
-	  try{ window.DBGSTEP('DBGSTEP ERROR ' + String(label||''), payload||{}); }catch(e){}
-	};
-	// Globals (so `dbgStep(...)` never throws ReferenceError)
-	function dbgStep(label, payload){
-	  try{ if(window.__LLDBG__ && typeof window.__LLDBG__.step === 'function') return window.__LLDBG__.step(label, payload||{}); }catch(e){}
-	  try{ return window.DBGSTEP('DBGSTEP ' + String(label||''), payload||{}); }catch(e){}
-	}
-	function dbgError(label, err){
-	  try{ if(window.__LLDBG__ && typeof window.__LLDBG__.error === 'function') return window.__LLDBG__.error(label, { err: String(err||'') }); }catch(e){}
-	  try{ return window.DBGSTEP('DBGSTEP ERROR ' + String(label||''), { err: String(err||'') }); }catch(e){}
-	  try{ console.error(label, err); }catch(e){}
-	}
+  // ---- Global debug helpers used across historical branches ----
+  window.dbg = window.dbg || function(){ try{ console.log.apply(console, arguments); }catch(e){} };
+  window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments); }catch(e){} };
+  window.DBGSTEP = window.DBGSTEP || function(){ try{ console.log.apply(console, arguments); }catch(e){} };
+  window.log = window.log || function(){ try{ console.log.apply(console, arguments); }catch(e){} };
+  window.NS = window.NS || 'http://www.w3.org/2000/svg';
 
+  window.__LLDBG__ = window.__LLDBG__ || {};
+  window.__LLDBG__.step = window.__LLDBG__.step || function(label, payload){
+    try{ window.DBGSTEP('DBGSTEP ' + String(label || ''), payload || {}); }catch(e){}
+  };
+  window.__LLDBG__.error = window.__LLDBG__.error || function(label, payload){
+    try{ window.DBGSTEP('DBGSTEP ERROR ' + String(label || ''), payload || {}); }catch(e){}
+  };
 
-// [v99.3.28_TodayPoll_ApplyUpdateAndDebug] logStep shim (some branches call logStep(...))
-window.logStep = window.logStep || function(label, payload){
-  try{ return dbgStep(label, payload||{}); }catch(e){}
-  try{ return window.DBGSTEP('DBGSTEP ' + String(label||''), payload||{}); }catch(e){}
-};
+  window.dbgStep = window.dbgStep || function(label, payload){
+    try{
+      if(window.__LLDBG__ && typeof window.__LLDBG__.step === 'function'){
+        return window.__LLDBG__.step(label, payload || {});
+      }
+    }catch(e){}
+    try{ return window.DBGSTEP('DBGSTEP ' + String(label || ''), payload || {}); }catch(e){}
+  };
 
-</script>
+  window.dbgError = window.dbgError || function(label, err){
+    try{
+      if(window.__LLDBG__ && typeof window.__LLDBG__.error === 'function'){
+        return window.__LLDBG__.error(label, { err: String(err || '') });
+      }
+    }catch(e){}
+    try{ return window.DBGSTEP('DBGSTEP ERROR ' + String(label || ''), { err: String(err || '') }); }catch(e){}
+    try{ console.error(label, err); }catch(e){}
+  };
 
-<!--
-  v99.3.28_TodayPoll_ApplyUpdateAndDebug NOTE
-  Back-rows rewrite (BRX) is installed at the very end of the file so it can:
-  - Not be shadowed by earlier backRows code.
-  - Capture-toggle the UI checkboxes and stop other listeners.
-  - Draw an obvious "BIG MARK" first so we can confirm rendering instantly.
--->
-<script>
-/* Phase A: BRX removed.
- * Keep minimal stubs so legacy references can't crash.
- */
-window.BRX = window.BRX || {
-  VERSION: "REMOVED",
-  enabled: false,
-  debugAnchors: false,
-  setEnabled: function(){},
-  setDebugAnchors: function(){},
-  render: function(){},
-  renderNow: function(){},
-};
-window.drawGridAnchors = function(){ /* removed */ };
-</script>
+  window.logStep = window.logStep || function(label, payload){
+    try{ return window.dbgStep(label, payload || {}); }catch(e){}
+    try{ return window.DBGSTEP('DBGSTEP ' + String(label || ''), payload || {}); }catch(e){}
+  };
 
-<script>
-    
-// --- v99.3.28_TodayPoll_ApplyUpdateAndDebug: DEBUG SHIMS (safe) ---
-window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
-window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
-window.NS = window.NS || "http://www.w3.org/2000/svg";
-console.log("[v99.3.28_TodayPoll_ApplyUpdateAndDebug] loaded", new Date().toISOString());
-// Provide a safe global log() early; later scripts may replace this with the project logger.
-    window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
+  // ---- Legacy BRX compatibility shims ----
+  window.BRX = window.BRX || {
+    VERSION: 'REMOVED',
+    enabled: false,
+    debugAnchors: false,
+    setEnabled: function(){},
+    setDebugAnchors: function(){},
+    render: function(){},
+    renderNow: function(){},
+  };
+  window.drawGridAnchors = window.drawGridAnchors || function(){ /* removed */ };
+
+  try{ console.log('[' + VERSION + '] loaded', new Date().toISOString()); }catch(e){}
+})();
   </script>
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v99.3.68_EvenSlots_NaturalBias_NoMidScrollRebuild_Fixed.html</title>
+<title>garden_v99.3.69_SafeCleanup.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -1910,7 +1898,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v99.3.68_EvenSlots_NaturalBias_NoMidScrollRebuild_Fixed.html • v99.3.68_EvenSlots_NaturalBias_NoMidScrollRebuild_Fixed • Built: 2026-02-25T07:38:50Z UTC</div>
+  <div id="llPinkBanner">garden_v99.3.69_SafeCleanup.html • v99.3.69_SafeCleanup • Built: 2026-03-10T15:17:53Z UTC</div>
 
 
 <script>
@@ -1957,8 +1945,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v99.3.68_EvenSlots_NaturalBias_NoMidScrollRebuild_Fixed.html</span><br>
-Version: <span id="__bannerVersion">v99.3.68_EvenSlots_NaturalBias_NoMidScrollRebuild_Fixed</span><br>
+File: <span id="__bannerFileName">garden_v99.3.69_SafeCleanup.html</span><br>
+Version: <span id="__bannerVersion">v99.3.69_SafeCleanup</span><br>
 Created: 2026-02-25T07:38:50Z</span></div>
 <script>
 (function(){
@@ -1974,7 +1962,7 @@ Created: 2026-02-25T07:38:50Z</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v99.3.68_EvenSlots_NaturalBias_NoMidScrollRebuild_Fixed loaded", new Date().toISOString());
+  console.log("[VERSION] v99.3.69_SafeCleanup loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -2938,7 +2926,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   </div>
 
   <div class="util hidden" id="util">
-    <div class="utilTitle">LifeLog Garden Walk v99.3.68_EvenSlots_NaturalBias_NoMidScrollRebuild_Fixed</div>
+    <div class="utilTitle">LifeLog Garden Walk v99.3.69_SafeCleanup</div>
     <div class="utilSub">Scroll to walk through weeks. Press H to hide/show this panel.</div>
 	    <div class="row">
 	      <label>Wireframe</label>
@@ -4693,7 +4681,7 @@ function refreshFrontGrass(){
 // ============================================
 
 // ============================================
-// v99.3.68_EvenSlots_NaturalBias_NoMidScrollRebuild_Fixed: keep back-row flowers horizontally de-clumped
+// v99.3.69_SafeCleanup: keep back-row flowers horizontally de-clumped
 // ============================================
 const __LL_BACK_SPREAD_MAX_BEHIND = 5;    // reach near-full spread quickly (about 4-6 rows back)
 const __LL_BACK_SPREAD_EDGE_PAD   = 0.006; // keep a tiny inset so nothing clips at extreme edges
@@ -9609,7 +9597,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 window.__PHASEA_DISABLE_BRX__ = true;
 if (window.__PHASEA_DISABLE_BRX__) {
   (function(){
-    const VERSION='v99.3.68_EvenSlots_NaturalBias_NoMidScrollRebuild_Fixed';
+    const VERSION='v99.3.69_SafeCleanup';
     // Install a stub so any callers don't crash
     const stub = {
       version: VERSION,
