@@ -1,9 +1,10 @@
+
 <!doctype html>
 <html>
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>LifeLog Photo Reel</title>
+  <title>LifeLog Photo Reel v2</title>
   <style>
     html, body { height: 100%; margin: 0; background: transparent; }
     body {
@@ -26,6 +27,7 @@
       opacity: 0;
       transform: none;
       will-change: opacity;
+      pointer-events: none;
     }
     .img.show { opacity: 1; }
 
@@ -68,8 +70,7 @@
   <div class="wrap" id="wrap"></div>
 
   <script>
-    // Set a default exec here so the iframe URL can stay short.
-    // You can still override via ?exec=... in the query string.
+    const VERSION = "reel_v2_robust_drive_loading";
     const DEFAULT_EXEC = "https://script.google.com/macros/s/AKfycbyHPnSrEOdYJwoIQpRk4SajFg9cgpSeXsH0ilg9-c2EglqzeSIubVhgy7WogI-Idsu8/exec";
 
     function qs() {
@@ -110,12 +111,107 @@
       wrap.appendChild(d);
     }
 
-    function preloadUrl(url) {
+    function extractDriveId(url) {
       try {
-        const p = new Image();
-        p.decoding = "async";
-        p.src = url;
-      } catch (e) {}
+        const s = String(url || "").trim();
+        let m = s.match(/\/file\/d\/([^/]+)/i);
+        if (m && m[1]) return m[1];
+        m = s.match(/[?&]id=([^&#]+)/i);
+        if (m && m[1]) return m[1];
+        return "";
+      } catch (e) {
+        return "";
+      }
+    }
+
+    function buildCandidateUrls(rawUrl, widthHint) {
+      const src = String(rawUrl || "").trim();
+      const out = [];
+      const push = (u) => {
+        if (!u) return;
+        if (!out.includes(u)) out.push(u);
+      };
+
+      const id = extractDriveId(src);
+      const w = Math.max(512, Math.min(4000, Number(widthHint) || 1600));
+
+      if (id) {
+        push(`https://drive.google.com/thumbnail?id=${encodeURIComponent(id)}&sz=w${w}`);
+        push(`https://drive.google.com/uc?export=view&id=${encodeURIComponent(id)}`);
+        push(`https://lh3.googleusercontent.com/d/${encodeURIComponent(id)}=w${w}`);
+        push(`https://drive.usercontent.google.com/download?id=${encodeURIComponent(id)}&export=view&authuser=0`);
+      }
+
+      push(src);
+      return out;
+    }
+
+    function tryLoadCandidates(candidates, timeoutMs) {
+      const list = Array.isArray(candidates) ? candidates.slice() : [];
+      const timeout = Math.max(1200, Number(timeoutMs) || 7000);
+
+      return new Promise((resolve, reject) => {
+        let idx = 0;
+        let settled = false;
+
+        function doneOk(url) {
+          if (settled) return;
+          settled = true;
+          resolve(url);
+        }
+
+        function doneFail(err) {
+          if (settled) return;
+          settled = true;
+          reject(err || new Error("image load failed"));
+        }
+
+        function tryNext() {
+          if (settled) return;
+          if (idx >= list.length) {
+            doneFail(new Error("all candidate URLs failed"));
+            return;
+          }
+
+          const url = list[idx++];
+          const probe = new Image();
+          let timer = null;
+          let completed = false;
+
+          function cleanup() {
+            if (timer) clearTimeout(timer);
+            probe.onload = null;
+            probe.onerror = null;
+          }
+
+          probe.onload = function() {
+            if (completed || settled) return;
+            completed = true;
+            cleanup();
+            doneOk(url);
+          };
+
+          probe.onerror = function() {
+            if (completed || settled) return;
+            completed = true;
+            cleanup();
+            tryNext();
+          };
+
+          timer = setTimeout(function() {
+            if (completed || settled) return;
+            completed = true;
+            cleanup();
+            tryNext();
+          }, timeout);
+
+          probe.decoding = "async";
+          probe.referrerPolicy = "no-referrer";
+          probe.src = url;
+        }
+
+        tryNext();
+      });
     }
 
     const wrap = document.getElementById("wrap");
@@ -123,94 +219,149 @@
 
     const bot = (p.bot || "winston").trim();
     const dateKey = (p.date || "").trim();
-
-    const fit = (p.fit || "contain").toLowerCase().trim();  // contain | cover
-    const intervalMs = clampInt(p.interval_ms, 10000, 800, 15000);
+    const fit = (p.fit || "contain").toLowerCase().trim();
+    const intervalMs = clampInt(p.interval_ms, 10000, 800, 30000);
     const fadeMs = clampInt(p.fade_ms, 450, 150, 4000);
-
-    const w = clampInt(p.w, 1200, 300, 3000);
-    const preloadN = clampInt(p.preload, 2, 0, 6);
+    const w = clampInt(p.w, 1200, 300, 4000);
     const cacheS = clampInt(p.cache_s, 600, 0, 3600);
-
+    const preloadN = clampInt(p.preload, 2, 0, 6);
+    const loadTimeoutMs = clampInt(p.load_timeout_ms, 7000, 1000, 20000);
     const exec = (p.exec || DEFAULT_EXEC).trim();
 
-    // Apply fit + fade in CSS at runtime
     const style = document.createElement("style");
     style.textContent = `
       .img { object-fit: ${fit === "cover" ? "cover" : "contain"}; transition: opacity ${fadeMs}ms ease; }
     `;
     document.head.appendChild(style);
 
-    // Build JSONP call to Apps Script
     const cbName = "__llPhotoReelCb_" + Math.random().toString(16).slice(2);
-    window[cbName] = function (payload) {
-      try {
-        if (!payload || !payload.ok) {
-          showEmpty(
-            wrap,
-            "No photos",
-            (dateKey || payload?.dateKey || "") + " • " + bot,
-            payload?.error || "api error"
-          );
-          cleanup();
-          return;
-        }
-
-        const photos = Array.isArray(payload.photos) ? payload.photos : [];
-        if (!photos.length) {
-          showEmpty(wrap, "No photos", payload.dateKey + " • " + payload.bot, "");
-          cleanup();
-          return;
-        }
-
-        const hud = makeHud(payload.dateKey + " • " + payload.bot + " • " + photos.length + " photos");
-        wrap.appendChild(hud);
-
-        const imgs = photos.map((src, i) => {
-          const im = document.createElement("img");
-          im.className = "img";
-          im.alt = "photo " + (i + 1);
-          im.loading = (i === 0) ? "eager" : "lazy";
-          im.decoding = "async";
-          try { im.fetchPriority = (i === 0) ? "high" : "low"; } catch (e) {}
-          im.src = src;
-          wrap.appendChild(im);
-          return im;
-        });
-
-        let idx = 0;
-        imgs[0].classList.add("show");
-
-        function preloadAround(i) {
-          if (preloadN <= 0) return;
-          for (let k = 1; k <= preloadN; k++) {
-            const j = (i + k) % imgs.length;
-            const im = imgs[j];
-            if (im && !im.dataset.preloaded) {
-              preloadUrl(im.src);
-              im.dataset.preloaded = "1";
-            }
-          }
-        }
-
-        preloadAround(0);
-
-        setInterval(() => {
-          const prev = idx;
-          idx = (idx + 1) % imgs.length;
-          imgs[prev].classList.remove("show");
-          imgs[idx].classList.add("show");
-          preloadAround(idx);
-        }, Math.max(300, intervalMs));
-      } finally {
-        cleanup();
-      }
-    };
+    let jsonpScript = null;
+    let rotateTimer = null;
 
     function cleanup() {
       try { delete window[cbName]; } catch (e) { window[cbName] = undefined; }
       if (jsonpScript && jsonpScript.parentNode) jsonpScript.parentNode.removeChild(jsonpScript);
     }
+
+    function clearRotateTimer() {
+      if (rotateTimer) {
+        clearTimeout(rotateTimer);
+        rotateTimer = null;
+      }
+    }
+
+    window[cbName] = function(payload) {
+      (async function() {
+        try {
+          if (!payload || !payload.ok) {
+            showEmpty(
+              wrap,
+              "No photos",
+              (dateKey || (payload && payload.dateKey) || "") + " • " + bot,
+              (payload && payload.error) || "api error"
+            );
+            return;
+          }
+
+          const photos = Array.isArray(payload.photos) ? payload.photos : [];
+          if (!photos.length) {
+            showEmpty(wrap, "No photos", payload.dateKey + " • " + payload.bot, "");
+            return;
+          }
+
+          const slides = photos.map(function(src, i) {
+            const im = document.createElement("img");
+            im.className = "img";
+            im.alt = "photo " + (i + 1);
+            im.loading = (i === 0) ? "eager" : "lazy";
+            im.decoding = "async";
+            try { im.fetchPriority = (i === 0) ? "high" : "low"; } catch (e) {}
+            wrap.appendChild(im);
+            return {
+              raw: String(src || "").trim(),
+              candidates: buildCandidateUrls(src, w),
+              img: im,
+              ready: false,
+              failed: false,
+              chosenUrl: ""
+            };
+          });
+
+          const hud = makeHud(payload.dateKey + " • " + payload.bot + " • " + photos.length + " photos • " + VERSION);
+          wrap.appendChild(hud);
+
+          async function ensureReady(i) {
+            const s = slides[i];
+            if (!s) return false;
+            if (s.ready) return true;
+            if (s.failed) return false;
+            try {
+              const goodUrl = await tryLoadCandidates(s.candidates, loadTimeoutMs);
+              s.chosenUrl = goodUrl;
+              s.img.src = goodUrl;
+              s.ready = true;
+              return true;
+            } catch (err) {
+              s.failed = true;
+              return false;
+            }
+          }
+
+          async function preloadAround(i) {
+            if (preloadN <= 0) return;
+            const tasks = [];
+            for (let k = 1; k <= preloadN; k++) {
+              const j = (i + k) % slides.length;
+              const s = slides[j];
+              if (s && !s.ready && !s.failed) tasks.push(ensureReady(j));
+            }
+            try { await Promise.allSettled(tasks); } catch (e) {}
+          }
+
+          async function findNextPlayable(fromIdx) {
+            for (let step = 1; step <= slides.length; step++) {
+              const j = (fromIdx + step) % slides.length;
+              const ok = await ensureReady(j);
+              if (ok) return j;
+            }
+            return -1;
+          }
+
+          let current = -1;
+          const firstIdx = await findNextPlayable(-1);
+          if (firstIdx < 0) {
+            showEmpty(wrap, "No playable photos", payload.dateKey + " • " + payload.bot, "All image candidates failed to load");
+            return;
+          }
+
+          current = firstIdx;
+          slides[current].img.classList.add("show");
+          preloadAround(current);
+
+          async function rotate() {
+            clearRotateTimer();
+            const nextIdx = await findNextPlayable(current);
+            if (nextIdx < 0 || nextIdx === current) {
+              rotateTimer = setTimeout(rotate, Math.max(1500, intervalMs));
+              return;
+            }
+
+            slides[current].img.classList.remove("show");
+            slides[nextIdx].img.classList.add("show");
+            current = nextIdx;
+            preloadAround(current);
+            rotateTimer = setTimeout(rotate, Math.max(300, intervalMs));
+          }
+
+          rotateTimer = setTimeout(rotate, Math.max(300, intervalMs));
+        } finally {
+          cleanup();
+        }
+      })().catch(function(err) {
+        showEmpty(wrap, "Photo reel error", dateKey + " • " + bot, err && err.message ? err.message : String(err));
+        cleanup();
+      });
+    };
 
     if (!exec || !bot || !dateKey) {
       showEmpty(wrap, "Missing params", "Need bot and date", "Example: ?bot=winston&date=2025-12-20");
@@ -225,14 +376,19 @@
         "&format=jsonp" +
         "&callback=" + encodeURIComponent(cbName);
 
-      var jsonpScript = document.createElement("script");
+      jsonpScript = document.createElement("script");
       jsonpScript.src = apiUrl;
-      jsonpScript.onerror = function () {
+      jsonpScript.onerror = function() {
         showEmpty(wrap, "No photos", dateKey + " • " + bot, "Failed to load API JSONP script");
         cleanup();
       };
       document.head.appendChild(jsonpScript);
     }
+
+    window.addEventListener("beforeunload", function() {
+      clearRotateTimer();
+      cleanup();
+    });
   </script>
 </body>
 </html>
