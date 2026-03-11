@@ -13,7 +13,7 @@
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v100.0.1_StrongerFrontRowGlow
+  v100.0.2_TonedDownFrontRowGlow
     + Consolidate duplicate Photo Reel skybox CSS into one block
     + Merge duplicate selection-ring state rules
     + Remove redundant early wireframe CSS copy
@@ -126,7 +126,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v100.0.1_StrongerFrontRowGlow';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v100.0.2_TonedDownFrontRowGlow';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -254,7 +254,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 function renderBackRows(){ /* disabled */ }
 
 (function(){
-  const VERSION = 'v100.0.1_StrongerFrontRowGlow';
+  const VERSION = 'v100.0.2_TonedDownFrontRowGlow';
 
   // ---- Canonical version globals ----
   window.APP_VERSION = VERSION;
@@ -318,7 +318,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.0.1_StrongerFrontRowGlow.html</title>
+<title>garden_v100.0.2_TonedDownFrontRowGlow.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -1609,19 +1609,19 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 }
 
 
-/* --- v100.0.1: strengthen front-row glow so the active front plane reads more clearly --- */
+/* --- v100.0.5: dark charcoal front-row separation with a restrained silver highlight flourish --- */
 .weekBand.isFront .flowerSvg,
 .weekBand.isFront .flower,
 .weekBand.isFront svg,
 .weekBand.isFront .flowerWrap,
 .weekBand.isFront .flowerHolder{
   filter:
-    brightness(1.07)
-    saturate(1.06)
-    drop-shadow(0 0 2px rgba(255,255,255,0.82))
-    drop-shadow(0 0 8px rgba(255,255,255,0.34))
-    drop-shadow(0 0 16px rgba(255,255,255,0.18))
-    drop-shadow(0 0 22px rgba(170,220,255,0.12)) !important;
+    brightness(1.015)
+    saturate(1.01)
+    drop-shadow(0 0 1.15px rgba(42,46,54,0.84))
+    drop-shadow(0 0 3.8px rgba(12,14,18,0.26))
+    drop-shadow(0 0 6.6px rgba(190,198,210,0.12))
+    drop-shadow(0 0 9.5px rgba(230,236,244,0.055)) !important;
   box-shadow: none !important;
 }
 
@@ -1640,9 +1640,9 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 #frontSpotlight{
   position: absolute;
   left: 50%;
-  top: 10%;
-  width: 160%;
-  height: 105%;
+  top: 12%;
+  width: 150%;
+  height: 98%;
   transform: translateX(-50%);
   pointer-events: none;
   z-index: 40; /* above scene, below UI panels */
@@ -1650,15 +1650,15 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
   transition: opacity 180ms ease;
   mix-blend-mode: soft-light;
   background:
-    radial-gradient(ellipse at 50% 58%,
-      rgba(255,244,220,0.70) 0%,
-      rgba(255,236,198,0.48) 26%,
-      rgba(255,228,184,0.26) 50%,
-      rgba(255,220,170,0.12) 67%,
-      rgba(255,210,160,0.00) 79%),
+    radial-gradient(ellipse at 50% 60%,
+      rgba(255,244,220,0.34) 0%,
+      rgba(255,236,198,0.20) 24%,
+      rgba(255,228,184,0.10) 46%,
+      rgba(255,220,170,0.03) 64%,
+      rgba(255,210,160,0.00) 76%),
     radial-gradient(ellipse at 50% 95%,
-      rgba(0,0,0,0.14) 0%,
-      rgba(0,0,0,0.00) 60%);
+      rgba(0,0,0,0.08) 0%,
+      rgba(0,0,0,0.00) 55%);
 }
 #frontSpotlight.on{ opacity: 1; }
 </style>
@@ -2065,7 +2065,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 <style>
 
-/* --- v100.0.1_StrongerFrontRowGlow: Daily Headlines skybox typography --- */
+/* --- v100.0.2_TonedDownFrontRowGlow: Daily Headlines skybox typography --- */
 .llSkyBox[data-idx="2"] .body{ text-align:left !important; }
 .llSkyBox[data-idx="2"] .body .sbHeadlineLine{
   text-align:left !important;
@@ -2082,7 +2082,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.0.1_StrongerFrontRowGlow.html • v100.0.1_StrongerFrontRowGlow • Built: 2026-03-10T18:35:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.0.2_TonedDownFrontRowGlow.html • v100.0.2_TonedDownFrontRowGlow • Built: 2026-03-10T18:35:00Z UTC</div>
 
 
 <script>
@@ -2096,8 +2096,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v100.0.1_StrongerFrontRowGlow.html</span><br>
-Version: <span id="__bannerVersion">v100.0.1_StrongerFrontRowGlow</span><br>
+File: <span id="__bannerFileName">garden_v100.0.2_TonedDownFrontRowGlow.html</span><br>
+Version: <span id="__bannerVersion">v100.0.2_TonedDownFrontRowGlow</span><br>
 Created: 2026-03-10T18:35:00Z</span></div>
 <script>
 (function(){
@@ -2113,7 +2113,7 @@ Created: 2026-03-10T18:35:00Z</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v100.0.1_StrongerFrontRowGlow loaded", new Date().toISOString());
+  console.log("[VERSION] v100.0.2_TonedDownFrontRowGlow loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -2719,7 +2719,7 @@ window.__LL_hillTopAtX_fill = function(x, yTopGuess, yBottom){
 <!-- Debug Panel -->
 <div aria-hidden="false" id="dbgPanel">
   <div class="hdr">
-    <div class="t">LifeLog DEBUG v100.0.1_StrongerFrontRowGlow (press D)</div>
+    <div class="t">LifeLog DEBUG v100.0.2_TonedDownFrontRowGlow (press D)</div>
     <div class="btns">
       <button id="dbgCopy" type="button">Copy</button>
       <button id="dbgClear" type="button">Clear</button>
@@ -3081,7 +3081,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   </div>
 
   <div class="util hidden" id="util">
-    <div class="utilTitle">LifeLog Garden Walk v100.0.1_StrongerFrontRowGlow</div>
+    <div class="utilTitle">LifeLog Garden Walk v100.0.2_TonedDownFrontRowGlow</div>
     <div class="utilSub">Scroll to walk through weeks. Press H to hide/show this panel.</div>
 	    <div class="row">
 	      <label>Wireframe</label>
@@ -3261,7 +3261,7 @@ function wrapLLDBGStep_(){
     }
   }catch(e){}
 }
-dbg_('v100.0.1_StrongerFrontRowGlow.0: Main script starting');
+dbg_('v100.0.2_TonedDownFrontRowGlow.0: Main script starting');
 
 // ============================================
 // Constants
@@ -5008,7 +5008,7 @@ function refreshFrontGrass(){
 // ============================================
 
 // ============================================
-// v100.0.1_StrongerFrontRowGlow: keep back-row flowers horizontally de-clumped
+// v100.0.2_TonedDownFrontRowGlow: keep back-row flowers horizontally de-clumped
 // ============================================
 const __LL_BACK_SPREAD_MAX_BEHIND = 5;    // reach near-full spread quickly (about 4-6 rows back)
 const __LL_BACK_SPREAD_EDGE_PAD   = 0.006; // keep a tiny inset so nothing clips at extreme edges
@@ -5224,7 +5224,7 @@ if (DOM.uBackRowsOn && DOM.uBackRowsOn.checked) {
 
       band.style.opacity = "1";
       if (behind < 0.03){
-        band.style.filter = "drop-shadow(0 0 14px rgba(255,255,255,0.18)) drop-shadow(0 0 28px rgba(120,190,255,0.12)) brightness(1.04) saturate(1.06) contrast(1.03)";
+        band.style.filter = "drop-shadow(0 0 4px rgba(18,20,26,0.18)) drop-shadow(0 0 10px rgba(8,10,14,0.10)) brightness(1.01) saturate(1.01) contrast(1.01)";
       } else {
         band.style.filter = "none";
       }
@@ -9506,7 +9506,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.__LL_LAST_PTR_X__ = window.innerWidth/2;
   window.__LL_LAST_PTR_Y__ = window.innerHeight/2;
   window.addEventListener('pointermove', (ev)=>{ window.__LL_LAST_PTR_X__ = ev.clientX; window.__LL_LAST_PTR_Y__ = ev.clientY; }, {passive:true});
-dbg_('v100.0.1_StrongerFrontRowGlow.0: DOMContentLoaded');
+dbg_('v100.0.2_TonedDownFrontRowGlow.0: DOMContentLoaded');
 
   cacheDomRefs();
   try{ wrapLLDBGStep_(); }catch(e){}
@@ -9652,7 +9652,7 @@ window.__LL_BACKROWS_ANCHOR_MATCHED = true; // prevent later global overrides
   }catch(e){}
 
 
-  dbg_('v100.0.1_StrongerFrontRowGlow.0: Initialization complete');
+  dbg_('v100.0.2_TonedDownFrontRowGlow.0: Initialization complete');
 });
 })();
 
@@ -10030,7 +10030,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 
 
 <script>
-// v100.0.1_StrongerFrontRowGlow lifecycle manager
+// v100.0.2_TonedDownFrontRowGlow lifecycle manager
 (function(){
   if (window.__LL_SYS__) return;
   const SYS = { timeouts:new Set(), intervals:new Set(), observers:new Set(), listeners:[] };
@@ -10046,14 +10046,14 @@ window.applySelectedAdornments = applySelectedAdornments;
 </script>
 
 <script>
-// v100.0.1_StrongerFrontRowGlow: unified BRX/back-row hard-disable controller.
+// v100.0.2_TonedDownFrontRowGlow: unified BRX/back-row hard-disable controller.
 (function(){
   try{
     window.__PHASEA_DISABLE_BRX__ = true;
     window.__LL_DISABLE_BACKHILL__ = true;
     window.BRX_DISABLE_LEGACY_BACKROWS = true;
 
-    const VERSION = 'v100.0.1_StrongerFrontRowGlow';
+    const VERSION = 'v100.0.2_TonedDownFrontRowGlow';
     const hideLegacyGroups = () => {
       ['backRowsG','gridWeeksG','hillGuidesG','gridOverlayG','gridWeeksOverlay','brxHillPngG','brxHillDbgG']
         .forEach(id => {
