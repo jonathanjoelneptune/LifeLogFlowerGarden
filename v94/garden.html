@@ -7249,7 +7249,7 @@ function updateSkyBoxesFromDay_(day, weekKey) {
       const headlineHtml = headlineLines.slice(0, 6).map(line => {
         const parts = String(line).split(/\s-\s(.+)/);
         if (parts.length >= 3) {
-          return `<div class="sbLine sbHeadlineLine"><strong>${safe(parts[0])}</strong> - ${safe(parts[1])}</div>`;
+          return `<div class="sbLine sbHeadlineLine">${safe(parts[0])} - ${safe(parts[1])}</div>`;
         }
         return `<div class="sbLine sbHeadlineLine">${safe(line)}</div>`;
       }).join("");
