@@ -2066,14 +2066,26 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 <style>
 
 /* --- v100.0.2_TonedDownFrontRowGlow: Daily Headlines skybox typography --- */
-.llSkyBox[data-idx="2"] .body{ text-align:left !important; }
-.llSkyBox[data-idx="2"] .body .sbHeadlineLine{
+.llSkyBox[data-idx="2"] .body,
+.llSkyBox[data-skybox-idx="2"] .body{
+  text-align:left !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+.llSkyBox[data-idx="2"] .head,
+.llSkyBox[data-skybox-idx="2"] .head{
+  padding-left: 18px !important;
+  padding-right: 18px !important;
+}
+.llSkyBox[data-idx="2"] .body .sbHeadlineLine,
+.llSkyBox[data-skybox-idx="2"] .body .sbHeadlineLine{
   text-align:left !important;
   margin: 0.24em 0;
   font-weight: 650;
   line-height: 1.22;
 }
-.llSkyBox[data-idx="2"] .body .sbHeadlineLine + .sbHeadlineLine{ margin-top: 0.34em; }
+.llSkyBox[data-idx="2"] .body .sbHeadlineLine + .sbHeadlineLine,
+.llSkyBox[data-skybox-idx="2"] .body .sbHeadlineLine + .sbHeadlineLine{ margin-top: 0.34em; }
 
 </style>
 <style>
@@ -2082,7 +2094,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.0.2_TonedDownFrontRowGlow.html • v100.0.2_TonedDownFrontRowGlow • Built: 2026-03-10T18:35:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.1.5_DailyHeadlinesNoSidePadding.html • v100.1.5_DailyHeadlinesNoSidePadding • Built: 2026-03-10T20:45:00Z UTC</div>
 
 
 <script>
