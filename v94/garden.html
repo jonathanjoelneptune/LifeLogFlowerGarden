@@ -7593,7 +7593,7 @@ function layoutSkyBoxes_(wrap){
   const SKY_TOP_PAD = 14;               // keep boxes away from stage top
   const HEADER_GAP_PX = 12;             // requested header -> cards gap
   const FLOWER_CLEARANCE_PX = 14;       // keep box bottom above flower top by this much
-  const BOX_W0 = 503;                   // base (unscaled) box width (~50% wider than prior version)
+  const BOX_W0 = 335;                   // base (unscaled) box dimensions (+25%)
   const BOX_H0 = 175;
   const GAP_X0 = 18;
   const GAP_Y0 = 18;
@@ -7840,7 +7840,7 @@ function layoutSkyBoxes_(wrap){
     const groupH = groupH0For(c) * uiScale;
     if (groupH > availH + 0.5) continue;
 
-    const boxW = Math.round(BOX_W0 * uiScale * 1.25);
+    const boxW = Math.round(BOX_W0 * uiScale * 1.20);
     const boxH = Math.round(BOX_H0 * uiScale);
 
     // v99.3.28_TodayPoll_ApplyUpdateAndDebug: Header pill width matches a single skybox (same as Daily Statistics width)
