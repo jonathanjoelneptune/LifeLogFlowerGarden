@@ -6991,20 +6991,20 @@ function getSkyBoxFitOpts_(boxEl, bodyEl){
     // Identify which skybox this is (0=Stats, 1=Reflection, 2=Daily Headlines, 3=Photo Reel)
     const idx = Number((boxEl.dataset && boxEl.dataset.idx) ? boxEl.dataset.idx : (boxEl.getAttribute("data-skybox-idx") || "0"));
 
-    if (idx === 2) {
-      const lineCount = Math.max(1, bodyEl ? bodyEl.querySelectorAll('.sbHeadlineLine').length : 0);
-      const bodyH = Math.max(1, (bodyEl && bodyEl.clientHeight) ? bodyEl.clientHeight : h);
-      const bodyW = Math.max(1, (bodyEl && bodyEl.clientWidth) ? bodyEl.clientWidth : w);
-      const maxByHeight = Math.max(13, Math.floor((bodyH / lineCount) / 1.14));
-      const maxByWidth = Math.max(13, Math.floor(bodyW / 42));
-      const computedMax = Math.max(13, Math.min(75.5, maxByHeight, maxByWidth));
-      return {
-        minPx: 13,
-        maxPx: computedMax,
-        lineHeightEm: 1.10,
-        epsilonPx: SKYFIT_.epsPx,
-      };
-    }
+if (idx === 2) {
+  const lineCount = Math.max(1, bodyEl ? bodyEl.querySelectorAll('.sbHeadlineLine').length : 0);
+  const bodyH = Math.max(1, (bodyEl && bodyEl.clientHeight) ? bodyEl.clientHeight : h);
+
+  const maxByHeight = Math.max(13, Math.floor((bodyH / lineCount) / 1.12));
+  const computedMax = Math.max(13, Math.min(24, maxByHeight));
+
+  return {
+    minPx: 13,
+    maxPx: computedMax,
+    lineHeightEm: 1.08,
+    epsilonPx: SKYFIT_.epsPx,
+  };
+}
 
     // Allow different scaling aggressiveness per box type.
     let frac = 0.22;
