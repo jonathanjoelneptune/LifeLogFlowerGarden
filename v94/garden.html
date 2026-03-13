@@ -2066,28 +2066,34 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 <style>
 
-/* --- v100.0.2_TonedDownFrontRowGlow: Daily Headlines skybox typography --- */
+/* --- v100.1.10_DailyHeadlinesDynamicFit: Daily Headlines skybox typography --- */
 .llSkyBox[data-idx="2"] .body,
 .llSkyBox[data-skybox-idx="2"] .body{
   text-align:left !important;
-  padding-left: 0 !important;
-  padding-right: 0 !important;
+  padding: 2px 16px 8px 16px !important;
+  margin-top: 6px !important;
+  overflow: hidden !important;
 }
 .llSkyBox[data-idx="2"] .head,
-.llSkyBox[data-skybox-idx="2"] .head{
-  padding-left: 18px !important;
-  padding-right: 18px !important;
+.llSkyBox[data-skybox-idx="2"] .head,
+.llSkyBox[data-idx="2"] .sub,
+.llSkyBox[data-skybox-idx="2"] .sub{
+  padding-left: 16px !important;
+  padding-right: 16px !important;
 }
 .llSkyBox[data-idx="2"] .body .sbHeadlineLine,
 .llSkyBox[data-skybox-idx="2"] .body .sbHeadlineLine{
+  display:block;
   text-align:left !important;
-  margin: 0.24em 0;
+  margin: 0.10em 0;
   font-weight: 400;
-  font-size: 15.5px;
-  line-height: 1.22;
+  line-height: inherit;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: clip !important;
 }
 .llSkyBox[data-idx="2"] .body .sbHeadlineLine + .sbHeadlineLine,
-.llSkyBox[data-skybox-idx="2"] .body .sbHeadlineLine + .sbHeadlineLine{ margin-top: 0.34em; }
+.llSkyBox[data-skybox-idx="2"] .body .sbHeadlineLine + .sbHeadlineLine{ margin-top: 0.08em; }
 
 </style>
 <style>
@@ -2096,7 +2102,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.1.9_DailyHeadlines7_SmallerText.html • v100.1.9_DailyHeadlines7_SmallerText • Built: 2026-03-12T16:20:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.1.10_DailyHeadlinesDynamicFit.html • v100.1.10_DailyHeadlinesDynamicFit • Built: 2026-03-13T06:35:00Z UTC</div>
 
 
 <script>
@@ -2110,9 +2116,9 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v100.0.2_TonedDownFrontRowGlow.html</span><br>
-Version: <span id="__bannerVersion">v100.0.2_TonedDownFrontRowGlow</span><br>
-Created: 2026-03-10T18:35:00Z</span></div>
+File: <span id="__bannerFileName">garden_v100.1.10_DailyHeadlinesDynamicFit.html</span><br>
+Version: <span id="__bannerVersion">v100.1.10_DailyHeadlinesDynamicFit</span><br>
+Created: 2026-03-13T06:35:00Z</span></div>
 <script>
 (function(){
   try{
@@ -2127,7 +2133,7 @@ Created: 2026-03-10T18:35:00Z</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v100.0.2_TonedDownFrontRowGlow loaded", new Date().toISOString());
+  console.log("[VERSION] v100.1.10_DailyHeadlinesDynamicFit loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -6982,30 +6988,46 @@ function getSkyBoxFitOpts_(boxEl, bodyEl){
     const h = Math.max(1, rect.height || boxEl.clientHeight || 1);
     const w = Math.max(1, rect.width || boxEl.clientWidth || 1);
 
-    // Identify which skybox this is (0=Stats, 1=Reflection, 2=Haiku, 3=Photo Reel)
+    // Identify which skybox this is (0=Stats, 1=Reflection, 2=Daily Headlines, 3=Photo Reel)
     const idx = Number((boxEl.dataset && boxEl.dataset.idx) ? boxEl.dataset.idx : (boxEl.getAttribute("data-skybox-idx") || "0"));
 
+    if (idx === 2) {
+      const lineCount = Math.max(1, bodyEl ? bodyEl.querySelectorAll('.sbHeadlineLine').length : 0);
+      const bodyH = Math.max(1, (bodyEl && bodyEl.clientHeight) ? bodyEl.clientHeight : h);
+      const bodyW = Math.max(1, (bodyEl && bodyEl.clientWidth) ? bodyEl.clientWidth : w);
+      const maxByHeight = Math.max(13, Math.floor((bodyH / lineCount) / 1.14));
+      const maxByWidth = Math.max(13, Math.floor(bodyW / 42));
+      const computedMax = Math.max(13, Math.min(16.5, maxByHeight, maxByWidth));
+      return {
+        minPx: 13,
+        maxPx: computedMax,
+        lineHeightEm: 1.10,
+        epsilonPx: SKYFIT_.epsPx,
+      };
+    }
+
     // Allow different scaling aggressiveness per box type.
-    // Goal: short content (haiku) can be big, long content (reflection) stays smaller.
-    let frac = 0.22;   // default
+    let frac = 0.22;
     if (idx === 0) frac = 0.24;        // Daily Statistics
-    if (idx === 1) frac = 0.18;        // Daily Reflection (usually longest)
-    if (idx === 2) frac = 0.32;        // Haiku (usually shortest)
+    if (idx === 1) frac = 0.18;        // Daily Reflection
     if (idx === 3) frac = 0.22;        // Photo Reel
 
     const computedMax = Math.floor(Math.min(72, Math.max(16, h * frac)));
-
-    // Slightly reduce line height when text is small to use space better.
     const lh = (idx === 1) ? 1.22 : 1.25;
 
     return {
       minPx: SKYFIT_.minPx,
       maxPx: computedMax,
-      lineHeightMult: lh,
-      epsPx: SKYFIT_.epsPx,
+      lineHeightEm: lh,
+      epsilonPx: SKYFIT_.epsPx,
     };
   }catch(e){
-    return SKYFIT_;
+    return {
+      minPx: SKYFIT_.minPx,
+      maxPx: SKYFIT_.maxPx,
+      lineHeightEm: SKYFIT_.lineHeightMult,
+      epsilonPx: SKYFIT_.epsPx,
+    };
   }
 }
 
@@ -7091,17 +7113,18 @@ function fitElementText_(el, opts){
 function fitSkyBoxText_(box){
   if (!box) return;
   const head = box.querySelector('.head');
+  const sub = box.querySelector('.sub');
   const body = box.querySelector('.body');
   if (!body) return;
 
-  // Constrain the body to the remaining height under the header.
-  const headH = head ? head.offsetHeight : 0;
-  const availH = Math.max(0, box.clientHeight - headH);
+  // Constrain the body to the remaining height under the header/subtitle.
+  const chromeH = (head ? head.offsetHeight : 0) + (sub ? sub.offsetHeight : 0);
+  const availH = Math.max(0, box.clientHeight - chromeH);
   body.style.height = `${availH}px`;
   body.style.maxHeight = `${availH}px`;
 
   // Only fit body content, never the header.
-  fitElementText_(body);
+  fitElementText_(body, getSkyBoxFitOpts_(box, body));
 }
 
 // Kick once after DOM is ready and on resize.
