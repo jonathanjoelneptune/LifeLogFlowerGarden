@@ -7271,7 +7271,7 @@ function updateSkyBoxesFromDay_(day, weekKey) {
     if (!headlineLines.length) {
       setSkyBoxBody_(__llBoxes[2], `<div class="sbLine sbEmpty">${safe("No headlines yet.")}</div>`);
     } else {
-      const headlineHtml = headlineLines.slice(0, 7).map(line => {
+      const headlineHtml = headlineLines.slice(0, 9).map(line => {
         const parts = String(line).split(/\s-\s(.+)/);
         if (parts.length >= 3) {
           return `<div class="sbLine sbHeadlineLine">${safe(parts[0])} - ${safe(parts[1])}</div>`;
