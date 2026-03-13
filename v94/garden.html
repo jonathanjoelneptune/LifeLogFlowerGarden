@@ -6997,7 +6997,7 @@ function getSkyBoxFitOpts_(boxEl, bodyEl){
       const bodyW = Math.max(1, (bodyEl && bodyEl.clientWidth) ? bodyEl.clientWidth : w);
       const maxByHeight = Math.max(13, Math.floor((bodyH / lineCount) / 1.14));
       const maxByWidth = Math.max(13, Math.floor(bodyW / 42));
-      const computedMax = Math.max(13, Math.min(50.5, maxByHeight, maxByWidth));
+      const computedMax = Math.max(13, Math.min(75.5, maxByHeight, maxByWidth));
       return {
         minPx: 13,
         maxPx: computedMax,
