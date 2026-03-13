@@ -10,6 +10,7 @@
 
 
 
+
 <!DOCTYPE html>
 <!--
   CHANGELOG
@@ -2082,6 +2083,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
   text-align:left !important;
   margin: 0.24em 0;
   font-weight: 400;
+  font-size: 15.5px;
   line-height: 1.22;
 }
 .llSkyBox[data-idx="2"] .body .sbHeadlineLine + .sbHeadlineLine,
@@ -2094,7 +2096,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.1.8_DailyHeadlinesActuallyNoBold.html • v100.1.8_DailyHeadlinesActuallyNoBold • Built: 2026-03-10T20:45:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.1.9_DailyHeadlines7_SmallerText.html • v100.1.9_DailyHeadlines7_SmallerText • Built: 2026-03-12T16:20:00Z UTC</div>
 
 
 <script>
@@ -7246,7 +7248,7 @@ function updateSkyBoxesFromDay_(day, weekKey) {
     if (!headlineLines.length) {
       setSkyBoxBody_(__llBoxes[2], `<div class="sbLine sbEmpty">${safe("No headlines yet.")}</div>`);
     } else {
-      const headlineHtml = headlineLines.slice(0, 6).map(line => {
+      const headlineHtml = headlineLines.slice(0, 7).map(line => {
         const parts = String(line).split(/\s-\s(.+)/);
         if (parts.length >= 3) {
           return `<div class="sbLine sbHeadlineLine">${safe(parts[0])} - ${safe(parts[1])}</div>`;
