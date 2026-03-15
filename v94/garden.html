@@ -1107,6 +1107,19 @@ body {
   font-weight: 800;
   color: var(--dowDate);
 }
+.dow .stars {
+  display: block;
+  margin-top: 2px;
+  font-size: calc(7.4px * var(--textScale,1));
+  letter-spacing: 0.4px;
+  font-weight: 900;
+  line-height: 0.95;
+  color: rgba(154,118,44,0.96);
+  text-shadow: 0 1px 0 rgba(255,255,255,0.40);
+}
+.dow.future .stars {
+  color: rgba(138,130,118,0.78);
+}
 .dow.future {
   --dowAccent: rgba(183,174,156,0.90);
   --dowFace1: rgba(248,245,238,0.97);
@@ -2164,7 +2177,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 <style>
 
-/* --- v100.1.24_DOWBottomStripeAccent: Daily Headlines skybox typography --- */
+/* --- v100.1.25_DOWStars: Daily Headlines skybox typography --- */
 .llSkyBox[data-idx="2"] .body,
 .llSkyBox[data-skybox-idx="2"] .body{
   text-align:left !important;
@@ -2200,7 +2213,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.1.24_DOWBottomStripeAccent.html • v100.1.24_DOWBottomStripeAccent • Built: 2026-03-15T09:40:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.1.25_DOWStars.html • v100.1.25_DOWStars • Built: 2026-03-15T09:40:00Z UTC</div>
 
 
 <script>
@@ -2214,8 +2227,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v100.1.24_DOWBottomStripeAccent.html</span><br>
-Version: <span id="__bannerVersion">v100.1.24_DOWBottomStripeAccent</span><br>
+File: <span id="__bannerFileName">garden_v100.1.25_DOWStars.html</span><br>
+Version: <span id="__bannerVersion">v100.1.25_DOWStars</span><br>
 Created: 2026-03-15T09:40:00Z</span></div>
 <script>
 (function(){
@@ -2231,7 +2244,7 @@ Created: 2026-03-15T09:40:00Z</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v100.1.24_DOWBottomStripeAccent loaded", new Date().toISOString());
+  console.log("[VERSION] v100.1.25_DOWStars loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -3320,13 +3333,13 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
     <div class="frontGrass" id="frontGrass"></div>
     <div class="dowGrass" id="dowGrass"></div>
     <div class="dowStrip" id="dowStrip">
-      <div class="dow"><span>Monday</span><span class="date" id="d0">--/--</span></div>
-      <div class="dow"><span>Tuesday</span><span class="date" id="d1">--/--</span></div>
-      <div class="dow"><span>Wednesday</span><span class="date" id="d2">--/--</span></div>
-      <div class="dow"><span>Thursday</span><span class="date" id="d3">--/--</span></div>
-      <div class="dow"><span>Friday</span><span class="date" id="d4">--/--</span></div>
-      <div class="dow"><span>Saturday</span><span class="date" id="d5">--/--</span></div>
-      <div class="dow"><span>Sunday</span><span class="date" id="d6">--/--</span></div>
+      <div class="dow"><span>Monday</span><span class="date" id="d0">--/--</span><span class="stars" id="s0">★</span></div>
+      <div class="dow"><span>Tuesday</span><span class="date" id="d1">--/--</span><span class="stars" id="s1">★</span></div>
+      <div class="dow"><span>Wednesday</span><span class="date" id="d2">--/--</span><span class="stars" id="s2">★</span></div>
+      <div class="dow"><span>Thursday</span><span class="date" id="d3">--/--</span><span class="stars" id="s3">★</span></div>
+      <div class="dow"><span>Friday</span><span class="date" id="d4">--/--</span><span class="stars" id="s4">★</span></div>
+      <div class="dow"><span>Saturday</span><span class="date" id="d5">--/--</span><span class="stars" id="s5">★</span></div>
+      <div class="dow"><span>Sunday</span><span class="date" id="d6">--/--</span><span class="stars" id="s6">★</span></div>
     </div>
   </div>
 <script>
@@ -5462,6 +5475,7 @@ function updateFrontText(focusWeekIndex){
     const dk = dateKeyFromDate_(d);
     const el = document.getElementById("d"+i);
     if (el) el.textContent = fmtMMDD(d);
+    const starsEl = document.getElementById("s"+i);
     const tag = el ? el.closest('.dow') : null;
     if (tag){
       const day = (meta2 && Array.isArray(meta2.days)) ? (meta2.days[i] || null) : null;
@@ -5469,6 +5483,7 @@ function updateFrontText(focusWeekIndex){
       const isFuture = String(dk) > String(todayKey);
       tag.classList.remove('future','lvl1','lvl2','lvl3','lvl4','lvl5');
       tag.classList.add(isFuture ? 'future' : ('lvl' + level));
+      if (starsEl) starsEl.textContent = isFuture ? '' : '★'.repeat(level);
       tag.setAttribute('title', isFuture ? 'Future day' : ((day && day.dayLevelLabel) ? String(day.dayLevelLabel) : ('Level ' + level)));
     }
   }
