@@ -12,6 +12,8 @@
 
 
 
+
+
 <!DOCTYPE html>
 <!--
   CHANGELOG
@@ -1021,30 +1023,67 @@ body {
   position: absolute;
   left: 92px;
   right: 92px;
-  bottom: 24px;
+  bottom: 34px;
   z-index: 12;
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   pointer-events: none;
-  opacity: 0.96;
+  opacity: 1;
   align-items: center;
-  text-shadow: 0 2px 10px rgba(0,0,0,0.25);
+  text-shadow: none;
 }
 
 .dow {
+  justify-self: center;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 66px;
+  padding: 6px 12px 7px;
+  border-radius: 999px;
   text-align: center;
   font-size: calc(12px * var(--textScale,1));
-  color: rgba(255,255,255,0.94);
+  color: rgba(34,34,34,0.96);
   font-variant-numeric: tabular-nums;
-  line-height: 1.1;
+  line-height: 1.02;
+  font-weight: 800;
+  letter-spacing: 0.05px;
+  border: 1px solid rgba(255,255,255,0.38);
+  background: linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(245,245,245,0.25) 100%);
+  -webkit-backdrop-filter: blur(10px) saturate(1.1);
+  backdrop-filter: blur(10px) saturate(1.1);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.28), 0 5px 12px rgba(0,0,0,0.16);
+}
+.dow > span:first-child{
+  font-weight: 800;
 }
 .dow .date {
   display: block;
-  margin-top: 4px;
+  margin-top: 2px;
   font-size: calc(10px * var(--textScale,1));
-  letter-spacing: 0.6px;
-  color: rgba(255,255,255,0.82);
+  letter-spacing: 0.35px;
+  color: rgba(34,34,34,0.90);
+  font-weight: 800;
 }
+.dow.wkRank1{ background:linear-gradient(180deg, rgba(255,225,230,0.25) 0%, rgba(255,210,220,0.25) 100%); border-color:rgba(204,110,132,0.42); color:rgba(38,30,33,0.96); }
+.dow.wkRank1 .date{ color:rgba(38,30,33,0.88); }
+.dow.wkRank2{ background:linear-gradient(180deg, rgba(255,245,208,0.25) 0%, rgba(255,235,186,0.25) 100%); border-color:rgba(213,186,101,0.42); color:rgba(38,34,24,0.96); }
+.dow.wkRank2 .date{ color:rgba(38,34,24,0.88); }
+.dow.wkRank3{ background:linear-gradient(180deg, rgba(255,232,208,0.25) 0%, rgba(255,220,194,0.25) 100%); border-color:rgba(215,154,102,0.42); color:rgba(42,31,24,0.96); }
+.dow.wkRank3 .date{ color:rgba(42,31,24,0.88); }
+.dow.wkRank4{ background:linear-gradient(180deg, rgba(220,248,227,0.25) 0%, rgba(202,240,211,0.25) 100%); border-color:rgba(105,175,123,0.42); color:rgba(24,42,29,0.96); }
+.dow.wkRank4 .date{ color:rgba(24,42,29,0.88); }
+.dow.wkRank5{ background:linear-gradient(180deg, rgba(223,250,228,0.25) 0%, rgba(208,246,216,0.25) 100%); border-color:rgba(224,191,92,0.50); color:rgba(24,42,29,0.98); box-shadow: inset 0 1px 0 rgba(255,255,255,0.28), 0 6px 14px rgba(0,0,0,0.17), 0 0 0 1px rgba(244,219,143,0.18); }
+.dow.wkRank5 .date{ color:rgba(24,42,29,0.88); }
+.dow.wkNeutral,
+.dow.future{
+  background: linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(244,244,244,0.25) 100%);
+  border-color: rgba(210,210,210,0.38);
+  color: rgba(40,40,40,0.96);
+}
+.dow.wkNeutral .date,
+.dow.future .date{ color: rgba(40,40,40,0.86); }
 
 /* ---------- Week Header ---------- */
 .weekHeader {
@@ -2067,7 +2106,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 <style>
 
-/* --- v100.1.12_DailyHeadlinesPadding8: Daily Headlines skybox typography --- */
+/* --- v100.1.18_PaddingControlsAndFrostedPills: Daily Headlines skybox typography --- */
 .llSkyBox[data-idx="2"] .body,
 .llSkyBox[data-skybox-idx="2"] .body{
   text-align:left !important;
@@ -2103,7 +2142,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.1.12_DailyHeadlinesPadding8.html • v100.1.12_DailyHeadlinesPadding8 • Built: 2026-03-15T06:40:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.1.18_PaddingControlsAndFrostedPills.html • v100.1.18_PaddingControlsAndFrostedPills • Built: 2026-03-15T08:20:00Z UTC</div>
 
 
 <script>
@@ -2117,9 +2156,9 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v100.1.12_DailyHeadlinesPadding8.html</span><br>
-Version: <span id="__bannerVersion">v100.1.12_DailyHeadlinesPadding8</span><br>
-Created: 2026-03-15T06:40:00Z</span></div>
+File: <span id="__bannerFileName">garden_v100.1.18_PaddingControlsAndFrostedPills.html</span><br>
+Version: <span id="__bannerVersion">v100.1.18_PaddingControlsAndFrostedPills</span><br>
+Created: 2026-03-15T08:20:00Z</span></div>
 <script>
 (function(){
   try{
@@ -2134,7 +2173,7 @@ Created: 2026-03-15T06:40:00Z</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v100.1.12_DailyHeadlinesPadding8 loaded", new Date().toISOString());
+  console.log("[VERSION] v100.1.18_PaddingControlsAndFrostedPills loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -3208,6 +3247,35 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
       Time Source: <span id="vTimeSource">Fixed Defaults</span>
     </div>
     <div class="hint" style="margin-top:2px; opacity:0.92;">Garden Data Source: <span id="vDataSource">Offline</span></div>
+    <hr style="border:none;border-top:1px solid rgba(255,255,255,0.22);margin:10px 0;"/>
+    <div class="utilNote">Skybox body text controls. Header titles stay unchanged.</div>
+    <div class="row">
+      <label>Stats text size</label>
+      <div class="row2" style="grid-column:2 / span 1; justify-content:flex-start; gap:8px; margin-top:0; flex-wrap:nowrap;">
+        <button class="btn" id="btnStatsTextMinus" type="button">Text size -</button>
+        <button class="btn" id="btnStatsTextPlus" type="button">Text size +</button>
+        <button class="btn" id="btnStatsTextFit" type="button">Fit to skybox</button>
+      </div>
+      <div class="val" id="vStatsTextSize">Auto</div>
+    </div>
+    <div class="row">
+      <label>Reflection text size</label>
+      <div class="row2" style="grid-column:2 / span 1; justify-content:flex-start; gap:8px; margin-top:0; flex-wrap:nowrap;">
+        <button class="btn" id="btnReflectionTextMinus" type="button">Text size -</button>
+        <button class="btn" id="btnReflectionTextPlus" type="button">Text size +</button>
+        <button class="btn" id="btnReflectionTextFit" type="button">Fit to skybox</button>
+      </div>
+      <div class="val" id="vReflectionTextSize">Auto</div>
+    </div>
+    <div class="row">
+      <label>Headlines text size</label>
+      <div class="row2" style="grid-column:2 / span 1; justify-content:flex-start; gap:8px; margin-top:0; flex-wrap:nowrap;">
+        <button class="btn" id="btnHeadlinesTextMinus" type="button">Text size -</button>
+        <button class="btn" id="btnHeadlinesTextPlus" type="button">Text size +</button>
+        <button class="btn" id="btnHeadlinesTextFit" type="button">Fit to skybox</button>
+      </div>
+      <div class="val" id="vHeadlinesTextSize">Auto</div>
+    </div>
     <div class="hint">
       Hotkeys: <code>H</code> hide utilities, <code>D</code> toggle debug, <code>B</code> toggle hitboxes.
     </div>
@@ -5358,11 +5426,21 @@ function updateFrontText(focusWeekIndex){
   const seasonKey = (__rt.visual.seasonOverride !== "auto") ? __rt.visual.seasonOverride : activeSeason;
   setForegroundGrassTintForSeason(seasonKey);
 
+  const todayKey = fmtDateKey(new Date());
   for (let i=0;i<7;i++){
     const d = new Date(mon);
     d.setDate(d.getDate() + i);
     const el = document.getElementById("d"+i);
     if (el) el.textContent = fmtMMDD(d);
+    const pill = el ? el.closest('.dow') : null;
+    if (pill){
+      const dayMeta = (weekData && Array.isArray(weekData.days)) ? (weekData.days[i] || null) : null;
+      const rawLevel = Number((dayMeta && (dayMeta.dayLevel ?? dayMeta.DayLevel ?? dayMeta.level ?? dayMeta.Level)) || dayLevelForWeekday_(i) || 1);
+      const dayLevel = Math.max(1, Math.min(5, rawLevel|0));
+      const dayKey = fmtDateKey(d);
+      const isFuture = dayKey > todayKey;
+      pill.className = 'dow ' + (isFuture ? 'future wkNeutral' : ('wkRank' + dayLevel));
+    }
   }
 
   const month = monthName(mon);
@@ -6916,6 +6994,7 @@ __llBoxes = titles.map((t,i)=>{
     }
   }catch(e){}
 
+  refreshSkyBoxTextSizeLabels_();
 }
 
 function setSkyBoxBody_(box, html){
@@ -6925,6 +7004,96 @@ function setSkyBoxBody_(box, html){
   body.innerHTML = html;
   // After content changes, refit to available space.
   scheduleFitSkyBox_(box);
+  refreshSkyBoxTextSizeLabels_();
+}
+
+const SKYBOX_TEXT_CONTROL_STEP_ = 0.5;
+const SKYBOX_TEXT_CONTROL_TARGETS_ = [
+  { idx: 0, key: 'stats', label: 'Stats', valId: 'vStatsTextSize' },
+  { idx: 1, key: 'reflection', label: 'Reflection', valId: 'vReflectionTextSize' },
+  { idx: 2, key: 'headlines', label: 'Headlines', valId: 'vHeadlinesTextSize' }
+];
+window.__llSkyBoxTextPrefs = window.__llSkyBoxTextPrefs || {};
+window.__llSkyBoxLastFit = window.__llSkyBoxLastFit || {};
+
+function getSkyBoxTextPref_(idx){
+  const k = String(idx);
+  if (!window.__llSkyBoxTextPrefs[k]) window.__llSkyBoxTextPrefs[k] = { mode: 'auto', px: null };
+  return window.__llSkyBoxTextPrefs[k];
+}
+
+function getSkyBoxBodyElByIdx_(idx){
+  try{
+    if (!window.__llSkyBoxes || !window.__llSkyBoxes[idx]) return null;
+    return window.__llSkyBoxes[idx].querySelector('.body');
+  }catch(e){ return null; }
+}
+
+function getSkyBoxDisplaySizeText_(idx){
+  const pref = getSkyBoxTextPref_(idx);
+  if (pref.mode === 'manual' && isFinite(pref.px)) return pref.px.toFixed(1) + 'px';
+  const last = Number(window.__llSkyBoxLastFit[String(idx)] || 0);
+  return last > 0 ? ('Auto (' + last.toFixed(1) + 'px)') : 'Auto';
+}
+
+function refreshSkyBoxTextSizeLabels_(){
+  try{
+    SKYBOX_TEXT_CONTROL_TARGETS_.forEach(t => {
+      const el = DOM && DOM[t.valId] ? DOM[t.valId] : document.getElementById(t.valId);
+      if (el) el.textContent = getSkyBoxDisplaySizeText_(t.idx);
+    });
+  }catch(e){}
+}
+
+function setSkyBoxTextModeAuto_(idx){
+  const pref = getSkyBoxTextPref_(idx);
+  pref.mode = 'auto';
+  pref.px = null;
+  const body = getSkyBoxBodyElByIdx_(idx);
+  if (body){
+    body.style.fontSize = '';
+    body.style.lineHeight = '';
+  }
+  const box = window.__llSkyBoxes && window.__llSkyBoxes[idx];
+  if (box) scheduleFitSkyBox_(box);
+  refreshSkyBoxTextSizeLabels_();
+}
+
+function nudgeSkyBoxTextSize_(idx, delta){
+  const box = window.__llSkyBoxes && window.__llSkyBoxes[idx];
+  const body = getSkyBoxBodyElByIdx_(idx);
+  if (!box || !body) return;
+  const pref = getSkyBoxTextPref_(idx);
+  const fitOpts = getSkyBoxFitOpts_(box, body) || {};
+  const minPx = Number(isFinite(fitOpts.minPx) ? fitOpts.minPx : SKYFIT_.minPx);
+  const maxPx = Number(isFinite(fitOpts.maxPx) ? fitOpts.maxPx : SKYFIT_.maxPx);
+  const current = (pref.mode === 'manual' && isFinite(pref.px))
+    ? Number(pref.px)
+    : Number(window.__llSkyBoxLastFit[String(idx)] || parseFloat(getComputedStyle(body).fontSize) || minPx);
+  const next = Math.max(minPx, Math.min(maxPx, Math.round((current + delta) * 10) / 10));
+  pref.mode = 'manual';
+  pref.px = next;
+  fitSkyBoxText_(box);
+  refreshSkyBoxTextSizeLabels_();
+}
+
+function wireSkyBoxTextUi_(){
+  try{
+    const map = [
+      { minus: 'btnStatsTextMinus', plus: 'btnStatsTextPlus', fit: 'btnStatsTextFit', idx: 0 },
+      { minus: 'btnReflectionTextMinus', plus: 'btnReflectionTextPlus', fit: 'btnReflectionTextFit', idx: 1 },
+      { minus: 'btnHeadlinesTextMinus', plus: 'btnHeadlinesTextPlus', fit: 'btnHeadlinesTextFit', idx: 2 }
+    ];
+    map.forEach(item => {
+      const minusBtn = DOM && DOM[item.minus] ? DOM[item.minus] : document.getElementById(item.minus);
+      const plusBtn = DOM && DOM[item.plus] ? DOM[item.plus] : document.getElementById(item.plus);
+      const fitBtn = DOM && DOM[item.fit] ? DOM[item.fit] : document.getElementById(item.fit);
+      if (minusBtn && !minusBtn.__llBound){ minusBtn.__llBound = true; minusBtn.addEventListener('click', () => nudgeSkyBoxTextSize_(item.idx, -SKYBOX_TEXT_CONTROL_STEP_)); }
+      if (plusBtn && !plusBtn.__llBound){ plusBtn.__llBound = true; plusBtn.addEventListener('click', () => nudgeSkyBoxTextSize_(item.idx, SKYBOX_TEXT_CONTROL_STEP_)); }
+      if (fitBtn && !fitBtn.__llBound){ fitBtn.__llBound = true; fitBtn.addEventListener('click', () => setSkyBoxTextModeAuto_(item.idx)); }
+    });
+    refreshSkyBoxTextSizeLabels_();
+  }catch(e){}
 }
 
 // -------------------- Skybox text fit (dynamic) --------------------
@@ -7036,10 +7205,9 @@ function refitAllSkyBoxes_(){
   try{
     if (!window.__llSkyBoxes) return;
     window.__llSkyBoxes.forEach((boxEl) => {
-      const bodyEl = boxEl && boxEl.querySelector ? boxEl.querySelector(".body") : null;
-      if (!bodyEl) return;
-      fitElementText_(bodyEl, getSkyBoxFitOpts_(boxEl, bodyEl));
+      fitSkyBoxText_(boxEl);
     });
+    refreshSkyBoxTextSizeLabels_();
   }catch(e){}
 }
 
@@ -7118,14 +7286,25 @@ function fitSkyBoxText_(box){
   const body = box.querySelector('.body');
   if (!body) return;
 
-  // Constrain the body to the remaining height under the header/subtitle.
   const chromeH = (head ? head.offsetHeight : 0) + (sub ? sub.offsetHeight : 0);
   const availH = Math.max(0, box.clientHeight - chromeH);
   body.style.height = `${availH}px`;
   body.style.maxHeight = `${availH}px`;
 
-  // Only fit body content, never the header.
-  fitElementText_(body, getSkyBoxFitOpts_(box, body));
+  const idx = Number((box.dataset && box.dataset.idx) ? box.dataset.idx : (box.getAttribute('data-skybox-idx') || '0'));
+  const opts = getSkyBoxFitOpts_(box, body);
+  const pref = getSkyBoxTextPref_(idx);
+
+  if (pref.mode === 'manual' && isFinite(pref.px)){
+    const px = Math.max(opts.minPx || SKYFIT_.minPx, Math.min(opts.maxPx || SKYFIT_.maxPx, Number(pref.px)));
+    pref.px = px;
+    body.style.fontSize = px + 'px';
+    body.style.lineHeight = (opts.lineHeightEm || SKYFIT_.lineHeightMult || 1.2) + 'em';
+    window.__llSkyBoxLastFit[String(idx)] = px;
+  } else {
+    fitElementText_(body, opts);
+    window.__llSkyBoxLastFit[String(idx)] = parseFloat(body.style.fontSize) || parseFloat(getComputedStyle(body).fontSize) || 0;
+  }
 }
 
 // Kick once after DOM is ready and on resize.
@@ -7142,6 +7321,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // If cards resize due to viewport changes, refit.
   window.addEventListener('resize', () => scheduleFitAllSkyBoxes_());
+  wireSkyBoxTextUi_();
+  refreshSkyBoxTextSizeLabels_();
 });
 function setSkyBoxMeta_(boxOrSide, maybeWhich, maybeText){
     // v99.3.28_TodayPoll_ApplyUpdateAndDebug: We no longer display the "From garden export" mini row.
