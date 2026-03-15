@@ -1108,6 +1108,13 @@ body {
   color: var(--dowDate);
 }
 .dow .stars {
+  position: static !important;
+  inset: auto !important;
+  width: auto !important;
+  height: auto !important;
+  opacity: 1 !important;
+  pointer-events: none !important;
+  z-index: auto !important;
   display: block;
   margin-top: 2px;
   font-size: calc(7.4px * var(--textScale,1));
@@ -2177,7 +2184,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 <style>
 
-/* --- v100.1.25_DOWStars: Daily Headlines skybox typography --- */
+/* --- v100.1.26_DOWStarsFixed: Daily Headlines skybox typography --- */
 .llSkyBox[data-idx="2"] .body,
 .llSkyBox[data-skybox-idx="2"] .body{
   text-align:left !important;
@@ -2213,7 +2220,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.1.25_DOWStars.html • v100.1.25_DOWStars • Built: 2026-03-15T09:40:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.1.26_DOWStarsFixed.html • v100.1.26_DOWStarsFixed • Built: 2026-03-15T09:40:00Z UTC</div>
 
 
 <script>
@@ -2227,8 +2234,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v100.1.25_DOWStars.html</span><br>
-Version: <span id="__bannerVersion">v100.1.25_DOWStars</span><br>
+File: <span id="__bannerFileName">garden_v100.1.26_DOWStarsFixed.html</span><br>
+Version: <span id="__bannerVersion">v100.1.26_DOWStarsFixed</span><br>
 Created: 2026-03-15T09:40:00Z</span></div>
 <script>
 (function(){
@@ -2244,7 +2251,7 @@ Created: 2026-03-15T09:40:00Z</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v100.1.25_DOWStars loaded", new Date().toISOString());
+  console.log("[VERSION] v100.1.26_DOWStarsFixed loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
