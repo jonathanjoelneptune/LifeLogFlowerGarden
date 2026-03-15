@@ -2188,7 +2188,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 <style>
 
-/* --- v100.1.30_DOWAlignedToFrontAnchors: Daily Headlines skybox typography --- */
+/* --- v100.1.31_DOWAlignedToFrontAnchors_TextControlsSpacing: Daily Headlines skybox typography --- */
 .llSkyBox[data-idx="2"] .body,
 .llSkyBox[data-skybox-idx="2"] .body{
   text-align:left !important;
@@ -2207,15 +2207,16 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 .llSkyBox[data-skybox-idx="2"] .body .sbHeadlineLine{
   display:block;
   text-align:left !important;
-  margin: 0.10em 0;
+  margin: 0 !important;
   font-weight: 400;
-  line-height: inherit;
+  line-height: 1.14 !important;
   white-space: nowrap !important;
-  overflow: hidden !important;
+  overflow: visible !important;
   text-overflow: clip !important;
+  padding-bottom: 1px !important;
 }
 .llSkyBox[data-idx="2"] .body .sbHeadlineLine + .sbHeadlineLine,
-.llSkyBox[data-skybox-idx="2"] .body .sbHeadlineLine + .sbHeadlineLine{ margin-top: 0.08em; }
+.llSkyBox[data-skybox-idx="2"] .body .sbHeadlineLine + .sbHeadlineLine{ margin-top: 3px !important; }
 
 </style>
 <style>
@@ -2224,7 +2225,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.1.30_DOWAlignedToFrontAnchors.html • v100.1.30_DOWAlignedToFrontAnchors • Built: 2026-03-15T09:40:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.1.31_DOWAlignedToFrontAnchors_TextControlsSpacing.html • v100.1.31_DOWAlignedToFrontAnchors_TextControlsSpacing • Built: 2026-03-15T06:25:00Z UTC</div>
 
 
 <script>
@@ -2238,9 +2239,9 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v100.1.30_DOWAlignedToFrontAnchors.html</span><br>
-Version: <span id="__bannerVersion">v100.1.30_DOWAlignedToFrontAnchors</span><br>
-Created: 2026-03-15T09:40:00Z</span></div>
+File: <span id="__bannerFileName">garden_v100.1.31_DOWAlignedToFrontAnchors_TextControlsSpacing.html</span><br>
+Version: <span id="__bannerVersion">v100.1.31_DOWAlignedToFrontAnchors_TextControlsSpacing</span><br>
+Created: 2026-03-15T06:25:00Z</span></div>
 <script>
 (function(){
   try{
@@ -2255,7 +2256,7 @@ Created: 2026-03-15T09:40:00Z</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v100.1.30_DOWAlignedToFrontAnchors loaded", new Date().toISOString());
+  console.log("[VERSION] v100.1.31_DOWAlignedToFrontAnchors_TextControlsSpacing loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -3329,6 +3330,35 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
       Time Source: <span id="vTimeSource">Fixed Defaults</span>
     </div>
     <div class="hint" style="margin-top:2px; opacity:0.92;">Garden Data Source: <span id="vDataSource">Offline</span></div>
+    <hr style="border:none;border-top:1px solid rgba(255,255,255,0.22);margin:10px 0;"/>
+    <div class="utilNote">Skybox body text controls. Header titles stay unchanged.</div>
+    <div class="row">
+      <label>Stats text size</label>
+      <div class="row2" style="grid-column:2 / span 1; justify-content:flex-start; gap:8px; margin-top:0; flex-wrap:nowrap;">
+        <button class="btn" id="btnStatsTextMinus" type="button">Text size -</button>
+        <button class="btn" id="btnStatsTextPlus" type="button">Text size +</button>
+        <button class="btn" id="btnStatsTextFit" type="button">Fit to skybox</button>
+      </div>
+      <div class="val" id="vStatsTextSize">Auto</div>
+    </div>
+    <div class="row">
+      <label>Reflection text size</label>
+      <div class="row2" style="grid-column:2 / span 1; justify-content:flex-start; gap:8px; margin-top:0; flex-wrap:nowrap;">
+        <button class="btn" id="btnReflectionTextMinus" type="button">Text size -</button>
+        <button class="btn" id="btnReflectionTextPlus" type="button">Text size +</button>
+        <button class="btn" id="btnReflectionTextFit" type="button">Fit to skybox</button>
+      </div>
+      <div class="val" id="vReflectionTextSize">Auto</div>
+    </div>
+    <div class="row">
+      <label>Headlines text size</label>
+      <div class="row2" style="grid-column:2 / span 1; justify-content:flex-start; gap:8px; margin-top:0; flex-wrap:nowrap;">
+        <button class="btn" id="btnHeadlinesTextMinus" type="button">Text size -</button>
+        <button class="btn" id="btnHeadlinesTextPlus" type="button">Text size +</button>
+        <button class="btn" id="btnHeadlinesTextFit" type="button">Fit to skybox</button>
+      </div>
+      <div class="val" id="vHeadlinesTextSize">Auto</div>
+    </div>
     <div class="hint">
       Hotkeys: <code>H</code> hide utilities, <code>D</code> toggle debug, <code>B</code> toggle hitboxes.
     </div>
@@ -7060,6 +7090,96 @@ function setSkyBoxBody_(box, html){
   body.innerHTML = html;
   // After content changes, refit to available space.
   scheduleFitSkyBox_(box);
+  refreshSkyBoxTextSizeLabels_();
+}
+
+const SKYBOX_TEXT_CONTROL_STEP_ = 0.5;
+const SKYBOX_TEXT_CONTROL_TARGETS_ = [
+  { idx: 0, key: 'stats', label: 'Stats', valId: 'vStatsTextSize' },
+  { idx: 1, key: 'reflection', label: 'Reflection', valId: 'vReflectionTextSize' },
+  { idx: 2, key: 'headlines', label: 'Headlines', valId: 'vHeadlinesTextSize' }
+];
+window.__llSkyBoxTextPrefs = window.__llSkyBoxTextPrefs || {};
+window.__llSkyBoxLastFit = window.__llSkyBoxLastFit || {};
+
+function getSkyBoxTextPref_(idx){
+  const k = String(idx);
+  if (!window.__llSkyBoxTextPrefs[k]) window.__llSkyBoxTextPrefs[k] = { mode: 'auto', px: null };
+  return window.__llSkyBoxTextPrefs[k];
+}
+
+function getSkyBoxBodyElByIdx_(idx){
+  try{
+    if (!window.__llSkyBoxes || !window.__llSkyBoxes[idx]) return null;
+    return window.__llSkyBoxes[idx].querySelector('.body');
+  }catch(e){ return null; }
+}
+
+function getSkyBoxDisplaySizeText_(idx){
+  const pref = getSkyBoxTextPref_(idx);
+  if (pref.mode === 'manual' && isFinite(pref.px)) return pref.px.toFixed(1) + 'px';
+  const last = Number(window.__llSkyBoxLastFit[String(idx)] || 0);
+  return last > 0 ? ('Auto (' + last.toFixed(1) + 'px)') : 'Auto';
+}
+
+function refreshSkyBoxTextSizeLabels_(){
+  try{
+    SKYBOX_TEXT_CONTROL_TARGETS_.forEach(t => {
+      const el = DOM && DOM[t.valId] ? DOM[t.valId] : document.getElementById(t.valId);
+      if (el) el.textContent = getSkyBoxDisplaySizeText_(t.idx);
+    });
+  }catch(e){}
+}
+
+function setSkyBoxTextModeAuto_(idx){
+  const pref = getSkyBoxTextPref_(idx);
+  pref.mode = 'auto';
+  pref.px = null;
+  const body = getSkyBoxBodyElByIdx_(idx);
+  if (body){
+    body.style.fontSize = '';
+    body.style.lineHeight = '';
+  }
+  const box = window.__llSkyBoxes && window.__llSkyBoxes[idx];
+  if (box) scheduleFitSkyBox_(box);
+  refreshSkyBoxTextSizeLabels_();
+}
+
+function nudgeSkyBoxTextSize_(idx, delta){
+  const box = window.__llSkyBoxes && window.__llSkyBoxes[idx];
+  const body = getSkyBoxBodyElByIdx_(idx);
+  if (!box || !body) return;
+  const pref = getSkyBoxTextPref_(idx);
+  const fitOpts = getSkyBoxFitOpts_(box, body) || {};
+  const minPx = Number(isFinite(fitOpts.minPx) ? fitOpts.minPx : SKYFIT_.minPx);
+  const maxPx = Number(isFinite(fitOpts.maxPx) ? fitOpts.maxPx : SKYFIT_.maxPx);
+  const current = (pref.mode === 'manual' && isFinite(pref.px))
+    ? Number(pref.px)
+    : Number(window.__llSkyBoxLastFit[String(idx)] || parseFloat(getComputedStyle(body).fontSize) || minPx);
+  const next = Math.max(minPx, Math.min(maxPx, Math.round((current + delta) * 10) / 10));
+  pref.mode = 'manual';
+  pref.px = next;
+  fitSkyBoxText_(box);
+  refreshSkyBoxTextSizeLabels_();
+}
+
+function wireSkyBoxTextUi_(){
+  try{
+    const map = [
+      { minus: 'btnStatsTextMinus', plus: 'btnStatsTextPlus', fit: 'btnStatsTextFit', idx: 0 },
+      { minus: 'btnReflectionTextMinus', plus: 'btnReflectionTextPlus', fit: 'btnReflectionTextFit', idx: 1 },
+      { minus: 'btnHeadlinesTextMinus', plus: 'btnHeadlinesTextPlus', fit: 'btnHeadlinesTextFit', idx: 2 }
+    ];
+    map.forEach(item => {
+      const minusBtn = DOM && DOM[item.minus] ? DOM[item.minus] : document.getElementById(item.minus);
+      const plusBtn = DOM && DOM[item.plus] ? DOM[item.plus] : document.getElementById(item.plus);
+      const fitBtn = DOM && DOM[item.fit] ? DOM[item.fit] : document.getElementById(item.fit);
+      if (minusBtn && !minusBtn.__llBound){ minusBtn.__llBound = true; minusBtn.addEventListener('click', () => nudgeSkyBoxTextSize_(item.idx, -SKYBOX_TEXT_CONTROL_STEP_)); }
+      if (plusBtn && !plusBtn.__llBound){ plusBtn.__llBound = true; plusBtn.addEventListener('click', () => nudgeSkyBoxTextSize_(item.idx, SKYBOX_TEXT_CONTROL_STEP_)); }
+      if (fitBtn && !fitBtn.__llBound){ fitBtn.__llBound = true; fitBtn.addEventListener('click', () => setSkyBoxTextModeAuto_(item.idx)); }
+    });
+    refreshSkyBoxTextSizeLabels_();
+  }catch(e){}
 }
 
 // -------------------- Skybox text fit (dynamic) --------------------
@@ -7171,10 +7291,9 @@ function refitAllSkyBoxes_(){
   try{
     if (!window.__llSkyBoxes) return;
     window.__llSkyBoxes.forEach((boxEl) => {
-      const bodyEl = boxEl && boxEl.querySelector ? boxEl.querySelector(".body") : null;
-      if (!bodyEl) return;
-      fitElementText_(bodyEl, getSkyBoxFitOpts_(boxEl, bodyEl));
+      fitSkyBoxText_(boxEl);
     });
+    refreshSkyBoxTextSizeLabels_();
   }catch(e){}
 }
 
@@ -7253,17 +7372,29 @@ function fitSkyBoxText_(box){
   const body = box.querySelector('.body');
   if (!body) return;
 
-  // Constrain the body to the remaining height under the header/subtitle.
   const chromeH = (head ? head.offsetHeight : 0) + (sub ? sub.offsetHeight : 0);
   const availH = Math.max(0, box.clientHeight - chromeH);
   body.style.height = `${availH}px`;
   body.style.maxHeight = `${availH}px`;
 
-  // Only fit body content, never the header.
-  fitElementText_(body, getSkyBoxFitOpts_(box, body));
+  const idx = Number((box.dataset && box.dataset.idx) ? box.dataset.idx : (box.getAttribute('data-skybox-idx') || '0'));
+  const opts = getSkyBoxFitOpts_(box, body);
+  const pref = getSkyBoxTextPref_(idx);
+
+  if (pref.mode === 'manual' && isFinite(pref.px)){
+    const px = Math.max(opts.minPx || SKYFIT_.minPx, Math.min(opts.maxPx || SKYFIT_.maxPx, Number(pref.px)));
+    pref.px = px;
+    body.style.fontSize = px + 'px';
+    body.style.lineHeight = (opts.lineHeightEm || SKYFIT_.lineHeightMult || 1.2) + 'em';
+    window.__llSkyBoxLastFit[String(idx)] = px;
+  } else {
+    fitElementText_(body, opts);
+    window.__llSkyBoxLastFit[String(idx)] = parseFloat(body.style.fontSize) || parseFloat(getComputedStyle(body).fontSize) || 0;
+  }
 }
 
 // Kick once after DOM is ready and on resize.
+
 document.addEventListener('DOMContentLoaded', () => {
   // Defer a bit so layout settles (fonts, images, etc.)
   setTimeout(scheduleFitAllSkyBoxes_, 80);
