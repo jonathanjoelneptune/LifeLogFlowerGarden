@@ -1047,9 +1047,12 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-width: 58px;
+  width: 84px;
+  min-width: 84px;
+  max-width: 84px;
   min-height: 36px;
   padding: 8px 9px 9px;
+  box-sizing: border-box;
   border-radius: 12px 12px 10px 10px;
   border: 1px solid var(--dowBorder);
   background:
@@ -1121,6 +1124,7 @@ body {
   letter-spacing: 0.4px;
   font-weight: 900;
   line-height: 0.95;
+  min-height: calc(7.4px * var(--textScale,1));
   color: rgba(154,118,44,0.96);
   text-shadow: 0 1px 0 rgba(255,255,255,0.40);
 }
@@ -2184,7 +2188,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 <style>
 
-/* --- v100.1.26_DOWStarsFixed: Daily Headlines skybox typography --- */
+/* --- v100.1.30_DOWAlignedToFrontAnchors: Daily Headlines skybox typography --- */
 .llSkyBox[data-idx="2"] .body,
 .llSkyBox[data-skybox-idx="2"] .body{
   text-align:left !important;
@@ -2220,7 +2224,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.1.26_DOWStarsFixed.html • v100.1.26_DOWStarsFixed • Built: 2026-03-15T09:40:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.1.30_DOWAlignedToFrontAnchors.html • v100.1.30_DOWAlignedToFrontAnchors • Built: 2026-03-15T09:40:00Z UTC</div>
 
 
 <script>
@@ -2234,8 +2238,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v100.1.26_DOWStarsFixed.html</span><br>
-Version: <span id="__bannerVersion">v100.1.26_DOWStarsFixed</span><br>
+File: <span id="__bannerFileName">garden_v100.1.30_DOWAlignedToFrontAnchors.html</span><br>
+Version: <span id="__bannerVersion">v100.1.30_DOWAlignedToFrontAnchors</span><br>
 Created: 2026-03-15T09:40:00Z</span></div>
 <script>
 (function(){
@@ -2251,7 +2255,7 @@ Created: 2026-03-15T09:40:00Z</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v100.1.26_DOWStarsFixed loaded", new Date().toISOString());
+  console.log("[VERSION] v100.1.30_DOWAlignedToFrontAnchors loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -5263,6 +5267,7 @@ function applyTransforms(tNow){
   const bobY = Math.sin(t * 0.09) * 0.8;
 
   DOM.weeksStack.style.transform = `translate3d(${bobX.toFixed(1)}px, ${(bobY + state.horizon).toFixed(1)}px, 0px) rotate(${state.bank.toFixed(2)}deg)`;
+  if (DOM.dowStrip) DOM.dowStrip.style.transform = `translate3d(${bobX.toFixed(1)}px, 0px, 0px)`;
 
   const frontIndexVisual = Math.max(0, Math.round(frontF));
 
@@ -5490,7 +5495,7 @@ function updateFrontText(focusWeekIndex){
       const isFuture = String(dk) > String(todayKey);
       tag.classList.remove('future','lvl1','lvl2','lvl3','lvl4','lvl5');
       tag.classList.add(isFuture ? 'future' : ('lvl' + level));
-      if (starsEl) starsEl.textContent = isFuture ? '' : '★'.repeat(level);
+      if (starsEl) starsEl.textContent = isFuture ? '\u00A0' : '★'.repeat(level);
       tag.setAttribute('title', isFuture ? 'Future day' : ((day && day.dayLevelLabel) ? String(day.dayLevelLabel) : ('Level ' + level)));
     }
   }
