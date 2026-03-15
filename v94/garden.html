@@ -2225,7 +2225,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.1.32_TextControlsWorking.html • v100.1.32_TextControlsWorking • Built: 2026-03-15T06:25:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.1.33_DailyHeadlines10.html • v100.1.33_DailyHeadlines10 • Built: 2026-03-15T06:25:00Z UTC</div>
 
 
 <script>
@@ -2239,8 +2239,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v100.1.32_TextControlsWorking.html</span><br>
-Version: <span id="__bannerVersion">v100.1.32_TextControlsWorking</span><br>
+File: <span id="__bannerFileName">garden_v100.1.33_DailyHeadlines10.html</span><br>
+Version: <span id="__bannerVersion">v100.1.33_DailyHeadlines10</span><br>
 Created: 2026-03-15T06:25:00Z</span></div>
 <script>
 (function(){
@@ -2256,7 +2256,7 @@ Created: 2026-03-15T06:25:00Z</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v100.1.32_TextControlsWorking loaded", new Date().toISOString());
+  console.log("[VERSION] v100.1.33_DailyHeadlines10 loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -7541,7 +7541,7 @@ function updateSkyBoxesFromDay_(day, weekKey) {
     if (!headlineLines.length) {
       setSkyBoxBody_(__llBoxes[2], `<div class="sbLine sbEmpty">${safe("No headlines yet.")}</div>`);
     } else {
-      const headlineHtml = headlineLines.slice(0, 9).map(line => {
+      const headlineHtml = headlineLines.slice(0, 10).map(line => {
         const parts = String(line).split(/\s-\s(.+)/);
         if (parts.length >= 3) {
           return `<div class="sbLine sbHeadlineLine">${safe(parts[0])} - ${safe(parts[1])}</div>`;
