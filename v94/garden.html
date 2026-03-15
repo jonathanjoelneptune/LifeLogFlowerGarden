@@ -2225,7 +2225,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.1.31_DOWAlignedToFrontAnchors_TextControlsSpacing.html • v100.1.31_DOWAlignedToFrontAnchors_TextControlsSpacing • Built: 2026-03-15T06:25:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.1.32_TextControlsWorking.html • v100.1.32_TextControlsWorking • Built: 2026-03-15T06:25:00Z UTC</div>
 
 
 <script>
@@ -2239,8 +2239,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v100.1.31_DOWAlignedToFrontAnchors_TextControlsSpacing.html</span><br>
-Version: <span id="__bannerVersion">v100.1.31_DOWAlignedToFrontAnchors_TextControlsSpacing</span><br>
+File: <span id="__bannerFileName">garden_v100.1.32_TextControlsWorking.html</span><br>
+Version: <span id="__bannerVersion">v100.1.32_TextControlsWorking</span><br>
 Created: 2026-03-15T06:25:00Z</span></div>
 <script>
 (function(){
@@ -2256,7 +2256,7 @@ Created: 2026-03-15T06:25:00Z</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v100.1.31_DOWAlignedToFrontAnchors_TextControlsSpacing loaded", new Date().toISOString());
+  console.log("[VERSION] v100.1.32_TextControlsWorking loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -6358,6 +6358,7 @@ function initUi(){
 }
 
 function wireUiEvents(){
+  wireSkyBoxTextUi_();
   [DOM.uStagger, DOM.uDepthY, DOM.uCloudOpacity, DOM.uCloudScale, DOM.uCloudSpeed].filter(Boolean).forEach(el => {
     el.addEventListener("input", applyUiToState);
   });
@@ -7408,6 +7409,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // If cards resize due to viewport changes, refit.
   window.addEventListener('resize', () => scheduleFitAllSkyBoxes_());
+  wireSkyBoxTextUi_();
+  refreshSkyBoxTextSizeLabels_();
 });
 function setSkyBoxMeta_(boxOrSide, maybeWhich, maybeText){
     // v99.3.28_TodayPoll_ApplyUpdateAndDebug: We no longer display the "From garden export" mini row.
