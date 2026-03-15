@@ -15,7 +15,7 @@
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v100.0.2_TonedDownFrontRowGlow
+  v100.1.14_DOWPillsColorByDayLevel
     + Consolidate duplicate Photo Reel skybox CSS into one block
     + Merge duplicate selection-ring state rules
     + Remove redundant early wireframe CSS copy
@@ -128,7 +128,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v100.0.2_TonedDownFrontRowGlow';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.14_DOWPillsColorByDayLevel';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -256,7 +256,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 function renderBackRows(){ /* disabled */ }
 
 (function(){
-  const VERSION = 'v100.0.2_TonedDownFrontRowGlow';
+  const VERSION = 'v100.1.14_DOWPillsColorByDayLevel';
 
   // ---- Canonical version globals ----
   window.APP_VERSION = VERSION;
@@ -320,7 +320,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.0.2_TonedDownFrontRowGlow.html</title>
+<title>garden_v100.1.14_DOWPillsColorByDayLevel.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -1021,29 +1021,84 @@ body {
   position: absolute;
   left: 92px;
   right: 92px;
-  bottom: 24px;
+  bottom: 34px;
   z-index: 12;
   display: grid;
   grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
   pointer-events: none;
-  opacity: 0.96;
-  align-items: center;
-  text-shadow: 0 2px 10px rgba(0,0,0,0.25);
+  opacity: 0.97;
+  align-items: end;
 }
 
 .dow {
+  justify-self: center;
+  min-width: 92px;
+  padding: 6px 12px 7px 12px;
+  border-radius: 999px;
   text-align: center;
-  font-size: calc(12px * var(--textScale,1));
-  color: rgba(255,255,255,0.94);
+  font-size: calc(11px * var(--textScale,1));
+  color: rgba(0,0,0,0.84);
   font-variant-numeric: tabular-nums;
-  line-height: 1.1;
+  line-height: 1.05;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  background: rgba(255,255,255,0.19);
+  border: 1px solid rgba(255,255,255,0.28);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.34),
+    inset 0 -1px 0 rgba(0,0,0,0.06),
+    0 4px 10px rgba(0,0,0,0.10),
+    0 1px 0 rgba(255,255,255,0.08);
+  backdrop-filter: blur(10px) saturate(1.08);
+  -webkit-backdrop-filter: blur(10px) saturate(1.08);
+  text-shadow: none;
+}
+.dow > span:first-child {
+  font-weight: 700;
+  letter-spacing: 0.1px;
+  color: rgba(0,0,0,0.84);
 }
 .dow .date {
   display: block;
-  margin-top: 4px;
-  font-size: calc(10px * var(--textScale,1));
-  letter-spacing: 0.6px;
-  color: rgba(255,255,255,0.82);
+  margin-top: 0;
+  font-size: calc(9px * var(--textScale,1));
+  letter-spacing: 0.5px;
+  color: rgba(0,0,0,0.58);
+}
+.dow > span:first-child,
+.dow .date{
+  font-weight: 800;
+}
+.dow.dowRank1{ background:linear-gradient(180deg, rgba(255,225,230,0.58) 0%, rgba(255,210,220,0.40) 100%); border-color:rgba(204,110,132,0.42); color:rgba(111,42,64,0.96); }
+.dow.dowRank1 > span:first-child,
+.dow.dowRank1 .date{ color:rgba(111,42,64,0.96); }
+.dow.dowRank2{ background:linear-gradient(180deg, rgba(255,245,208,0.60) 0%, rgba(255,235,186,0.42) 100%); border-color:rgba(213,186,101,0.42); color:rgba(109,88,27,0.96); }
+.dow.dowRank2 > span:first-child,
+.dow.dowRank2 .date{ color:rgba(109,88,27,0.96); }
+.dow.dowRank3{ background:linear-gradient(180deg, rgba(255,232,208,0.60) 0%, rgba(255,220,194,0.42) 100%); border-color:rgba(215,154,102,0.42); color:rgba(124,73,31,0.96); }
+.dow.dowRank3 > span:first-child,
+.dow.dowRank3 .date{ color:rgba(124,73,31,0.96); }
+.dow.dowRank4{ background:linear-gradient(180deg, rgba(220,248,227,0.60) 0%, rgba(202,240,211,0.42) 100%); border-color:rgba(105,175,123,0.42); color:rgba(37,103,56,0.96); }
+.dow.dowRank4 > span:first-child,
+.dow.dowRank4 .date{ color:rgba(37,103,56,0.96); }
+.dow.dowRank5{ background:linear-gradient(180deg, rgba(223,250,228,0.66) 0%, rgba(208,246,216,0.48) 100%); border-color:rgba(224,191,92,0.84); color:rgba(25,97,44,0.98); box-shadow: inset 0 1px 0 rgba(255,255,255,0.38), inset 0 -1px 0 rgba(115,92,20,0.10), 0 5px 12px rgba(0,0,0,0.12), 0 0 0 1px rgba(244,219,143,0.20); }
+.dow.dowRank5 > span:first-child,
+.dow.dowRank5 .date{ color:rgba(25,97,44,0.98); }
+.dow.dowFuture,
+.dow.dowNeutral{ background:linear-gradient(180deg, rgba(255,255,255,0.74) 0%, rgba(255,255,255,0.58) 100%); border-color:rgba(255,255,255,0.82); color:rgba(0,0,0,0.82); }
+.dow.dowFuture > span:first-child,
+.dow.dowFuture .date,
+.dow.dowNeutral > span:first-child,
+.dow.dowNeutral .date{ color:rgba(0,0,0,0.82); }
+.stage[data-stars-on="1"] .dow,
+[data-stars-on="1"] .dow{
+  background: linear-gradient(180deg, rgba(255,255,255,0.24) 0%, rgba(255,255,255,0.14) 100%);
+  border-color: rgba(255,255,255,0.28);
+  color: rgba(0,0,0,0.82);
 }
 
 /* ---------- Week Header ---------- */
@@ -2067,11 +2122,11 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 <style>
 
-/* --- v100.1.12_DailyHeadlinesPadding8: Daily Headlines skybox typography --- */
+/* --- v100.1.10_DailyHeadlinesDynamicFit: Daily Headlines skybox typography --- */
 .llSkyBox[data-idx="2"] .body,
 .llSkyBox[data-skybox-idx="2"] .body{
   text-align:left !important;
-  padding: 1px 2px 2px 2px !important;
+  padding: 2px 16px 8px 16px !important;
   margin-top: 6px !important;
   overflow: hidden !important;
 }
@@ -2079,8 +2134,8 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 .llSkyBox[data-skybox-idx="2"] .head,
 .llSkyBox[data-idx="2"] .sub,
 .llSkyBox[data-skybox-idx="2"] .sub{
-  padding-left: 8px !important;
-  padding-right: 4px !important;
+  padding-left: 16px !important;
+  padding-right: 16px !important;
 }
 .llSkyBox[data-idx="2"] .body .sbHeadlineLine,
 .llSkyBox[data-skybox-idx="2"] .body .sbHeadlineLine{
@@ -2103,7 +2158,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.1.12_DailyHeadlinesPadding8.html • v100.1.12_DailyHeadlinesPadding8 • Built: 2026-03-15T06:40:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.1.14_DOWPillsColorByDayLevel.html • v100.1.10_DailyHeadlinesDynamicFit • Built: 2026-03-13T06:35:00Z UTC</div>
 
 
 <script>
@@ -2117,9 +2172,9 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v100.1.12_DailyHeadlinesPadding8.html</span><br>
-Version: <span id="__bannerVersion">v100.1.12_DailyHeadlinesPadding8</span><br>
-Created: 2026-03-15T06:40:00Z</span></div>
+File: <span id="__bannerFileName">garden_v100.1.14_DOWPillsColorByDayLevel.html</span><br>
+Version: <span id="__bannerVersion">v100.1.10_DailyHeadlinesDynamicFit</span><br>
+Created: 2026-03-15T02:14:33Z</span></div>
 <script>
 (function(){
   try{
@@ -2134,7 +2189,7 @@ Created: 2026-03-15T06:40:00Z</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v100.1.12_DailyHeadlinesPadding8 loaded", new Date().toISOString());
+  console.log("[VERSION] v100.1.10_DailyHeadlinesDynamicFit loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -2740,7 +2795,7 @@ window.__LL_hillTopAtX_fill = function(x, yTopGuess, yBottom){
 <!-- Debug Panel -->
 <div aria-hidden="false" id="dbgPanel">
   <div class="hdr">
-    <div class="t">LifeLog DEBUG v100.0.2_TonedDownFrontRowGlow (press D)</div>
+    <div class="t">LifeLog DEBUG v100.1.14_DOWPillsColorByDayLevel (press D)</div>
     <div class="btns">
       <button id="dbgCopy" type="button">Copy</button>
       <button id="dbgClear" type="button">Clear</button>
@@ -3102,7 +3157,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   </div>
 
   <div class="util hidden" id="util">
-    <div class="utilTitle">LifeLog Garden Walk v100.0.2_TonedDownFrontRowGlow</div>
+    <div class="utilTitle">LifeLog Garden Walk v100.1.14_DOWPillsColorByDayLevel</div>
     <div class="utilSub">Scroll to walk through weeks. Press H to hide/show this panel.</div>
 	    <div class="row">
 	      <label>Wireframe</label>
@@ -3282,7 +3337,7 @@ function wrapLLDBGStep_(){
     }
   }catch(e){}
 }
-dbg_('v100.0.2_TonedDownFrontRowGlow.0: Main script starting');
+dbg_('v100.1.14_DOWPillsColorByDayLevel.0: Main script starting');
 
 // ============================================
 // Constants
@@ -5029,7 +5084,7 @@ function refreshFrontGrass(){
 // ============================================
 
 // ============================================
-// v100.0.2_TonedDownFrontRowGlow: keep back-row flowers horizontally de-clumped
+// v100.1.14_DOWPillsColorByDayLevel: keep back-row flowers horizontally de-clumped
 // ============================================
 const __LL_BACK_SPREAD_MAX_BEHIND = 5;    // reach near-full spread quickly (about 4-6 rows back)
 const __LL_BACK_SPREAD_EDGE_PAD   = 0.006; // keep a tiny inset so nothing clips at extreme edges
@@ -5358,11 +5413,26 @@ function updateFrontText(focusWeekIndex){
   const seasonKey = (__rt.visual.seasonOverride !== "auto") ? __rt.visual.seasonOverride : activeSeason;
   setForegroundGrassTintForSeason(seasonKey);
 
+  const today = new Date();
+  today.setHours(0,0,0,0);
   for (let i=0;i<7;i++){
     const d = new Date(mon);
     d.setDate(d.getDate() + i);
     const el = document.getElementById("d"+i);
+    const pill = el ? el.closest('.dow') : null;
     if (el) el.textContent = fmtMMDD(d);
+    if (pill){
+      pill.classList.remove('dowRank1','dowRank2','dowRank3','dowRank4','dowRank5','dowFuture','dowNeutral');
+      const day = (weekData && weekData.days && weekData.days[i]) ? weekData.days[i] : null;
+      const isFuture = d.getTime() > today.getTime();
+      if (isFuture){
+        pill.classList.add('dowFuture');
+      } else {
+        const lvl = Number(day && day.dayLevel);
+        if (Number.isFinite(lvl) && lvl >= 1 && lvl <= 5) pill.classList.add('dowRank' + String(lvl));
+        else pill.classList.add('dowNeutral');
+      }
+    }
   }
 
   const month = monthName(mon);
@@ -9544,7 +9614,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.__LL_LAST_PTR_X__ = window.innerWidth/2;
   window.__LL_LAST_PTR_Y__ = window.innerHeight/2;
   window.addEventListener('pointermove', (ev)=>{ window.__LL_LAST_PTR_X__ = ev.clientX; window.__LL_LAST_PTR_Y__ = ev.clientY; }, {passive:true});
-dbg_('v100.0.2_TonedDownFrontRowGlow.0: DOMContentLoaded');
+dbg_('v100.1.14_DOWPillsColorByDayLevel.0: DOMContentLoaded');
 
   cacheDomRefs();
   try{ wrapLLDBGStep_(); }catch(e){}
@@ -9690,7 +9760,7 @@ window.__LL_BACKROWS_ANCHOR_MATCHED = true; // prevent later global overrides
   }catch(e){}
 
 
-  dbg_('v100.0.2_TonedDownFrontRowGlow.0: Initialization complete');
+  dbg_('v100.1.14_DOWPillsColorByDayLevel.0: Initialization complete');
 });
 })();
 
@@ -10068,7 +10138,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 
 
 <script>
-// v100.0.2_TonedDownFrontRowGlow lifecycle manager
+// v100.1.14_DOWPillsColorByDayLevel lifecycle manager
 (function(){
   if (window.__LL_SYS__) return;
   const SYS = { timeouts:new Set(), intervals:new Set(), observers:new Set(), listeners:[] };
@@ -10084,14 +10154,14 @@ window.applySelectedAdornments = applySelectedAdornments;
 </script>
 
 <script>
-// v100.0.2_TonedDownFrontRowGlow: unified BRX/back-row hard-disable controller.
+// v100.1.14_DOWPillsColorByDayLevel: unified BRX/back-row hard-disable controller.
 (function(){
   try{
     window.__PHASEA_DISABLE_BRX__ = true;
     window.__LL_DISABLE_BACKHILL__ = true;
     window.BRX_DISABLE_LEGACY_BACKROWS = true;
 
-    const VERSION = 'v100.0.2_TonedDownFrontRowGlow';
+    const VERSION = 'v100.1.14_DOWPillsColorByDayLevel';
     const hideLegacyGroups = () => {
       ['backRowsG','gridWeeksG','hillGuidesG','gridOverlayG','gridWeeksOverlay','brxHillPngG','brxHillDbgG']
         .forEach(id => {
