@@ -7555,15 +7555,16 @@ function updateSkyBoxesFromDay_(day, weekKey) {
 
   // 3) Photo Reel (replaces Word Wall)
   if (__llBoxes[3]) {
-    // Build reel URL from selected dateKey.
-    const REEL_BASE = "https://jonathanjoelneptune.github.io/LifeLogFlowerGarden/v94/reel.html?v=20260316c";
-    const REEL_EXEC = "https://script.google.com/macros/s/AKfycbyHPnSrEOdYJwoIQpRk4SajFg9cgpSeXsH0ilg9-c2EglqzeSIubVhgy7WogI-Idsu8/exec";
+    // Point directly at the Apps Script HTML route so captions/UI stay in sync.
+    const REEL_HTML_BASE = "https://script.google.com/macros/s/AKfycbyHPnSrEOdYJwoIQpRk4SajFg9cgpSeXsH0ilg9-c2EglqzeSIubVhgy7WogI-Idsu8/exec";
 
     let botParam = "winston";
+    let debugFlag = "";
     try {
       const qs = new URLSearchParams(window.location.search || "");
       const qb = qs.get("bot");
       botParam = (qb || (window.__LIFELOG_BOT__ || "winston"));
+      debugFlag = (qs.get("debug") === "1") ? "&debug=1" : "";
     } catch (e) {}
     botParam = String(botParam || "winston").toLowerCase();
 
@@ -7571,21 +7572,17 @@ function updateSkyBoxesFromDay_(day, weekKey) {
     if (!dk) {
       setSkyBoxBody_(__llBoxes[3], `<div class="sbLine">${safe("No date selected")}</div>`);
     } else {
-      const debugFlag = (() => {
-        try {
-          const qs = new URLSearchParams(window.location.search || "");
-          return qs.get("debug") === "1" ? "&debug=1" : "";
-        } catch (e) {
-          return "";
-        }
-      })();
-
       const src =
-        REEL_BASE +
-        "&exec=" + encodeURIComponent(REEL_EXEC) +
+        REEL_HTML_BASE +
+        "?r=photo_reel" +
         "&bot=" + encodeURIComponent(botParam) +
         "&date=" + encodeURIComponent(dk) +
-        "&fit=contain&w=1200&cache_s=0&preload=2&interval_ms=10000&fade_ms=3000" +
+        "&fit=contain" +
+        "&w=1200" +
+        "&cache_s=0" +
+        "&preload=2" +
+        "&interval_ms=10000" +
+        "&fade_ms=3000" +
         debugFlag;
 
       const iframeHtml =
