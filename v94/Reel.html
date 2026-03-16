@@ -1,24 +1,25 @@
-
 <!doctype html>
 <html>
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>LifeLog Photo Reel v2</title>
+  <title>LifeLog Photo Reel v3</title>
   <style>
     html, body { height: 100%; margin: 0; background: transparent; }
     body {
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       overflow: hidden;
     }
+
     .wrap {
       position: relative;
       width: 100%;
       height: 100%;
       border-radius: 12px;
       overflow: hidden;
-      background: rgba(0,0,0,0.08);
+      background: transparent;
     }
+
     .img {
       position: absolute;
       inset: 0;
@@ -28,26 +29,59 @@
       transform: none;
       will-change: opacity;
       pointer-events: none;
+      z-index: 1;
     }
+
     .img.show { opacity: 1; }
 
     .hud {
+      display: none;
+    }
+
+    .caption {
       position: absolute;
       left: 10px;
+      right: 10px;
       bottom: 10px;
-      padding: 6px 10px;
+      padding: 8px 12px;
       border-radius: 10px;
       background: rgba(0,0,0,0.45);
       color: #fff;
-      font-size: 12px;
+      font-size: 13px;
+      line-height: 1.35;
       backdrop-filter: blur(6px);
-      max-width: calc(100% - 20px);
       box-sizing: border-box;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
       pointer-events: none;
+      max-height: 34%;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      word-break: break-word;
+      z-index: 20;
     }
+
+    .dbg {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      right: 8px;
+      max-height: 45%;
+      overflow: auto;
+      font-family: ui-monospace, Menlo, Consolas, monospace;
+      font-size: 11px;
+      line-height: 1.25;
+      color: #fff;
+      background: rgba(0,0,0,0.65);
+      border-radius: 10px;
+      padding: 8px;
+      box-sizing: border-box;
+      display: none;
+      white-space: pre-wrap;
+      z-index: 30;
+    }
+
+    .dbg.on { display: block; }
 
     .empty {
       display: flex;
@@ -55,12 +89,13 @@
       justify-content: center;
       height: 100%;
       color: #fff;
-      background: rgba(0,0,0,0.35);
+      background: rgba(0,0,0,0.20);
       border-radius: 12px;
       text-align: center;
       padding: 16px;
       box-sizing: border-box;
     }
+
     .empty .title { font-size: 14px; font-weight: 700; }
     .empty .sub { margin-top: 6px; opacity: 0.85; font-size: 12px; line-height: 1.35; }
     .empty .err { margin-top: 10px; opacity: 0.75; font-size: 11px; white-space: pre-wrap; }
@@ -70,7 +105,7 @@
   <div class="wrap" id="wrap"></div>
 
   <script>
-    const VERSION = "reel_v2_robust_drive_loading";
+    const VERSION = "reel_v3_captions";
     const DEFAULT_EXEC = "https://script.google.com/macros/s/AKfycbyHPnSrEOdYJwoIQpRk4SajFg9cgpSeXsH0ilg9-c2EglqzeSIubVhgy7WogI-Idsu8/exec";
 
     function qs() {
@@ -92,103 +127,128 @@
       return Math.max(min, Math.min(max, Math.round(n)));
     }
 
-    function makeHud(text) {
-      const hud = document.createElement("div");
-      hud.className = "hud";
-      hud.textContent = text;
-      return hud;
-    }
-
     function showEmpty(wrap, title, sub, err) {
+      wrap.innerHTML = "";
       const d = document.createElement("div");
       d.className = "empty";
       d.innerHTML =
-        '<div>' +
-          '<div class="title">' + title + '</div>' +
-          '<div class="sub">' + sub + '</div>' +
-          (err ? '<div class="err">' + String(err) + '</div>' : '') +
-        '</div>';
+        "<div>" +
+          "<div class='title'>" + escapeHtml(title || "") + "</div>" +
+          "<div class='sub'>" + escapeHtml(sub || "") + "</div>" +
+          (err ? "<div class='err'>" + escapeHtml(err || "") + "</div>" : "") +
+        "</div>";
       wrap.appendChild(d);
     }
 
-    function extractDriveId(url) {
-      try {
-        const s = String(url || "").trim();
-        let m = s.match(/\/file\/d\/([^/]+)/i);
-        if (m && m[1]) return m[1];
-        m = s.match(/[?&]id=([^&#]+)/i);
-        if (m && m[1]) return m[1];
-        return "";
-      } catch (e) {
-        return "";
-      }
+    function escapeHtml(s) {
+      return String(s || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
     }
 
-    function buildCandidateUrls(rawUrl, widthHint) {
-      const src = String(rawUrl || "").trim();
+    function makeCaption(text) {
+      const el = document.createElement("div");
+      el.className = "caption";
+      el.id = "caption";
+      el.textContent = text || "";
+      if (!text) el.style.display = "none";
+      return el;
+    }
+
+    function makeDbg(on) {
+      const d = document.createElement("div");
+      d.className = "dbg" + (on ? " on" : "");
+      d.id = "dbg";
+      d.textContent = "";
+      return d;
+    }
+
+    function dbgSet(lines) {
+      const el = document.getElementById("dbg");
+      if (!el) return;
+      el.textContent = Array.isArray(lines) ? lines.join("\n") : String(lines || "");
+    }
+
+    function buildCandidateUrls(src, w) {
+      const s = String(src || "").trim();
+      if (!s) return [];
+
       const out = [];
-      const push = (u) => {
-        if (!u) return;
-        if (!out.includes(u)) out.push(u);
-      };
+      const seen = new Set();
 
-      const id = extractDriveId(src);
-      const w = Math.max(512, Math.min(4000, Number(widthHint) || 1600));
-
-      if (id) {
-        push(`https://drive.google.com/thumbnail?id=${encodeURIComponent(id)}&sz=w${w}`);
-        push(`https://drive.google.com/uc?export=view&id=${encodeURIComponent(id)}`);
-        push(`https://lh3.googleusercontent.com/d/${encodeURIComponent(id)}=w${w}`);
-        push(`https://drive.usercontent.google.com/download?id=${encodeURIComponent(id)}&export=view&authuser=0`);
+      function add(u) {
+        const x = String(u || "").trim();
+        if (!x || seen.has(x)) return;
+        seen.add(x);
+        out.push(x);
       }
 
-      push(src);
+      add(s);
+
+      const id = driveUrlToFileId(s);
+      if (id) {
+        add("https://drive.google.com/thumbnail?id=" + encodeURIComponent(id) + "&sz=w" + encodeURIComponent(String(w)));
+        add("https://lh3.googleusercontent.com/d/" + encodeURIComponent(id) + "=w" + encodeURIComponent(String(w)));
+        add("https://drive.google.com/uc?export=view&id=" + encodeURIComponent(id));
+        add("https://drive.google.com/uc?export=download&id=" + encodeURIComponent(id));
+      }
+
       return out;
     }
 
-    function tryLoadCandidates(candidates, timeoutMs) {
-      const list = Array.isArray(candidates) ? candidates.slice() : [];
-      const timeout = Math.max(1200, Number(timeoutMs) || 7000);
+    function driveUrlToFileId(url) {
+      const s = String(url || "").trim();
+      if (!s) return "";
 
+      let m = /\/file\/d\/([a-zA-Z0-9_-]+)/.exec(s);
+      if (!m) m = /[?&]id=([a-zA-Z0-9_-]+)/.exec(s);
+      return m ? m[1] : "";
+    }
+
+    function tryLoadCandidates(candidates, timeout) {
       return new Promise((resolve, reject) => {
         let idx = 0;
         let settled = false;
+        let timer = null;
+        let probe = null;
 
-        function doneOk(url) {
-          if (settled) return;
-          settled = true;
-          resolve(url);
-        }
-
-        function doneFail(err) {
-          if (settled) return;
-          settled = true;
-          reject(err || new Error("image load failed"));
+        function cleanup() {
+          if (timer) clearTimeout(timer);
+          timer = null;
+          if (probe) {
+            probe.onload = null;
+            probe.onerror = null;
+            probe = null;
+          }
         }
 
         function tryNext() {
           if (settled) return;
-          if (idx >= list.length) {
-            doneFail(new Error("all candidate URLs failed"));
+          if (idx >= candidates.length) {
+            settled = true;
+            cleanup();
+            reject(new Error("All candidates failed"));
             return;
           }
 
-          const url = list[idx++];
-          const probe = new Image();
-          let timer = null;
-          let completed = false;
-
-          function cleanup() {
-            if (timer) clearTimeout(timer);
-            probe.onload = null;
-            probe.onerror = null;
+          const url = String(candidates[idx++] || "").trim();
+          if (!url) {
+            tryNext();
+            return;
           }
+
+          probe = new Image();
+          let completed = false;
 
           probe.onload = function() {
             if (completed || settled) return;
             completed = true;
+            settled = true;
             cleanup();
-            doneOk(url);
+            resolve(url);
           };
 
           probe.onerror = function() {
@@ -226,11 +286,15 @@
     const cacheS = clampInt(p.cache_s, 600, 0, 3600);
     const preloadN = clampInt(p.preload, 2, 0, 6);
     const loadTimeoutMs = clampInt(p.load_timeout_ms, 7000, 1000, 20000);
+    const debugOn = String(p.debug || "").trim() === "1";
     const exec = (p.exec || DEFAULT_EXEC).trim();
 
     const style = document.createElement("style");
     style.textContent = `
-      .img { object-fit: ${fit === "cover" ? "cover" : "contain"}; transition: opacity ${fadeMs}ms ease; }
+      .img {
+        object-fit: ${fit === "cover" ? "cover" : "contain"};
+        transition: opacity ${fadeMs}ms ease;
+      }
     `;
     document.head.appendChild(style);
 
@@ -250,6 +314,31 @@
       }
     }
 
+    function updateCaption(index, slides) {
+      const el = document.getElementById("caption");
+      if (!el) return;
+
+      const text = slides[index] && slides[index].caption ? String(slides[index].caption) : "";
+      el.textContent = text;
+      el.style.display = text ? "block" : "none";
+
+      if (debugOn) {
+        const cs = window.getComputedStyle(el);
+        dbgSet([
+          "version: " + VERSION,
+          "index: " + index,
+          "slides: " + slides.length,
+          "caption exists: " + (!!el),
+          "caption display: " + cs.display,
+          "caption visibility: " + cs.visibility,
+          "caption opacity: " + cs.opacity,
+          "caption z-index: " + cs.zIndex,
+          "caption length: " + text.length,
+          "caption text: " + (text || "[empty]")
+        ]);
+      }
+    }
+
     window[cbName] = function(payload) {
       (async function() {
         try {
@@ -263,13 +352,29 @@
             return;
           }
 
-          const photos = Array.isArray(payload.photos) ? payload.photos : [];
-          if (!photos.length) {
+          const items = Array.isArray(payload.items) && payload.items.length
+            ? payload.items.map(function(it) {
+                return {
+                  src: String((it && (it.thumb || it.original || "")) || "").trim(),
+                  caption: String((it && it.caption) || "").trim()
+                };
+              }).filter(function(it) { return !!it.src; })
+            : (Array.isArray(payload.photos) ? payload.photos.map(function(src, i) {
+                const captions = Array.isArray(payload.captions) ? payload.captions : [];
+                return {
+                  src: String(src || "").trim(),
+                  caption: String(captions[i] || "").trim()
+                };
+              }).filter(function(it) { return !!it.src; }) : []);
+
+          if (!items.length) {
             showEmpty(wrap, "No photos", payload.dateKey + " • " + payload.bot, "");
             return;
           }
 
-          const slides = photos.map(function(src, i) {
+          wrap.innerHTML = "";
+
+          const slides = items.map(function(item, i) {
             const im = document.createElement("img");
             im.className = "img";
             im.alt = "photo " + (i + 1);
@@ -278,8 +383,9 @@
             try { im.fetchPriority = (i === 0) ? "high" : "low"; } catch (e) {}
             wrap.appendChild(im);
             return {
-              raw: String(src || "").trim(),
-              candidates: buildCandidateUrls(src, w),
+              raw: item.src,
+              caption: item.caption,
+              candidates: buildCandidateUrls(item.src, w),
               img: im,
               ready: false,
               failed: false,
@@ -287,8 +393,11 @@
             };
           });
 
-          const hud = makeHud(payload.dateKey + " • " + payload.bot + " • " + photos.length + " photos • " + VERSION);
-          wrap.appendChild(hud);
+          const captionEl = makeCaption(slides[0] && slides[0].caption ? slides[0].caption : "");
+          wrap.appendChild(captionEl);
+
+          const dbg = makeDbg(debugOn);
+          wrap.appendChild(dbg);
 
           async function ensureReady(i) {
             const s = slides[i];
@@ -336,6 +445,7 @@
 
           current = firstIdx;
           slides[current].img.classList.add("show");
+          updateCaption(current, slides);
           preloadAround(current);
 
           async function rotate() {
@@ -349,6 +459,7 @@
             slides[current].img.classList.remove("show");
             slides[nextIdx].img.classList.add("show");
             current = nextIdx;
+            updateCaption(current, slides);
             preloadAround(current);
             rotateTimer = setTimeout(rotate, Math.max(300, intervalMs));
           }
