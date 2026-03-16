@@ -14,6 +14,7 @@
 
 
 
+
 <!DOCTYPE html>
 <!--
   CHANGELOG
@@ -7555,8 +7556,8 @@ function updateSkyBoxesFromDay_(day, weekKey) {
   // 3) Photo Reel (replaces Word Wall)
   if (__llBoxes[3]) {
     // Build reel URL from selected dateKey.
-    const REEL_BASE = "https://jonathanjoelneptune.github.io/LifeLogFlowerGarden/v94/reel.html";
-    const REEL_API_ENC = "https%3A%2F%2Fscript.google.com%2Fmacros%2Fs%2FAKfycbyHPnSrEOdYJwoIQpRk4SajFg9cgpSeXsH0ilg9-c2EglqzeSIubVhgy7WogI-Idsu8%2Fexec%3Fr%3Dapi_photo_reel";
+    const REEL_BASE = "https://jonathanjoelneptune.github.io/LifeLogFlowerGarden/v94/reel.html?v=20260316c";
+    const REEL_EXEC = "https://script.google.com/macros/s/AKfycbyHPnSrEOdYJwoIQpRk4SajFg9cgpSeXsH0ilg9-c2EglqzeSIubVhgy7WogI-Idsu8/exec";
 
     let botParam = "winston";
     try {
@@ -7570,12 +7571,22 @@ function updateSkyBoxesFromDay_(day, weekKey) {
     if (!dk) {
       setSkyBoxBody_(__llBoxes[3], `<div class="sbLine">${safe("No date selected")}</div>`);
     } else {
+      const debugFlag = (() => {
+        try {
+          const qs = new URLSearchParams(window.location.search || "");
+          return qs.get("debug") === "1" ? "&debug=1" : "";
+        } catch (e) {
+          return "";
+        }
+      })();
+
       const src =
         REEL_BASE +
-        "?api=" + REEL_API_ENC +
+        "&exec=" + encodeURIComponent(REEL_EXEC) +
         "&bot=" + encodeURIComponent(botParam) +
         "&date=" + encodeURIComponent(dk) +
-        "&fit=contain&w=1200&cache_s=600&preload=2&interval_ms=10000&fade_ms=3000&shuffle=1";
+        "&fit=contain&w=1200&cache_s=0&preload=2&interval_ms=10000&fade_ms=3000" +
+        debugFlag;
 
       const iframeHtml =
         `<div class="llReelWrap" style="width:100%;height:100%;border-radius:12px;overflow:hidden;background:transparent;">` +
