@@ -19,7 +19,7 @@
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v100.0.3_ScreenSaverLowPower12fps
+  v100.0.4_ScreenSaverLowPowerPersistAfterExport
     + Consolidate duplicate Photo Reel skybox CSS into one block
     + Merge duplicate selection-ring state rules
     + Remove redundant early wireframe CSS copy
@@ -132,7 +132,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v100.0.3_ScreenSaverLowPower12fps';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v100.0.4_ScreenSaverLowPowerPersistAfterExport';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -260,7 +260,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 function renderBackRows(){ /* disabled */ }
 
 (function(){
-  const VERSION = 'v100.0.3_ScreenSaverLowPower12fps';
+  const VERSION = 'v100.0.4_ScreenSaverLowPowerPersistAfterExport';
 
   // ---- Canonical version globals ----
   window.APP_VERSION = VERSION;
@@ -324,7 +324,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.0.3_ScreenSaverLowPower12fps.html</title>
+<title>garden_v100.0.4_ScreenSaverLowPowerPersistAfterExport.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -2239,7 +2239,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.1.33_DailyHeadlines10.html • v100.1.33_DailyHeadlines10 • Built: 2026-03-15T06:25:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.0.4_ScreenSaverLowPowerPersistAfterExport.html • v100.0.4_ScreenSaverLowPowerPersistAfterExport • Built: 2026-03-15T06:25:00Z UTC</div>
 
 
 <script>
@@ -2253,8 +2253,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v100.1.33_DailyHeadlines10.html</span><br>
-Version: <span id="__bannerVersion">v100.1.33_DailyHeadlines10</span><br>
+File: <span id="__bannerFileName">garden_v100.0.4_ScreenSaverLowPowerPersistAfterExport.html</span><br>
+Version: <span id="__bannerVersion">v100.0.4_ScreenSaverLowPowerPersistAfterExport</span><br>
 Created: 2026-03-15T06:25:00Z</span></div>
 <script>
 (function(){
@@ -2270,7 +2270,7 @@ Created: 2026-03-15T06:25:00Z</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v100.1.33_DailyHeadlines10 loaded", new Date().toISOString());
+  console.log("[VERSION] v100.0.4_ScreenSaverLowPowerPersistAfterExport loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -2876,7 +2876,7 @@ window.__LL_hillTopAtX_fill = function(x, yTopGuess, yBottom){
 <!-- Debug Panel -->
 <div aria-hidden="false" id="dbgPanel">
   <div class="hdr">
-    <div class="t">LifeLog DEBUG v100.0.3_ScreenSaverLowPower12fps (press D)</div>
+    <div class="t">LifeLog DEBUG v100.0.4_ScreenSaverLowPowerPersistAfterExport (press D)</div>
     <div class="btns">
       <button id="dbgCopy" type="button">Copy</button>
       <button id="dbgClear" type="button">Clear</button>
@@ -3238,7 +3238,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   </div>
 
   <div class="util hidden" id="util">
-    <div class="utilTitle">LifeLog Garden Walk v100.0.3_ScreenSaverLowPower12fps</div>
+    <div class="utilTitle">LifeLog Garden Walk v100.0.4_ScreenSaverLowPowerPersistAfterExport</div>
     <div class="utilSub">Scroll to walk through weeks. Press H to hide/show this panel.</div>
 	    <div class="row">
 	      <label>Wireframe</label>
@@ -3447,7 +3447,7 @@ function wrapLLDBGStep_(){
     }
   }catch(e){}
 }
-dbg_('v100.0.3_ScreenSaverLowPower12fps.0: Main script starting');
+dbg_('v100.0.4_ScreenSaverLowPowerPersistAfterExport.0: Main script starting');
 
 // ============================================
 // Constants
@@ -5197,7 +5197,7 @@ function refreshFrontGrass(){
 // ============================================
 
 // ============================================
-// v100.0.3_ScreenSaverLowPower12fps: keep back-row flowers horizontally de-clumped
+// v100.0.4_ScreenSaverLowPowerPersistAfterExport: keep back-row flowers horizontally de-clumped
 // ============================================
 const __LL_BACK_SPREAD_MAX_BEHIND = 5;    // reach near-full spread quickly (about 4-6 rows back)
 const __LL_BACK_SPREAD_EDGE_PAD   = 0.006; // keep a tiny inset so nothing clips at extreme edges
@@ -9964,7 +9964,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.__LL_LAST_PTR_X__ = window.innerWidth/2;
   window.__LL_LAST_PTR_Y__ = window.innerHeight/2;
   window.addEventListener('pointermove', (ev)=>{ window.__LL_LAST_PTR_X__ = ev.clientX; window.__LL_LAST_PTR_Y__ = ev.clientY; }, {passive:true});
-dbg_('v100.0.3_ScreenSaverLowPower12fps.0: DOMContentLoaded');
+dbg_('v100.0.4_ScreenSaverLowPowerPersistAfterExport.0: DOMContentLoaded');
 
   cacheDomRefs();
   try{ wrapLLDBGStep_(); }catch(e){}
@@ -10110,7 +10110,7 @@ window.__LL_BACKROWS_ANCHOR_MATCHED = true; // prevent later global overrides
   }catch(e){}
 
 
-  dbg_('v100.0.3_ScreenSaverLowPower12fps.0: Initialization complete');
+  dbg_('v100.0.4_ScreenSaverLowPowerPersistAfterExport.0: Initialization complete');
 });
 })();
 
@@ -10488,7 +10488,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 
 
 <script>
-// v100.0.3_ScreenSaverLowPower12fps lifecycle manager
+// v100.0.4_ScreenSaverLowPowerPersistAfterExport lifecycle manager
 (function(){
   if (window.__LL_SYS__) return;
   const SYS = { timeouts:new Set(), intervals:new Set(), observers:new Set(), listeners:[] };
@@ -10504,14 +10504,14 @@ window.applySelectedAdornments = applySelectedAdornments;
 </script>
 
 <script>
-// v100.0.3_ScreenSaverLowPower12fps: unified BRX/back-row hard-disable controller.
+// v100.0.4_ScreenSaverLowPowerPersistAfterExport: unified BRX/back-row hard-disable controller.
 (function(){
   try{
     window.__PHASEA_DISABLE_BRX__ = true;
     window.__LL_DISABLE_BACKHILL__ = true;
     window.BRX_DISABLE_LEGACY_BACKROWS = true;
 
-    const VERSION = 'v100.0.3_ScreenSaverLowPower12fps';
+    const VERSION = 'v100.0.4_ScreenSaverLowPowerPersistAfterExport';
     const hideLegacyGroups = () => {
       ['backRowsG','gridWeeksG','hillGuidesG','gridOverlayG','gridWeeksOverlay','brxHillPngG','brxHillDbgG']
         .forEach(id => {
@@ -10752,6 +10752,14 @@ const LS_KEY = "LL_V94_HOST_CFG";
       } catch (e2) {}
     }, 0);
   } catch (e) {}
+
+        // Re-apply screensaver low-power tuning after rebuild because rebuilt flower wrappers
+        // restore normal wind values unless the SS profile is stamped back on.
+        try {
+          if (window.__LL_SCREENSAVER && window.__LL_SCREENSAVER.enabled && typeof __llApplyScreenSaverPerformance_ === "function") {
+            __llApplyScreenSaverPerformance_(true);
+          }
+        } catch (e3) {}
 
       }else{
         console.warn("[export] WARN: no rebuild hook found (syncRenderedWeeks_ not in scope). Export applied but no forced rebuild.");
