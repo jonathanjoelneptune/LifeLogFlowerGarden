@@ -15,10 +15,11 @@
 
 
 
+
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v100.0.2_TonedDownFrontRowGlow
+  v100.0.3_ScreenSaverLowPower12fps
     + Consolidate duplicate Photo Reel skybox CSS into one block
     + Merge duplicate selection-ring state rules
     + Remove redundant early wireframe CSS copy
@@ -131,7 +132,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v100.0.2_TonedDownFrontRowGlow';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v100.0.3_ScreenSaverLowPower12fps';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -259,7 +260,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 function renderBackRows(){ /* disabled */ }
 
 (function(){
-  const VERSION = 'v100.0.2_TonedDownFrontRowGlow';
+  const VERSION = 'v100.0.3_ScreenSaverLowPower12fps';
 
   // ---- Canonical version globals ----
   window.APP_VERSION = VERSION;
@@ -323,7 +324,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.0.2_TonedDownFrontRowGlow.html</title>
+<title>garden_v100.0.3_ScreenSaverLowPower12fps.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -744,6 +745,18 @@ body {
 }
 .clouds .cloudSprite.drift.rev {
   animation-name: cloudDriftSpriteRev, cloudFade;
+}
+
+/* ScreenSaver low-power mode */
+body.llScreenSaverLowPower .clouds .cloudSprite.drift,
+body.llScreenSaverLowPower .clouds .cloudSprite.drift.rev{
+  animation-play-state: paused !important;
+}
+body.llScreenSaverLowPower .grassStack.swayOn .grassBand::before{
+  animation: none !important;
+}
+body.llScreenSaverLowPower .flowerWind{
+  animation-duration: var(--ssWindDur, 18s) !important;
 }
 
 @keyframes cloudDriftSprite {
@@ -2863,7 +2876,7 @@ window.__LL_hillTopAtX_fill = function(x, yTopGuess, yBottom){
 <!-- Debug Panel -->
 <div aria-hidden="false" id="dbgPanel">
   <div class="hdr">
-    <div class="t">LifeLog DEBUG v100.0.2_TonedDownFrontRowGlow (press D)</div>
+    <div class="t">LifeLog DEBUG v100.0.3_ScreenSaverLowPower12fps (press D)</div>
     <div class="btns">
       <button id="dbgCopy" type="button">Copy</button>
       <button id="dbgClear" type="button">Clear</button>
@@ -3225,7 +3238,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   </div>
 
   <div class="util hidden" id="util">
-    <div class="utilTitle">LifeLog Garden Walk v100.0.2_TonedDownFrontRowGlow</div>
+    <div class="utilTitle">LifeLog Garden Walk v100.0.3_ScreenSaverLowPower12fps</div>
     <div class="utilSub">Scroll to walk through weeks. Press H to hide/show this panel.</div>
 	    <div class="row">
 	      <label>Wireframe</label>
@@ -3434,7 +3447,7 @@ function wrapLLDBGStep_(){
     }
   }catch(e){}
 }
-dbg_('v100.0.2_TonedDownFrontRowGlow.0: Main script starting');
+dbg_('v100.0.3_ScreenSaverLowPower12fps.0: Main script starting');
 
 // ============================================
 // Constants
@@ -5105,14 +5118,17 @@ flowerWrapEls.push(wrap);
     wrap.style.setProperty("--jx", jx.toFixed(1) + "px");
 
     const w = initStableWind(dayData.uid);
+    wrap.dataset.baseAmp = w.amp.toFixed(2);
     wrap.style.setProperty("--amp", w.amp.toFixed(2));
     wrap.style.setProperty("--ampDeg", (w.amp).toFixed(2) + "deg");
+    wrap.dataset.baseDur = w.dur.toFixed(2);
     wrap.style.setProperty("--dur", w.dur.toFixed(2) + "s");
     wrap.style.setProperty("--del", w.del.toFixed(2) + "s");
 
     const twr = mulberry32(hash32FromString("tw_" + dayData.uid));
     const twist = 1.6 + twr()*2.2;
     const tdur = (w.dur*1.35) + 3.0;
+    wrap.dataset.baseTwist = twist.toFixed(2);
     wrap.style.setProperty("--twist", twist.toFixed(2));
     wrap.style.setProperty("--twistDeg", twist.toFixed(2) + "deg");
     wrap.style.setProperty("--tdur", tdur.toFixed(2) + "s");
@@ -5181,7 +5197,7 @@ function refreshFrontGrass(){
 // ============================================
 
 // ============================================
-// v100.0.2_TonedDownFrontRowGlow: keep back-row flowers horizontally de-clumped
+// v100.0.3_ScreenSaverLowPower12fps: keep back-row flowers horizontally de-clumped
 // ============================================
 const __LL_BACK_SPREAD_MAX_BEHIND = 5;    // reach near-full spread quickly (about 4-6 rows back)
 const __LL_BACK_SPREAD_EDGE_PAD   = 0.006; // keep a tiny inset so nothing clips at extreme edges
@@ -6217,8 +6233,9 @@ function applyUiToState(){
   if (DOM.vDepthY) DOM.vDepthY.textContent = `${DOM.uDepthY?.value || 110}`;
 
   if (DOM.grassStack && DOM.uGrassSwayOn){
-    DOM.grassStack.classList.toggle("swayOn", !!DOM.uGrassSwayOn.checked);
-    if (DOM.vGrassSwayOn) DOM.vGrassSwayOn.textContent = DOM.uGrassSwayOn.checked ? "On" : "Off";
+    const swayOn = __llIsLowPowerScreensaverActive_() ? false : !!DOM.uGrassSwayOn.checked;
+    DOM.grassStack.classList.toggle("swayOn", swayOn);
+    if (DOM.vGrassSwayOn) DOM.vGrassSwayOn.textContent = swayOn ? "On" : "Off";
   }
 
   // Debug panel toggle (mirrors D hotkey)
@@ -6443,7 +6460,20 @@ if (e.key === "ArrowUp" || e.key === "ArrowDown"){
 // ============================================
 // v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: OPTIMIZED Main Loop with dirty flag
 // ============================================
+let __llLastTickTs = 0;
+let __llLastTodTickTs = 0;
+
 function tick(tNow){
+  requestAnimationFrame(tick);
+
+  const lowPowerSS = __llIsLowPowerScreensaverActive_();
+  if (lowPowerSS){
+    const fpsCap = Math.max(1, (__LL_SCREENSAVER && __LL_SCREENSAVER.fpsCap) ? __LL_SCREENSAVER.fpsCap : 12);
+    const minFrameMs = 1000 / fpsCap;
+    if (__llLastTickTs && (tNow - __llLastTickTs) < minFrameMs) return;
+  }
+  __llLastTickTs = tNow;
+
   flushRenderQueue_(tNow);
 
   const offsetChanged = Math.abs(__rt.nav.targetIndex - __rt.nav.currentOffset) > LL_CONFIG.motion.offsetDirtyEpsilon;
@@ -6454,14 +6484,20 @@ function tick(tNow){
     CACHED.transformsDirty = true;
   }
 
-  // v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: Only run expensive transforms when dirty or offset changed
   if (CACHED.transformsDirty || offsetChanged){
     applyTransforms(tNow);
     CACHED.transformsDirty = false;
   }
 
-  applyTimeOfDayVisuals();
-  requestAnimationFrame(tick);
+  if (lowPowerSS){
+    if (!__llLastTodTickTs){
+      applyTimeOfDayVisuals();
+      __llLastTodTickTs = tNow;
+    }
+  }else{
+    applyTimeOfDayVisuals();
+    __llLastTodTickTs = tNow;
+  }
 }
 
 
@@ -8344,7 +8380,12 @@ function showSkyBoxesForWrap_(wrap){
   layoutSkyBoxes_(wrap);
 
   // Start tracking the selected wrap and then enable sway
-  try { if (typeof startSkySyncLoop_ === 'function') startSkySyncLoop_(); } catch(e){}
+  try{ syncSkyBoxesToWrap_(); }catch(e){}
+  if (__llIsLowPowerScreensaverActive_() && __LL_SCREENSAVER.skyboxStatic){
+    try { if (typeof stopSkySyncLoop_ === 'function') stopSkySyncLoop_(); } catch(e){}
+  }else{
+    try { if (typeof startSkySyncLoop_ === 'function') startSkySyncLoop_(); } catch(e){}
+  }
   try { __llBoxGroup.classList.add('sway'); } catch(e){}
 
   // Force a post-layout refit (double RAF for stable sizes)
@@ -8710,13 +8751,106 @@ const __LL_SCREENSAVER = {
   timerA: null,
   timerB: null,
   kickTimer: null,
+  todTimer: null,
   token: 0,
   lastSlotId: '',
   startedOnce: false,
   stopOnMove: false,
   dim: 0,
+  explicitOpenMs: false,
+  explicitWaitMs: false,
+  explicitStartDelayMs: false,
+  lowPower: true,
+  fpsCap: 12,
+  todMinMs: 10000,
+  todMaxMs: 30000,
+  selectMinMs: 30000,
+  selectMaxMs: 60000,
+  skyboxStatic: true,
+  pausedClouds: true,
+  disableGrassSway: true,
+  slowTinySway: true,
+  windAmpMul: 0.20,
+  windTwistMul: 0.18,
+  windDurMul: 2.60,
+  windMinDurSec: 14,
 
 };;
+
+function __llIsLowPowerScreensaverActive_(){
+  try{ return !!(__LL_SCREENSAVER && __LL_SCREENSAVER.enabled && __LL_SCREENSAVER.lowPower); }catch(e){ return false; }
+}
+
+function __llRandomInt_(min, max){
+  const lo = Math.max(0, min|0);
+  const hi = Math.max(lo, max|0);
+  return lo + Math.floor(Math.random() * (hi - lo + 1));
+}
+
+function __llGetScreenSaverOpenMs_(){
+  try{
+    if (!__LL_SCREENSAVER.lowPower) return __LL_SCREENSAVER.openMs;
+    if (__LL_SCREENSAVER.explicitOpenMs) return __LL_SCREENSAVER.openMs;
+    return __llRandomInt_(__LL_SCREENSAVER.selectMinMs, __LL_SCREENSAVER.selectMaxMs);
+  }catch(e){ return __LL_SCREENSAVER.openMs; }
+}
+
+function __llGetScreenSaverWaitMs_(){
+  try{
+    if (!__LL_SCREENSAVER.lowPower) return __LL_SCREENSAVER.waitMs;
+    if (__LL_SCREENSAVER.explicitWaitMs) return __LL_SCREENSAVER.waitMs;
+    return 0;
+  }catch(e){ return __LL_SCREENSAVER.waitMs; }
+}
+
+function __llApplyScreenSaverPerformance_(on){
+  try{
+    document.body.classList.toggle('llScreenSaverLowPower', !!on);
+    const root = document.documentElement;
+    const ampMul = (!!on && __LL_SCREENSAVER.slowTinySway) ? (__LL_SCREENSAVER.windAmpMul || 0.2) : 1;
+    const twistMul = (!!on && __LL_SCREENSAVER.slowTinySway) ? (__LL_SCREENSAVER.windTwistMul || 0.18) : 1;
+    const durMul = (!!on && __LL_SCREENSAVER.slowTinySway) ? (__LL_SCREENSAVER.windDurMul || 2.6) : 1;
+    const minDur = (!!on && __LL_SCREENSAVER.slowTinySway) ? (__LL_SCREENSAVER.windMinDurSec || 14) : 0;
+    root.style.setProperty('--ssWindDur', (minDur || 18) + 's');
+    document.querySelectorAll('.flowerWrap').forEach((wrap)=>{
+      try{
+        const baseAmp = parseFloat(wrap.dataset.baseAmp || wrap.style.getPropertyValue('--amp') || '2.5') || 2.5;
+        const baseTwist = parseFloat(wrap.dataset.baseTwist || wrap.style.getPropertyValue('--twist') || '2.0') || 2.0;
+        const durStr = String(wrap.dataset.baseDur || wrap.style.getPropertyValue('--dur') || '7s').replace('s','');
+        const baseDur = parseFloat(durStr) || 7;
+        if (!wrap.dataset.baseAmp) wrap.dataset.baseAmp = String(baseAmp);
+        if (!wrap.dataset.baseTwist) wrap.dataset.baseTwist = String(baseTwist);
+        if (!wrap.dataset.baseDur) wrap.dataset.baseDur = String(baseDur);
+        const nextAmp = Math.max(0.12, baseAmp * ampMul);
+        const nextTwist = Math.max(0.10, baseTwist * twistMul);
+        const nextDur = Math.max(minDur, baseDur * durMul);
+        wrap.style.setProperty('--amp', nextAmp.toFixed(2));
+        wrap.style.setProperty('--ampDeg', nextAmp.toFixed(2) + 'deg');
+        wrap.style.setProperty('--twist', nextTwist.toFixed(2));
+        wrap.style.setProperty('--twistDeg', nextTwist.toFixed(2) + 'deg');
+        wrap.style.setProperty('--dur', nextDur.toFixed(2) + 's');
+      }catch(e){}
+    });
+    if (DOM && DOM.grassStack && __LL_SCREENSAVER.disableGrassSway && on){
+      DOM.grassStack.classList.remove('swayOn');
+    }else if (DOM && DOM.grassStack && DOM.uGrassSwayOn && !on){
+      DOM.grassStack.classList.toggle('swayOn', !!DOM.uGrassSwayOn.checked);
+    }
+  }catch(e){}
+}
+
+function __llScheduleScreenSaverTod_(){
+  try{
+    if (__LL_SCREENSAVER.todTimer){ clearTimeout(__LL_SCREENSAVER.todTimer); __LL_SCREENSAVER.todTimer = null; }
+    if (!__llIsLowPowerScreensaverActive_()) return;
+    const delay = __llRandomInt_(__LL_SCREENSAVER.todMinMs || 10000, __LL_SCREENSAVER.todMaxMs || 30000);
+    __LL_SCREENSAVER.todTimer = setTimeout(()=>{
+      __LL_SCREENSAVER.todTimer = null;
+      try{ applyTimeOfDayVisuals(); }catch(e){}
+      __llScheduleScreenSaverTod_();
+    }, delay);
+  }catch(e){}
+}
 
 // Expose screensaver state so other handlers can gate hotkeys
 window.__LL_SCREENSAVER = __LL_SCREENSAVER;
@@ -8758,9 +8892,9 @@ if (dimRaw != null && String(dimRaw).length){
 }
 
     if (enable) { __LL_SCREENSAVER.enabled = true; __LL_SCREENSAVER.alwaysRun = true; }
-    if (Number.isFinite(openMs) && openMs > 0) __LL_SCREENSAVER.openMs = Math.max(250, Math.min(openMs, 10*60*1000));
-    if (Number.isFinite(waitMs) && waitMs >= 0) __LL_SCREENSAVER.waitMs = Math.max(0, Math.min(waitMs, 10*60*1000));
-    if (Number.isFinite(startDelayMs) && startDelayMs >= 0) __LL_SCREENSAVER.startDelayMs = Math.max(0, Math.min(startDelayMs, 10*60*1000));
+    if (Number.isFinite(openMs) && openMs > 0) { __LL_SCREENSAVER.openMs = Math.max(250, Math.min(openMs, 10*60*1000)); __LL_SCREENSAVER.explicitOpenMs = true; }
+    if (Number.isFinite(waitMs) && waitMs >= 0) { __LL_SCREENSAVER.waitMs = Math.max(0, Math.min(waitMs, 10*60*1000)); __LL_SCREENSAVER.explicitWaitMs = true; }
+    if (Number.isFinite(startDelayMs) && startDelayMs >= 0) { __LL_SCREENSAVER.startDelayMs = Math.max(0, Math.min(startDelayMs, 10*60*1000)); __LL_SCREENSAVER.explicitStartDelayMs = true; }
     if (stopOnMove) __LL_SCREENSAVER.stopOnMove = true;
     if (alwaysRun) __LL_SCREENSAVER.alwaysRun = true;
     if (Number.isFinite(dim) && dim > 0) __LL_SCREENSAVER.dim = Math.max(0, Math.min(dim, 0.85));
@@ -8839,6 +8973,9 @@ function __llScreenSaverLoop_(tok){
     if (typeof dbg_ === 'function') dbg_(`Screensaver: OPEN ${next.dataset.dateKey || next.dataset.datekey || ''}`);
   }catch(e){}
 
+  const activeOpenMs = __llGetScreenSaverOpenMs_();
+  const activeWaitMs = __llGetScreenSaverWaitMs_();
+
   // Close after openMs
   __LL_SCREENSAVER.timerA = setTimeout(()=>{
     try{
@@ -8848,8 +8985,8 @@ function __llScreenSaverLoop_(tok){
     // Wait, then open next
     __LL_SCREENSAVER.timerB = setTimeout(()=>{
       __llScreenSaverLoop_(tok);
-    }, __LL_SCREENSAVER.waitMs);
-  }, __LL_SCREENSAVER.openMs);
+    }, activeWaitMs);
+  }, activeOpenMs);
 }
 
 function __llStartScreenSaver_(why){
@@ -8857,10 +8994,16 @@ function __llStartScreenSaver_(why){
     if (__LL_SCREENSAVER.timerA) { clearTimeout(__LL_SCREENSAVER.timerA); __LL_SCREENSAVER.timerA = null; }
     if (__LL_SCREENSAVER.timerB) { clearTimeout(__LL_SCREENSAVER.timerB); __LL_SCREENSAVER.timerB = null; }
     if (__LL_SCREENSAVER.kickTimer) { clearTimeout(__LL_SCREENSAVER.kickTimer); __LL_SCREENSAVER.kickTimer = null; }
+    if (__LL_SCREENSAVER.todTimer) { clearTimeout(__LL_SCREENSAVER.todTimer); __LL_SCREENSAVER.todTimer = null; }
     __LL_SCREENSAVER.token = (__LL_SCREENSAVER.token|0) + 1;
     const tok = __LL_SCREENSAVER.token;
     __LL_SCREENSAVER.enabled = true;
     try{ __llApplyScreenSaverDim_(true); }catch(e){}
+    try{ __llApplyScreenSaverPerformance_(true); }catch(e){}
+    try{ applyTimeOfDayVisuals(); }catch(e){}
+    try{ __llScheduleScreenSaverTod_(); }catch(e){}
+    __llLastTickTs = 0;
+    __llLastTodTickTs = 0;
     __LL_SCREENSAVER.startedOnce = true;
     if (typeof dbg_ === 'function') dbg_(`Screensaver: START (${why || 'url'}) open=${__LL_SCREENSAVER.openMs}ms wait=${__LL_SCREENSAVER.waitMs}ms`);
     // small delay to ensure initial render/export apply settles
@@ -9821,7 +9964,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.__LL_LAST_PTR_X__ = window.innerWidth/2;
   window.__LL_LAST_PTR_Y__ = window.innerHeight/2;
   window.addEventListener('pointermove', (ev)=>{ window.__LL_LAST_PTR_X__ = ev.clientX; window.__LL_LAST_PTR_Y__ = ev.clientY; }, {passive:true});
-dbg_('v100.0.2_TonedDownFrontRowGlow.0: DOMContentLoaded');
+dbg_('v100.0.3_ScreenSaverLowPower12fps.0: DOMContentLoaded');
 
   cacheDomRefs();
   try{ wrapLLDBGStep_(); }catch(e){}
@@ -9967,7 +10110,7 @@ window.__LL_BACKROWS_ANCHOR_MATCHED = true; // prevent later global overrides
   }catch(e){}
 
 
-  dbg_('v100.0.2_TonedDownFrontRowGlow.0: Initialization complete');
+  dbg_('v100.0.3_ScreenSaverLowPower12fps.0: Initialization complete');
 });
 })();
 
@@ -10345,7 +10488,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 
 
 <script>
-// v100.0.2_TonedDownFrontRowGlow lifecycle manager
+// v100.0.3_ScreenSaverLowPower12fps lifecycle manager
 (function(){
   if (window.__LL_SYS__) return;
   const SYS = { timeouts:new Set(), intervals:new Set(), observers:new Set(), listeners:[] };
@@ -10361,14 +10504,14 @@ window.applySelectedAdornments = applySelectedAdornments;
 </script>
 
 <script>
-// v100.0.2_TonedDownFrontRowGlow: unified BRX/back-row hard-disable controller.
+// v100.0.3_ScreenSaverLowPower12fps: unified BRX/back-row hard-disable controller.
 (function(){
   try{
     window.__PHASEA_DISABLE_BRX__ = true;
     window.__LL_DISABLE_BACKHILL__ = true;
     window.BRX_DISABLE_LEGACY_BACKROWS = true;
 
-    const VERSION = 'v100.0.2_TonedDownFrontRowGlow';
+    const VERSION = 'v100.0.3_ScreenSaverLowPower12fps';
     const hideLegacyGroups = () => {
       ['backRowsG','gridWeeksG','hillGuidesG','gridOverlayG','gridWeeksOverlay','brxHillPngG','brxHillDbgG']
         .forEach(id => {
