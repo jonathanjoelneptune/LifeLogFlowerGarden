@@ -16,6 +16,7 @@
 
 
 
+
 <!DOCTYPE html>
 <!--
   CHANGELOG
@@ -324,7 +325,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.0.5_ScreenSaverLowPowerStaticSkyboxes.html</title>
+<title>garden_v100.0.6_DailyHeadlinesAiryRotation.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -2202,7 +2203,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 <style>
 
-/* --- v100.1.31_DOWAlignedToFrontAnchors_TextControlsSpacing: Daily Headlines skybox typography --- */
+/* --- v100.0.6_DailyHeadlinesAiryRotation: Daily Headlines skybox typography + airy row rotation --- */
 .llSkyBox[data-idx="2"] .body,
 .llSkyBox[data-skybox-idx="2"] .body{
   text-align:left !important;
@@ -2220,17 +2221,45 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 .llSkyBox[data-idx="2"] .body .sbHeadlineLine,
 .llSkyBox[data-skybox-idx="2"] .body .sbHeadlineLine{
   display:block;
+  position: relative;
   text-align:left !important;
   margin: 0 !important;
   font-weight: 400;
   line-height: 1.14 !important;
   white-space: nowrap !important;
-  overflow: visible !important;
+  overflow: hidden !important;
   text-overflow: clip !important;
   padding-bottom: 1px !important;
 }
 .llSkyBox[data-idx="2"] .body .sbHeadlineLine + .sbHeadlineLine,
 .llSkyBox[data-skybox-idx="2"] .body .sbHeadlineLine + .sbHeadlineLine{ margin-top: 3px !important; }
+
+.llSkyBox[data-idx="2"] .body .llHeadlineSwap,
+.llSkyBox[data-skybox-idx="2"] .body .llHeadlineSwap{
+  display:block;
+  transform: translate3d(0,0,0);
+  opacity: 1;
+  filter: blur(0px);
+  transition:
+    opacity 1300ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 1300ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 1300ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform, filter;
+}
+
+.llSkyBox[data-idx="2"] .body .llHeadlineSwap.is-leaving,
+.llSkyBox[data-skybox-idx="2"] .body .llHeadlineSwap.is-leaving{
+  opacity: 0;
+  transform: translate3d(0,-7px,0);
+  filter: blur(1.6px);
+}
+
+.llSkyBox[data-idx="2"] .body .llHeadlineSwap.is-entering,
+.llSkyBox[data-skybox-idx="2"] .body .llHeadlineSwap.is-entering{
+  opacity: 0;
+  transform: translate3d(0,7px,0);
+  filter: blur(1.9px);
+}
 
 </style>
 <style>
@@ -2239,7 +2268,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.0.5_ScreenSaverLowPowerStaticSkyboxes.html • v100.0.5_ScreenSaverLowPowerStaticSkyboxes • Built: 2026-03-15T06:25:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.0.6_DailyHeadlinesAiryRotation.html • v100.0.6_DailyHeadlinesAiryRotation • Built: 2026-04-01T00:00:00Z UTC</div>
 
 
 <script>
@@ -7123,12 +7152,127 @@ __llBoxes = titles.map((t,i)=>{
 
 function setSkyBoxBody_(box, html){
   if (!box) return;
+  stopHeadlineRotation_(box);
   const body = box.querySelector('.body');
   if (!body) return;
   body.innerHTML = html;
   // After content changes, refit to available space.
   scheduleFitSkyBox_(box);
   refreshSkyBoxTextSizeLabels_();
+}
+
+window.__llHeadlineRotation = window.__llHeadlineRotation || new WeakMap();
+
+function stopHeadlineRotation_(box){
+  if (!box || !window.__llHeadlineRotation) return;
+  const state = window.__llHeadlineRotation.get(box);
+  if (!state) return;
+  try{
+    if (state.swapTimer) clearTimeout(state.swapTimer);
+    if (Array.isArray(state.pendingTimers)) state.pendingTimers.forEach(id => clearTimeout(id));
+  }catch(e){}
+  window.__llHeadlineRotation.delete(box);
+}
+
+function formatHeadlineLineHtml_(safe, line){
+  const raw = String(line == null ? '' : line).trim();
+  const parts = raw.split(/\s-\s(.+)/);
+  if (parts.length >= 3) return `${safe(parts[0])} - ${safe(parts[1])}`;
+  return safe(raw);
+}
+
+function renderHeadlineSlotsHtml_(safe, lines, visibleCount){
+  return lines.slice(0, visibleCount).map((line, idx) => {
+    return `<div class="sbLine sbHeadlineLine" data-headline-slot="${idx}"><span class="llHeadlineSwap">${formatHeadlineLineHtml_(safe, line)}</span></div>`;
+  }).join('');
+}
+
+function animateHeadlineSlotTo_(box, slotEl, safe, nextLine){
+  if (!box || !slotEl) return;
+  const swapEl = slotEl.querySelector('.llHeadlineSwap');
+  if (!swapEl || swapEl.__llHeadlineBusy) return;
+  swapEl.__llHeadlineBusy = true;
+  const state = window.__llHeadlineRotation && window.__llHeadlineRotation.get(box);
+  const pendingTimers = state && Array.isArray(state.pendingTimers) ? state.pendingTimers : [];
+
+  swapEl.classList.add('is-leaving');
+
+  const swapMidTimer = setTimeout(() => {
+    swapEl.innerHTML = formatHeadlineLineHtml_(safe, nextLine);
+    swapEl.classList.remove('is-leaving');
+    swapEl.classList.add('is-entering');
+    void swapEl.offsetWidth;
+    requestAnimationFrame(() => {
+      swapEl.classList.remove('is-entering');
+      scheduleFitSkyBox_(box);
+    });
+
+    const swapDoneTimer = setTimeout(() => {
+      swapEl.__llHeadlineBusy = false;
+    }, 1500);
+
+    pendingTimers.push(swapDoneTimer);
+  }, 820);
+
+  pendingTimers.push(swapMidTimer);
+}
+
+function startHeadlineRotation_(box, safe, allLines){
+  if (!box) return;
+  stopHeadlineRotation_(box);
+
+  const body = box.querySelector('.body');
+  if (!body) return;
+
+  const cleaned = Array.isArray(allLines)
+    ? allLines.map(s => String(s == null ? '' : s).trim()).filter(Boolean)
+    : [];
+  if (!cleaned.length){
+    setSkyBoxBody_(box, `<div class="sbLine sbEmpty">${safe("No headlines yet.")}</div>`);
+    return;
+  }
+
+  const visibleCount = Math.min(10, cleaned.length);
+  body.innerHTML = renderHeadlineSlotsHtml_(safe, cleaned, visibleCount);
+  scheduleFitSkyBox_(box);
+  refreshSkyBoxTextSizeLabels_();
+
+  if (cleaned.length <= visibleCount) return;
+
+  const state = {
+    visible: cleaned.slice(0, visibleCount),
+    pool: cleaned.slice(visibleCount),
+    rowCursor: 0,
+    pendingTimers: [],
+    swapTimer: null
+  };
+  window.__llHeadlineRotation.set(box, state);
+
+  const scheduleNextSwap = () => {
+    const active = window.__llHeadlineRotation.get(box);
+    if (!active) return;
+
+    active.swapTimer = setTimeout(() => {
+      const latest = window.__llHeadlineRotation.get(box);
+      if (!latest || !latest.pool.length) return;
+
+      const slotCount = latest.visible.length || visibleCount;
+      const slotIndex = latest.rowCursor % Math.max(1, slotCount);
+      latest.rowCursor = (latest.rowCursor + 1) % Math.max(1, slotCount);
+
+      const nextLine = latest.pool.shift();
+      const outgoing = latest.visible[slotIndex];
+      latest.visible[slotIndex] = nextLine;
+      latest.pool.push(outgoing);
+
+      const slotEl = body.querySelector(`[data-headline-slot="${slotIndex}"]`);
+      animateHeadlineSlotTo_(box, slotEl, safe, nextLine);
+
+      scheduleNextSwap();
+    }, 6200);
+  };
+
+  scheduleNextSwap();
 }
 
 const SKYBOX_TEXT_CONTROL_STEP_ = 0.5;
@@ -7575,18 +7719,7 @@ function updateSkyBoxesFromDay_(day, weekKey) {
       .filter(Boolean)
       .map(s => s.replace(/^[-•*]\s*/, ""));
 
-    if (!headlineLines.length) {
-      setSkyBoxBody_(__llBoxes[2], `<div class="sbLine sbEmpty">${safe("No headlines yet.")}</div>`);
-    } else {
-      const headlineHtml = headlineLines.slice(0, 10).map(line => {
-        const parts = String(line).split(/\s-\s(.+)/);
-        if (parts.length >= 3) {
-          return `<div class="sbLine sbHeadlineLine">${safe(parts[0])} - ${safe(parts[1])}</div>`;
-        }
-        return `<div class="sbLine sbHeadlineLine">${safe(line)}</div>`;
-      }).join("");
-      setSkyBoxBody_(__llBoxes[2], headlineHtml);
-    }
+    startHeadlineRotation_(__llBoxes[2], safe, headlineLines);
   }
 
   // 3) Photo Reel (replaces Word Wall)
