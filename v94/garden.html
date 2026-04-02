@@ -17,10 +17,11 @@
 
 
 
+
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v100.0.5_ScreenSaverLowPowerStaticSkyboxes
+  v100.0.44_BackRowsRealCleanup_60WeekTest
     + Consolidate duplicate Photo Reel skybox CSS into one block
     + Merge duplicate selection-ring state rules
     + Remove redundant early wireframe CSS copy
@@ -133,7 +134,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v100.0.5_ScreenSaverLowPowerStaticSkyboxes';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v100.0.44_BackRowsRealCleanup_60WeekTest';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -261,7 +262,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 function renderBackRows(){ /* disabled */ }
 
 (function(){
-  const VERSION = 'v100.0.5_ScreenSaverLowPowerStaticSkyboxes';
+  const VERSION = 'v100.0.44_BackRowsRealCleanup_60WeekTest';
 
   // ---- Canonical version globals ----
   window.APP_VERSION = VERSION;
@@ -325,7 +326,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.0.6_DailyHeadlinesAiryRotation.html</title>
+<title>garden_v100.0.44_BackRowsRealCleanup_60WeekTest.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -2268,7 +2269,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.0.6_DailyHeadlinesAiryRotation.html • v100.0.6_DailyHeadlinesAiryRotation • Built: 2026-04-01T00:00:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.0.44_BackRowsRealCleanup_60WeekTest.html • v100.0.6_DailyHeadlinesAiryRotation • Built: 2026-04-01T00:00:00Z UTC</div>
 
 
 <script>
@@ -2282,8 +2283,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v100.0.5_ScreenSaverLowPowerStaticSkyboxes.html</span><br>
-Version: <span id="__bannerVersion">v100.0.5_ScreenSaverLowPowerStaticSkyboxes</span><br>
+File: <span id="__bannerFileName">garden_v100.0.44_BackRowsRealCleanup_60WeekTest.html</span><br>
+Version: <span id="__bannerVersion">v100.0.44_BackRowsRealCleanup_60WeekTest</span><br>
 Created: 2026-03-15T06:25:00Z</span></div>
 <script>
 (function(){
@@ -2299,7 +2300,7 @@ Created: 2026-03-15T06:25:00Z</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v100.0.5_ScreenSaverLowPowerStaticSkyboxes loaded", new Date().toISOString());
+  console.log("[VERSION] v100.0.44_BackRowsRealCleanup_60WeekTest loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -2905,7 +2906,7 @@ window.__LL_hillTopAtX_fill = function(x, yTopGuess, yBottom){
 <!-- Debug Panel -->
 <div aria-hidden="false" id="dbgPanel">
   <div class="hdr">
-    <div class="t">LifeLog DEBUG v100.0.5_ScreenSaverLowPowerStaticSkyboxes (press D)</div>
+    <div class="t">LifeLog DEBUG v100.0.44_BackRowsRealCleanup_60WeekTest (press D)</div>
     <div class="btns">
       <button id="dbgCopy" type="button">Copy</button>
       <button id="dbgClear" type="button">Clear</button>
@@ -3267,7 +3268,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   </div>
 
   <div class="util hidden" id="util">
-    <div class="utilTitle">LifeLog Garden Walk v100.0.5_ScreenSaverLowPowerStaticSkyboxes</div>
+    <div class="utilTitle">LifeLog Garden Walk v100.0.44_BackRowsRealCleanup_60WeekTest</div>
     <div class="utilSub">Scroll to walk through weeks. Press H to hide/show this panel.</div>
 	    <div class="row">
 	      <label>Wireframe</label>
@@ -3476,7 +3477,7 @@ function wrapLLDBGStep_(){
     }
   }catch(e){}
 }
-dbg_('v100.0.5_ScreenSaverLowPowerStaticSkyboxes.0: Main script starting');
+dbg_('v100.0.44_BackRowsRealCleanup_60WeekTest.0: Main script starting');
 
 // ============================================
 // Constants
@@ -3523,7 +3524,7 @@ function __llComputeFocusWeekIndexForToday_(){
 }
 
 // Monday
-const PAST_WEEKS_RENDERED = 15;
+const PAST_WEEKS_RENDERED = 60;
 const FUTURE_WEEKS_RENDERED = 5;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const WEEK_MS = 7 * DAY_MS;
@@ -5018,7 +5019,7 @@ if(window.__llForceTodayAfterExport_ && fullRebuild){
     }
   }
 
-  const minIdx = Math.max(0, (focusWeekIndex|0) - PAST_WEEKS_RENDERED);
+  const minIdx = (focusWeekIndex|0) - PAST_WEEKS_RENDERED;
   const maxIdx = (focusWeekIndex|0) + FUTURE_WEEKS_RENDERED;
 
   // Create needed weeks
@@ -5144,6 +5145,7 @@ function renderBandFlowers(band){
       rowKind: 'front'
     });
 flowerWrapEls.push(wrap);
+    wrap.dataset.baseJx = jx.toFixed(1);
     wrap.style.setProperty("--jx", jx.toFixed(1) + "px");
 
     const w = initStableWind(dayData.uid);
@@ -5226,7 +5228,7 @@ function refreshFrontGrass(){
 // ============================================
 
 // ============================================
-// v100.0.5_ScreenSaverLowPowerStaticSkyboxes: keep back-row flowers horizontally de-clumped
+// v100.0.44_BackRowsRealCleanup_60WeekTest: keep back-row flowers horizontally de-clumped
 // ============================================
 const __LL_BACK_SPREAD_MAX_BEHIND = 5;    // reach near-full spread quickly (about 4-6 rows back)
 const __LL_BACK_SPREAD_EDGE_PAD   = 0.006; // keep a tiny inset so nothing clips at extreme edges
@@ -5248,6 +5250,80 @@ function __llLerp_(a,b,t){ return a + (b-a)*t; }
 //   x = (k + W/2) / (7*W)   -> when k=W*d, x=(d+0.5)/7 (canonical day center)
 const __LL_EVEN_MAX_WEEKS = 7;
 const __LL_EVEN_NEARFRONT_BLEND_BEHIND = 1.35; // rows: 0..~1.35 blends from day-centers to even slots
+
+
+// ============================================
+// v100.0.44_BackRowsRealCleanup_60WeekTest: offline back-hill port constants
+// ============================================
+const FRONT_VISIBLE_WEEKS = 10;
+const CREST_BUFFER_WEEKS = 1;
+const BACK_TRIPLET_START_WEEKS = FRONT_VISIBLE_WEEKS + CREST_BUFFER_WEEKS;
+const BACK_HILL_STEP_Y = 9;
+const BACK_HILL_CURVE = 1.12;
+const BACK_HILL_CENTER_PULL = 26;
+const BACK_HILL_SCALE_BOOST = -0.004;
+const BACK_TRIPLET_BASE_Y = 2;
+const BACK_TRIPLET_ROW_Y = 42;
+const BACK_TRIPLET_SCALE = 0.60;
+const BACK_TRIPLET_SCALE_DECAY = 0.050;
+const BACK_TRIPLET_MIN_SCALE = 0.24;
+const BACK_TRIPLET_ROW_WIDTH = 1.06;
+const BACK_TRIPLET_ROW_WIDTH_DECAY = 0.07;
+const BACK_TRIPLET_MIN_ROW_WIDTH = 0.56;
+const FAR_ROW_FADE_SPAN = 3;
+const FAR_ROW_EXTRA_SHRINK = 0.10;
+const FAR_ROW_EXTRA_TIGHTEN = 0.08;
+const FAR_ROW_CREST_RISE_Y = 39;
+const PRECREST_ROW1_OPACITY = 0.75;
+const PRECREST_ROW2_OPACITY = 0.50;
+const PRECREST_ROW1_DROP_Y = 42;
+const PRECREST_ROW2_DROP_Y = 92;
+const PRECREST_ROW1_SCALE = 0.92;
+const PRECREST_ROW2_SCALE = 0.82;
+const PRECREST_ROW1_TIGHTEN = 0.95;
+const PRECREST_ROW2_TIGHTEN = 0.88;
+const renderPrefs = { hideFarRows: true, lastWeekToShow: 42 };
+const CREST_HIDE_DROP = 52;
+
+function setBandFullWidth_(band){
+  if (!band) return;
+  band.style.left = '0px';
+  band.style.right = '0px';
+  band.style.width = 'auto';
+}
+function setBandBackWidth_(band, leftPx, widthPx){
+  if (!band) return;
+  band.style.left = `${leftPx.toFixed(1)}px`;
+  band.style.right = 'auto';
+  band.style.width = `${widthPx.toFixed(1)}px`;
+}
+function setBandContinuous21Mode_(band, subIndex){
+  if (!band) return;
+  const slots = band.querySelectorAll('.flowerSlot');
+  slots.forEach((slot)=>{
+    const wrap = slot.querySelector('.flowerWrap');
+    const d = wrap ? parseInt(wrap.dataset.dayIndex || wrap.dataset.dow || '0', 10) : parseInt(slot.dataset.dayIndex || '0', 10);
+    const idx21 = subIndex * 7 + Math.max(0, Math.min(6, d));
+    slot.style.left = ((((idx21 + 0.5) / 21) * 100).toFixed(4)) + '%';
+    if (wrap) wrap.style.setProperty('--jx', '0.0px');
+  });
+}
+function setBandEvenSpacingMode_(band, on){
+  if (!band) return;
+  const wraps = band.querySelectorAll('.flowerWrap');
+  wraps.forEach((wrap)=>{
+    const base = (wrap.dataset && wrap.dataset.baseJx != null) ? parseFloat(wrap.dataset.baseJx || '0') : 0;
+    wrap.style.setProperty('--jx', ((on ? 0 : base) || 0).toFixed(1) + 'px');
+  });
+  if (!on){
+    const slots = band.querySelectorAll('.flowerSlot');
+    slots.forEach((slot)=>{
+      const wrap = slot.querySelector('.flowerWrap');
+      const d = wrap ? parseInt(wrap.dataset.dayIndex || wrap.dataset.dow || '0', 10) : parseInt(slot.dataset.dayIndex || '0', 10);
+      slot.style.left = ((((Math.max(0, Math.min(6, d)) + 0.5) / 7) * 100).toFixed(4)) + '%';
+    });
+  }
+}
 
 function updateBandSlotSpread_(band, behind, s){
   if (!band) return;
@@ -5345,13 +5421,7 @@ function applyTransforms(tNow){
   DOM.weeksStack.style.transform = `translate3d(${bobX.toFixed(1)}px, ${(bobY + state.horizon).toFixed(1)}px, 0px) rotate(${state.bank.toFixed(2)}deg)`;
   if (DOM.dowStrip) DOM.dowStrip.style.transform = `translate3d(${bobX.toFixed(1)}px, 0px, 0px)`;
 
-  const frontIndexVisual = Math.max(0, Math.round(frontF));
-
-  // v99.3.62: Even-slot spacing always-on (Option A)
-  try{ window.__llEvenSlotsWCurrent = __LL_EVEN_MAX_WEEKS; }catch(e){}
-
-  // v99.3.68: prevent mid-scroll rebuild/pop when many rows are present.
-  // Only "commit" a new frontIndex (and run expensive sync/selection work) when we're close to settled.
+  const frontIndexVisual = Math.round(frontF);
   const __llSettleEps = 0.10;
   const __llIsSettled = Math.abs(__rt.nav.currentOffset - __rt.nav.targetIndex) <= __llSettleEps;
 
@@ -5359,121 +5429,184 @@ function applyTransforms(tNow){
     const prevFront = __rt.nav.lastFrontIndex;
     __llLastRowDir = (prevFront < 0) ? 0 : (frontIndexVisual > prevFront ? +1 : -1);
     __rt.nav.lastFrontIndex = frontIndexVisual;
-
     try{ syncRenderedWeeks_(frontIndexVisual); }catch(e){}
     try{
       if (typeof hideSkyBoxes_ === 'function') hideSkyBoxes_('row change', __llLastRowDir);
       if (typeof dbg_==='function') dbg_(`Row change -> keep selection (hide boxes) dir=${__llLastRowDir}`);
     }catch(e){}
     try{ setTimeout(()=>{ try{ rebindSelectionToVisibleWrap_('row change'); }catch(e){} }, 0); }catch(e){}
-
     updateFrontText(frontIndexVisual);
-
-    // Keep the hill back-row preview synchronized with the currently-front week,
-    // but also only when settled to avoid a mid-scroll snap.
-    try{
-      if (DOM.uBackRowsOn && DOM.uBackRowsOn.checked){
-        if ((frontIndexVisual|0) !== (__rt.nav.lastBackRowsFrontIndex|0)){
-          __rt.nav.lastBackRowsFrontIndex = (frontIndexVisual|0);
-          try{ if(typeof dbg_==="function") dbg_(`[BRX] sync frontIndex=${frontIndexVisual}`); }catch(e){}
-          try{ window.__backRowsLastFrontIndex = (frontIndexVisual|0); }catch(e){}
-          try{ if(window.BRX && typeof BRX.syncFrontIndex==='function'){ BRX.syncFrontIndex(frontIndexVisual); } }catch(e){}
-        }
-      }
-    }catch(e){}
-
     const fs = document.getElementById('frontSpotlight');
     if (fs) fs.classList.add('on');
   }
+
   const depthY = state.depthY;
   const staggerStrength = state.staggerStrength;
   const yawPx = state.yaw * 3.0;
+  const designW = (DOM.weeksStack && DOM.weeksStack.clientWidth) ? DOM.weeksStack.clientWidth : 1200;
+  const sortedWeekIdx = bands.map(b => parseInt((b && b.dataset && b.dataset.weekIndex) ? b.dataset.weekIndex : '0', 10)).filter(v=>Number.isFinite(v)).sort((a,b)=>a-b);
+  const minWeekIdx = sortedWeekIdx.length ? sortedWeekIdx[0] : 0;
+  const maxWeekIdx = sortedWeekIdx.length ? sortedWeekIdx[sortedWeekIdx.length - 1] : 0;
+  const visibleBackSpanWeeks = Math.max(1, renderPrefs.lastWeekToShow - BACK_TRIPLET_START_WEEKS);
 
   for (let i = 0; i < bands.length; i++){
     const band = bands[i];
     const gband = grassBands[i];
+    if (!band) continue;
 
-    const wi = parseInt((band && band.dataset && band.dataset.weekIndex) ? band.dataset.weekIndex : String(i), 10);
+    const wi = parseInt((band.dataset && band.dataset.weekIndex) ? band.dataset.weekIndex : String(i), 10);
     const grassFlip = ((wi % 2) === 1) ? -1 : 1;
     const dist = (wi - frontF);
     const yComp = 1 / (1 + Math.abs(dist) * 0.35);
 
-    // v99.3.28_TodayPoll_ApplyUpdateAndDebug: Render all week bands at all times (no lazy hiding)
-    band.style.display = "block";
-    if (gband) gband.style.display = "block";
-
+    band.style.display = 'block';
+    if (gband) gband.style.display = 'block';
 
     const meta = (__llBandMetaByWeekIndex && __llBandMetaByWeekIndex.get) ? (__llBandMetaByWeekIndex.get((wi|0)) || null) : null;
     const meta2 = meta || (bandMeta && bandMeta.length ? bandMeta.find(m => (m && (m.weekIndex|0) === (wi|0))) : null);
     if (!meta2) continue;
-    const rw = mulberry32(hash32FromString("weekShift_" + meta2.iso));
+    const rw = mulberry32(hash32FromString('weekShift_' + meta2.iso));
     const baseShift = (rw() * 2 - 1);
 
-    band.classList.toggle("frontOutline", Math.abs(dist) < 0.08);
-    band.classList.toggle("isFront", Math.abs(dist) < 0.08);
+    band.classList.toggle('frontOutline', Math.abs(dist) < 0.08);
+    band.classList.toggle('isFront', Math.abs(dist) < 0.08);
+
+    const weekCountFromFront = dist <= 0 ? ((-dist) + 1) : 0;
+    const farWeeksBeyond = weekCountFromFront > 0 ? (weekCountFromFront - renderPrefs.lastWeekToShow) : 0;
+    const fadeT = farWeeksBeyond <= 0 ? 0 : __llClamp01_(farWeeksBeyond / FAR_ROW_FADE_SPAN);
+    const farOpacityMul = 1 - smoothstep(0, 1, fadeT);
+
+    if (dist <= 0 && renderPrefs.hideFarRows && farWeeksBeyond >= (FAR_ROW_FADE_SPAN + 0.05)){
+      band.style.display = 'none';
+      if (gband) gband.style.display = 'none';
+      continue;
+    }
 
     if (dist <= 0){
       const behind = -dist;
 
-// Rolling-hill illusion (v89): hide a "valley" band behind the near rows,
-if (DOM.uBackRowsOn && DOM.uBackRowsOn.checked) {
-  const behindIdx = Math.floor(behind + 1e-6); // 0=front, 1=one row behind, ...
-  const VALLEY_HIDE_FROM = 15; // rows 16+ disappear (0-based behind indices 15+); keep full 15-week history visible
-  const VALLEY_HIDE_TO   = 15;
-  const FAR_FROM         = 15; // 16+ are rendered on the hill instead of in-band
-  if (behindIdx >= VALLEY_HIDE_FROM && behindIdx < VALLEY_HIDE_TO) {
-    band.style.opacity = "0";
-    band.style.pointerEvents = "none";
-    band.style.filter = "none";
-    band.style.transform = "translate3d(0,-9999px,0) scale(0.01)";
-    continue;
-  }
-  if (behindIdx >= FAR_FROM) {
-    band.style.opacity = "0";
-    band.style.pointerEvents = "none";
-    band.style.filter = "none";
-    band.style.transform = "translate3d(0,-9999px,0) scale(0.01)";
-    continue;
-  }
-}
+      // State 1: front readable rows
+      if (behind < FRONT_VISIBLE_WEEKS){
+        setBandFullWidth_(band);
+        setBandEvenSpacingMode_(band, false);
+        const xBase = (baseShift * 55 * behind * staggerStrength) + (yawPx * behind * 0.35);
+        const x = xBase;
+        const y = -(behind * 15) * yComp;
+        const s = Math.max(0.42, 1 - behind * 0.017);
+        const frontTransitionT = __llClamp01_(FRONT_VISIBLE_WEEKS - behind);
+        const frontOpacity = (behind > (FRONT_VISIBLE_WEEKS - 1)) ? smoothstep(0, 1, frontTransitionT) : 1;
 
-      const y = -(behind * 16) * yComp;
-      const s = Math.max(0.70, 1 - behind * 0.02);
-      const x = (baseShift * 55 * behind * staggerStrength) + (yawPx * behind * 0.35);
+        band.style.opacity = (frontOpacity * farOpacityMul).toFixed(3);
+        if (behind < 0.03){
+          band.style.filter = 'drop-shadow(0 0 14px rgba(255,255,255,0.18)) drop-shadow(0 0 28px rgba(120,190,255,0.12)) brightness(1.04) saturate(1.06) contrast(1.03)';
+        } else {
+          const b = Math.min(1, behind / 18);
+          band.style.filter = `brightness(${(0.98 - b*0.04).toFixed(2)}) saturate(${(1.00 - b*0.02).toFixed(2)}) blur(${(b * 0.18).toFixed(2)}px)`;
+        }
+        band.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0px) scale(${s.toFixed(3)})`;
+        try{ updateBandSlotSpread_(band, behind, s); }catch(e){}
 
-      band.style.opacity = "1";
-      if (behind < 0.03){
-        band.style.filter = "drop-shadow(0 0 4px rgba(18,20,26,0.18)) drop-shadow(0 0 10px rgba(8,10,14,0.10)) brightness(1.01) saturate(1.01) contrast(1.01)";
+        if (gband){
+          gband.style.setProperty('--grassFlip', String(grassFlip));
+          let grassFade = Math.max(0, 1 - behind * 0.08);
+          gband.style.opacity = (CACHED.grassOpacity * Math.max(0.20, grassFade) * frontOpacity * farOpacityMul).toFixed(3);
+          let gy = (y * GRASS_PARALLAX) + GRASS_Y_OFFSET;
+          if (GRASS_FRONT_CLAMP && Math.abs(dist) < 0.51) gy = GRASS_Y_OFFSET;
+          gband.style.transform = `translate3d(${x.toFixed(1)}px, ${gy.toFixed(1)}px, 0px)`;
+        }
+
+      // State 2: hidden crest handoff
+      } else if (behind < BACK_TRIPLET_START_WEEKS){
+        setBandFullWidth_(band);
+        setBandEvenSpacingMode_(band, false);
+        const crestT = (behind - FRONT_VISIBLE_WEEKS) / Math.max(0.001, CREST_BUFFER_WEEKS);
+        const x = (baseShift * 42 * (1 + crestT * 0.18)) + (yawPx * 0.22);
+        const y = -(82 + crestT * CREST_HIDE_DROP);
+        const s = Math.max(0.44, 0.76 - crestT * 0.10);
+
+        band.style.opacity = '0.000';
+        band.style.filter = 'none';
+        band.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0px) scale(${s.toFixed(3)})`;
+        if (gband){
+          gband.style.setProperty('--grassFlip', String(grassFlip));
+          gband.style.opacity = '0.000';
+          gband.style.transform = `translate3d(${x.toFixed(1)}px, ${(y * GRASS_PARALLAX + GRASS_Y_OFFSET).toFixed(1)}px, 0px)`;
+        }
+
+      // State 3: 3-week panoramic hill rows
       } else {
-        band.style.filter = "none";
-      }
-      band.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0px) scale(${s.toFixed(3)})`;
+        const backWeeks = Math.max(0, behind - BACK_TRIPLET_START_WEEKS);
+        const backWeeksInt = Math.max(0, Math.floor(backWeeks + 1e-6));
+        const subIndex = ((backWeeksInt % 3) + 3) % 3;
+        const groupF = Math.max(0, (backWeeks - subIndex) / 3);
+        const tripletBandMaxWeek = BACK_TRIPLET_START_WEEKS + 3 + (groupF * 3);
+        const tripletCompressionT = __llClamp01_((Math.min(tripletBandMaxWeek, renderPrefs.lastWeekToShow) - BACK_TRIPLET_START_WEEKS) / visibleBackSpanWeeks);
+        const tripletFarWeeksBeyond = Math.max(0, tripletBandMaxWeek - renderPrefs.lastWeekToShow);
+        const beyondClamped = Math.min(FAR_ROW_FADE_SPAN, tripletFarWeeksBeyond);
+        let tripletOpacityMul = 1.0;
+        let tripletScaleMul = 1.0;
+        let tripletTightenMul = 1.0;
+        let farBandCrestDrop = 0;
 
-      
-      try{ updateBandSlotSpread_(band, behind, s); }catch(e){}
-if (gband){
-        gband.style.setProperty("--grassFlip", String(grassFlip));
-        let grassFade = behind >= 2 ? 0 : behind > 1 ? 1 - easeSmooth(behind - 1) : 1;
-        gband.style.opacity = (CACHED.grassOpacity * grassFade).toFixed(3);
-        let gy = (y * GRASS_PARALLAX) + GRASS_Y_OFFSET;
-        if (GRASS_FRONT_CLAMP && Math.abs(dist) < 0.51) gy = GRASS_Y_OFFSET;
-        gband.style.transform = `translate3d(${x.toFixed(1)}px, ${gy.toFixed(1)}px, 0px)`;
+        if (beyondClamped > 0){
+          if (beyondClamped <= 1){
+            const t1 = smoothstep(0, 1, beyondClamped);
+            tripletOpacityMul = lerp(PRECREST_ROW1_OPACITY, 1.0, 1 - t1);
+            tripletScaleMul = lerp(PRECREST_ROW1_SCALE, 1.0, 1 - t1);
+            tripletTightenMul = lerp(PRECREST_ROW1_TIGHTEN, 1.0, 1 - t1);
+            farBandCrestDrop = lerp(PRECREST_ROW1_DROP_Y, 0, 1 - t1);
+          } else if (beyondClamped <= 2){
+            const t2 = smoothstep(1, 2, beyondClamped);
+            tripletOpacityMul = PRECREST_ROW2_OPACITY;
+            tripletScaleMul = PRECREST_ROW2_SCALE;
+            tripletTightenMul = PRECREST_ROW2_TIGHTEN;
+            farBandCrestDrop = lerp(PRECREST_ROW1_DROP_Y, PRECREST_ROW2_DROP_Y, t2);
+          } else {
+            const t3 = smoothstep(2, 3, beyondClamped);
+            tripletOpacityMul = lerp(PRECREST_ROW2_OPACITY, 0.0, t3);
+            tripletScaleMul = lerp(PRECREST_ROW2_SCALE, PRECREST_ROW2_SCALE * (1 - FAR_ROW_EXTRA_SHRINK), t3);
+            tripletTightenMul = lerp(PRECREST_ROW2_TIGHTEN, PRECREST_ROW2_TIGHTEN * (1 - FAR_ROW_EXTRA_TIGHTEN), t3);
+            farBandCrestDrop = lerp(PRECREST_ROW2_DROP_Y, PRECREST_ROW2_DROP_Y + FAR_ROW_CREST_RISE_Y, t3);
+          }
+        }
+
+        const rowWidthRatioBase = lerp(BACK_TRIPLET_ROW_WIDTH, BACK_TRIPLET_MIN_ROW_WIDTH, tripletCompressionT);
+        const rowWidthRatio = Math.max(BACK_TRIPLET_MIN_ROW_WIDTH * tripletTightenMul, rowWidthRatioBase * tripletTightenMul);
+        const rowWidth = designW * rowWidthRatio;
+        const rowLeft = (designW - rowWidth) * 0.5;
+        const yBase = -(BACK_TRIPLET_BASE_Y + groupF * BACK_TRIPLET_ROW_Y);
+        const y = yBase + farBandCrestDrop;
+        const sBase = lerp(BACK_TRIPLET_SCALE, BACK_TRIPLET_MIN_SCALE, tripletCompressionT);
+        const s = Math.max(BACK_TRIPLET_MIN_SCALE * tripletScaleMul, sBase * tripletScaleMul);
+        const blur = Math.min(1.1, groupF * 0.18);
+        const x = (yawPx * 0.04);
+
+        setBandBackWidth_(band, rowLeft, rowWidth);
+        setBandContinuous21Mode_(band, subIndex);
+        setBandEvenSpacingMode_(band, true);
+        band.style.opacity = tripletOpacityMul.toFixed(3);
+        band.style.filter = `brightness(${(0.92 - groupF * 0.03).toFixed(2)}) saturate(${(0.94 - groupF * 0.03).toFixed(2)}) blur(${blur.toFixed(2)}px)`;
+        band.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0px) scale(${s.toFixed(3)})`;
+        if (gband){
+          gband.style.setProperty('--grassFlip', String(grassFlip));
+          gband.style.opacity = '0.000';
+          gband.style.transform = `translate3d(${x.toFixed(1)}px, ${(y * GRASS_PARALLAX + GRASS_Y_OFFSET).toFixed(1)}px, 0px)`;
+        }
       }
     } else {
+      setBandFullWidth_(band);
+      setBandEvenSpacingMode_(band, false);
       const ahead = dist;
       const y = (ahead * depthY);
       const s = Math.min(1.65, 1 + ahead * 0.18);
       const o = Math.max(0, 1 - ahead * 1.25);
       const x = (baseShift * 40 * ahead * staggerStrength) + (yawPx * ahead * 0.25);
-
       band.style.opacity = o.toFixed(3);
-      band.style.filter = "none";
+      band.style.filter = 'none';
       band.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0px) scale(${s.toFixed(3)})`;
-
-      
       try{ updateBandSlotSpread_(band, 0, 1); }catch(e){}
-if (gband){
-        gband.style.setProperty("--grassFlip", String(grassFlip));
+      if (gband){
+        gband.style.setProperty('--grassFlip', String(grassFlip));
         gband.style.opacity = (o*0.86).toFixed(3);
         let gy = (y * GRASS_PARALLAX) + GRASS_Y_OFFSET;
         gband.style.transform = `translate3d(${x.toFixed(1)}px, ${gy.toFixed(1)}px, 0px)`;
@@ -10098,7 +10231,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.__LL_LAST_PTR_X__ = window.innerWidth/2;
   window.__LL_LAST_PTR_Y__ = window.innerHeight/2;
   window.addEventListener('pointermove', (ev)=>{ window.__LL_LAST_PTR_X__ = ev.clientX; window.__LL_LAST_PTR_Y__ = ev.clientY; }, {passive:true});
-dbg_('v100.0.5_ScreenSaverLowPowerStaticSkyboxes.0: DOMContentLoaded');
+dbg_('v100.0.44_BackRowsRealCleanup_60WeekTest.0: DOMContentLoaded');
 
   cacheDomRefs();
   try{ wrapLLDBGStep_(); }catch(e){}
@@ -10244,7 +10377,7 @@ window.__LL_BACKROWS_ANCHOR_MATCHED = true; // prevent later global overrides
   }catch(e){}
 
 
-  dbg_('v100.0.5_ScreenSaverLowPowerStaticSkyboxes.0: Initialization complete');
+  dbg_('v100.0.44_BackRowsRealCleanup_60WeekTest.0: Initialization complete');
 });
 })();
 
@@ -10622,7 +10755,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 
 
 <script>
-// v100.0.5_ScreenSaverLowPowerStaticSkyboxes lifecycle manager
+// v100.0.44_BackRowsRealCleanup_60WeekTest lifecycle manager
 (function(){
   if (window.__LL_SYS__) return;
   const SYS = { timeouts:new Set(), intervals:new Set(), observers:new Set(), listeners:[] };
@@ -10638,14 +10771,14 @@ window.applySelectedAdornments = applySelectedAdornments;
 </script>
 
 <script>
-// v100.0.5_ScreenSaverLowPowerStaticSkyboxes: unified BRX/back-row hard-disable controller.
+// v100.0.44_BackRowsRealCleanup_60WeekTest: unified BRX/back-row hard-disable controller.
 (function(){
   try{
     window.__PHASEA_DISABLE_BRX__ = true;
     window.__LL_DISABLE_BACKHILL__ = true;
     window.BRX_DISABLE_LEGACY_BACKROWS = true;
 
-    const VERSION = 'v100.0.5_ScreenSaverLowPowerStaticSkyboxes';
+    const VERSION = 'v100.0.44_BackRowsRealCleanup_60WeekTest';
     const hideLegacyGroups = () => {
       ['backRowsG','gridWeeksG','hillGuidesG','gridOverlayG','gridWeeksOverlay','brxHillPngG','brxHillDbgG']
         .forEach(id => {
