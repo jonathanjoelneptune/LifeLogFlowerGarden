@@ -22,7 +22,7 @@
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v100.0.74_FlowerGeneratorMode_ExportDrivenCompat
+  v100.0.75_FlowerGeneratorMode_AllDepsDefined
     + Consolidate duplicate Photo Reel skybox CSS into one block
     + Merge duplicate selection-ring state rules
     + Remove redundant early wireframe CSS copy
@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.0.74_FlowerGeneratorMode_ExportDrivenCompat.html</title>
+<title>garden_v100.0.75_FlowerGeneratorMode_AllDepsDefined.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -2297,7 +2297,7 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 <div id="__versionBanner">LifeLog Garden Walk<br>
 File: <span id="__bannerFileName">garden_v100.0.45_BackRowsResponsiveHillAlign.html</span><br>
 Version: <span id="__bannerVersion">v100.0.45_BackRowsResponsiveHillAlign</span><br>
-Created: 2026-04-03 11:50 AM PT</span></div>
+Created: 2026-04-03 12:08 PM PT</span></div>
 <script>
 (function(){
   try{
@@ -11992,6 +11992,21 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
     return new Set(json.dateKeys || []);
   }
 
+
+  function getTodayWeekIndexCompat_(){
+    try {
+      if (typeof todayWeekIndex_ === 'function') return todayWeekIndex_()|0;
+      if (window.__LL && typeof window.__LL.getFocusWeekIndex === 'function') return window.__LL.getFocusWeekIndex()|0;
+      if (window.__rt && window.__rt.nav && typeof window.__rt.nav.lastFrontIndex === 'number') return window.__rt.nav.lastFrontIndex|0;
+    } catch(_e){}
+    return 0;
+  }
+
+  function getWeekModelCompat_(weekIndex){
+    if (typeof weekModelForIndex_ === 'function') return weekModelForIndex_(weekIndex);
+    return null;
+  }
+
   function fmtDateKeyLocal_(d){
     var yyyy = d.getFullYear();
     var mm = String(d.getMonth()+1).padStart(2,'0');
@@ -12001,10 +12016,42 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
 
   function collectHistoricalDays_(){
     var days = [];
-    var todayIdx = todayWeekIndex_();
     var todayKey = fmtDateKeyLocal_(new Date());
+    var ex = window.__LL_EXPORT || null;
+
+    if (ex && ex.byDate && typeof ex.byDate.forEach === 'function') {
+      ex.byDate.forEach(function(exportRow, dateKey){
+        if (!dateKey || dateKey >= todayKey) return;
+        exportRow = exportRow || {};
+        var level = Number(exportRow.DayLevel) || 0;
+        if (!(level > 0)) return;
+
+        var dateObj = new Date(dateKey + 'T12:00:00');
+        var monthIndex = isNaN(dateObj.getTime()) ? 0 : dateObj.getMonth();
+        var stem = (typeof stemColorsForMonthIndex_ === 'function')
+          ? stemColorsForMonthIndex_(monthIndex)
+          : { stemCore:'#4f8a5b', stemHi:'#76a66f', stemEdge:'#2d5a37' };
+
+        days.push({
+          dateKey: String(dateKey),
+          dateObj: dateObj,
+          month: monthIndex,
+          uid: 'asset_' + String(dateKey),
+          level: level,
+          primary: String(exportRow.PrimaryColor || '#FFFFFF').trim(),
+          secondary: String(exportRow.SecondaryColor || '#FFFFFF').trim(),
+          stemCore: stem.stemCore,
+          stemHi: stem.stemHi,
+          stemEdge: stem.stemEdge
+        });
+      });
+      days.sort(function(a,b){ return String(a.dateKey).localeCompare(String(b.dateKey)); });
+      return days;
+    }
+
+    var todayIdx = getTodayWeekIndexCompat_();
     for (var wi = 0; wi <= todayIdx; wi++) {
-      var week = weekModelForIndex_(wi);
+      var week = getWeekModelCompat_(wi);
       if (!week || !Array.isArray(week.days)) continue;
       week.days.forEach(function(day){
         if (!day || !day.dateKey) return;
