@@ -22,7 +22,7 @@
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v100.0.83_FlowerGeneratorMode_Level45Padding
+  v100.0.84_FlowerGeneratorMode_StemBaseAnchor
     + Consolidate duplicate Photo Reel skybox CSS into one block
     + Merge duplicate selection-ring state rules
     + Remove redundant early wireframe CSS copy
@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.0.83_FlowerGeneratorMode_Level45Padding.html</title>
+<title>garden_v100.0.84_FlowerGeneratorMode_StemBaseAnchor.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -2297,7 +2297,7 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 <div id="__versionBanner">LifeLog Garden Walk<br>
 File: <span id="__bannerFileName">garden_v100.0.45_BackRowsResponsiveHillAlign.html</span><br>
 Version: <span id="__bannerVersion">v100.0.45_BackRowsResponsiveHillAlign</span><br>
-Created: 2026-04-03 1:31 PM PT</span></div>
+Created: 2026-04-03 1:42 PM PT</span></div>
 <script>
 (function(){
   try{
@@ -11991,7 +11991,7 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
       var g = svg.querySelector('g') || svg;
       var box = null;
       try { box = g.getBBox(); } catch(_e3) {}
-      if (!box) return { markup: clone.outerHTML || '', width: 400, height: 940 };
+      if (!box) return { markup: clone.outerHTML || '', width: 400, height: 940, stemBaseX: 200, stemBaseY: 940 };
 
       var basePad = Math.max(28, Math.round(Math.max(box.width, box.height) * 0.08));
       var extraX = 0, extraTop = 0, extraBottom = 0;
@@ -12016,7 +12016,7 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
       var vbW = Math.ceil(box.width + leftPad + rightPad);
       var vbH = Math.ceil(box.height + topPad + bottomPad);
       var wrapped = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + vbX + ' ' + vbY + ' ' + vbW + ' ' + vbH + '">' + clone.innerHTML + '</svg>';
-      return { markup: wrapped, width: vbW, height: vbH };
+      return { markup: wrapped, width: vbW, height: vbH, stemBaseX: (200 - vbX), stemBaseY: (940 - vbY) };
     }
     try {
       var sel = '.flowerWrap[data-datekey="' + CSS.escape(String(dateKey)) + '"] .flowerWind svg, .flowerWrap[data-date-key="' + CSS.escape(String(dateKey)) + '"] .flowerWind svg';
@@ -12065,7 +12065,7 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
             ctx.drawImage(img, 0, 0, size.w, size.h);
             URL.revokeObjectURL(url);
             var dataUrl = canvas.toDataURL('image/png');
-            resolve({ pngBase64: dataUrl.split(',')[1], imageWidth: size.w, imageHeight: size.h, hotspot: hotspotGeomForDay_(day) });
+            resolve({ pngBase64: dataUrl.split(',')[1], imageWidth: size.w, imageHeight: size.h, hotspot: hotspotGeomForDay_(day), stemBase: { x: (liveSnapshot && liveSnapshot.stemBaseX != null) ? liveSnapshot.stemBaseX : 200, y: (liveSnapshot && liveSnapshot.stemBaseY != null) ? liveSnapshot.stemBaseY : 940 } });
           } catch (err){ reject(err); }
         };
         img.onerror = function(err){ try{ URL.revokeObjectURL(url); }catch(_e){} reject(err); };
