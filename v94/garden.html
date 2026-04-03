@@ -22,7 +22,7 @@
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v100.0.84_FlowerGeneratorMode_StemBaseAnchor
+  v100.0.85_FlowerGeneratorMode_PixelStemBase
     + Consolidate duplicate Photo Reel skybox CSS into one block
     + Merge duplicate selection-ring state rules
     + Remove redundant early wireframe CSS copy
@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.0.84_FlowerGeneratorMode_StemBaseAnchor.html</title>
+<title>garden_v100.0.85_FlowerGeneratorMode_PixelStemBase.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -2297,7 +2297,7 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 <div id="__versionBanner">LifeLog Garden Walk<br>
 File: <span id="__bannerFileName">garden_v100.0.45_BackRowsResponsiveHillAlign.html</span><br>
 Version: <span id="__bannerVersion">v100.0.45_BackRowsResponsiveHillAlign</span><br>
-Created: 2026-04-03 1:42 PM PT</span></div>
+Created: 2026-04-03 1:58 PM PT</span></div>
 <script>
 (function(){
   try{
@@ -11944,6 +11944,25 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
     throw new Error('Native flowerSvg renderer is not available in this garden build. Use the exact generator file and hard refresh.');
   }
 
+  function detectStemBaseFromCanvas_(canvas){
+    try {
+      var ctx = canvas.getContext('2d', { willReadFrequently: true });
+      var w = canvas.width, h = canvas.height;
+      var data = ctx.getImageData(0, 0, w, h).data;
+      for (var y = h - 1; y >= 0; y--) {
+        var sumX = 0, count = 0;
+        for (var x = 0; x < w; x++) {
+          var a = data[(y * w + x) * 4 + 3];
+          if (a > 16) { sumX += x; count++; }
+        }
+        if (count > 0) {
+          return { x: sumX / count, y: y };
+        }
+      }
+    } catch(_e) {}
+    return null;
+  }
+
   function rasterSizeFromSvgMarkup_(svgMarkup, fallback){
     var mul = flatFlowerRasterMul_();
     if (fallback && fallback.width && fallback.height) {
@@ -12064,8 +12083,18 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
             ctx.clearRect(0,0,size.w,size.h);
             ctx.drawImage(img, 0, 0, size.w, size.h);
             URL.revokeObjectURL(url);
+            var detectedStemBase = detectStemBaseFromCanvas_(canvas);
             var dataUrl = canvas.toDataURL('image/png');
-            resolve({ pngBase64: dataUrl.split(',')[1], imageWidth: size.w, imageHeight: size.h, hotspot: hotspotGeomForDay_(day), stemBase: { x: (liveSnapshot && liveSnapshot.stemBaseX != null) ? liveSnapshot.stemBaseX : 200, y: (liveSnapshot && liveSnapshot.stemBaseY != null) ? liveSnapshot.stemBaseY : 940 } });
+            resolve({
+              pngBase64: dataUrl.split(',')[1],
+              imageWidth: size.w,
+              imageHeight: size.h,
+              hotspot: hotspotGeomForDay_(day),
+              stemBase: detectedStemBase || {
+                x: (liveSnapshot && liveSnapshot.stemBaseX != null) ? liveSnapshot.stemBaseX : 200,
+                y: (liveSnapshot && liveSnapshot.stemBaseY != null) ? liveSnapshot.stemBaseY : 940
+              }
+            });
           } catch (err){ reject(err); }
         };
         img.onerror = function(err){ try{ URL.revokeObjectURL(url); }catch(_e){} reject(err); };
