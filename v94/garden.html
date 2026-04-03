@@ -12387,5 +12387,45 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
 })();
 </script>
 
+
+<script>
+(function(){
+  const ERR=[];
+  function norm(s){ return String(s==null?'':s); }
+  function isErrorLine(s){ s=s.toLowerCase(); return s.includes('error')||s.includes('failed')||s.includes('exception'); }
+  function clearAndRender(){
+    const el=document.getElementById('dbgLog'); if(!el) return;
+    const flowers=[...document.querySelectorAll('[data-date-key], [data-date]')];
+    let pngCount=0, svgCount=0; const lines=[]; const seen=new Set();
+    for(const node of flowers){
+      const key=node.getAttribute('data-date-key')||node.getAttribute('data-date')||'';
+      if(!key || seen.has(key)) continue; seen.add(key);
+      const img=node.querySelector('image');
+      const svg=node.querySelector('svg');
+      const wrap=(node.matches && (node.matches('svg')||node.matches('g'))) ? node : (node.querySelector('svg, g')||node);
+      const rect=(node.getBoundingClientRect?node.getBoundingClientRect():{x:0,y:0,width:0,height:0});
+      const vb=(svg&&svg.getAttribute?svg.getAttribute('viewBox'):'') || (wrap&&wrap.getAttribute?wrap.getAttribute('viewBox'):'');
+      const hs=node.querySelector('[data-role="hotspot"], .hsCore, .llCoreHotspotSvg');
+      const hsx=hs&&(hs.getAttribute('cx')||hs.getAttribute('x')||'');
+      const hsy=hs&&(hs.getAttribute('cy')||hs.getAttribute('y')||'');
+      const hsr=hs&&hs.getAttribute&&hs.getAttribute('r');
+      const level=node.getAttribute('data-day-level')||node.getAttribute('data-level')||'';
+      if(img){ pngCount++; lines.push(`${key} | lvl=${level} | PNG | x=${rect.x.toFixed(1)} y=${rect.y.toFixed(1)} w=${rect.width.toFixed(1)} h=${rect.height.toFixed(1)} | viewBox=${vb||'-'} | hotspot=${hsx||'-'},${hsy||'-'},${hsr||'-'} | url=${img.getAttribute('href')||img.getAttribute('xlink:href')||''}`); }
+      else { svgCount++; lines.push(`${key} | lvl=${level} | SVG | x=${rect.x.toFixed(1)} y=${rect.y.toFixed(1)} w=${rect.width.toFixed(1)} h=${rect.height.toFixed(1)} | viewBox=${vb||'-'} | hotspot=${hsx||'-'},${hsy||'-'},${hsr||'-'}`); }
+    }
+    const out=[];
+    out.push(`PNG count: ${pngCount}`);
+    out.push(`SVG count: ${svgCount}`);
+    if(ERR.length){ out.push(''); out.push('Errors:'); out.push(...ERR.slice(-20)); }
+    out.push(''); out.push('Flower render info:'); out.push(...lines.slice(0,200));
+    el.textContent=out.join('\n');
+  }
+  window.appendDebugLog_=function(msg){ const s=norm(msg); if(isErrorLine(s)) ERR.push(s); clearAndRender(); };
+  window.dbgLog=window.appendDebugLog_;
+  const origErr=console.error; console.error=function(...args){ try{ const s=args.map(a=>typeof a==='string'?a:JSON.stringify(a)).join(' '); if(isErrorLine(s)) ERR.push(s); }catch(_){} try{clearAndRender();}catch(_){} return origErr&&origErr.apply(console,args); };
+  window.addEventListener('load', ()=>{ setTimeout(clearAndRender,50); setTimeout(clearAndRender,500); setInterval(clearAndRender,1500); });
+})();
+</script>
+
 </body>
 </html>
