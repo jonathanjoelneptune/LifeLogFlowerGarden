@@ -22,7 +22,7 @@
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v100.0.75_FlowerGeneratorMode_AllDepsDefined
+  v100.0.76_FlowerGeneratorMode_SelfContainedCompat
     + Consolidate duplicate Photo Reel skybox CSS into one block
     + Merge duplicate selection-ring state rules
     + Remove redundant early wireframe CSS copy
@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.0.75_FlowerGeneratorMode_AllDepsDefined.html</title>
+<title>garden_v100.0.76_FlowerGeneratorMode_SelfContainedCompat.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -2297,7 +2297,7 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 <div id="__versionBanner">LifeLog Garden Walk<br>
 File: <span id="__bannerFileName">garden_v100.0.45_BackRowsResponsiveHillAlign.html</span><br>
 Version: <span id="__bannerVersion">v100.0.45_BackRowsResponsiveHillAlign</span><br>
-Created: 2026-04-03 12:08 PM PT</span></div>
+Created: 2026-04-03 12:20 PM PT</span></div>
 <script>
 (function(){
   try{
@@ -11930,6 +11930,50 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
     if (el) el.textContent = msg;
   }
 
+
+  function renderFlowerSvgCompat_(day){
+    if (typeof flowerSvg === 'function') return flowerSvg(day);
+
+    var level = Math.max(1, Number(day && day.level) || 1);
+    var primary = String(day && day.primary || '#FFFFFF');
+    var secondary = String(day && day.secondary || '#FFFFFF');
+    var stemCore = String(day && day.stemCore || '#4f8a5b');
+    var stemHi = String(day && day.stemHi || '#76a66f');
+    var stemEdge = String(day && day.stemEdge || '#2d5a37');
+    var uid = String(day && day.uid || 'compat');
+    var month = Number(day && day.month || 0) || 0;
+    var diskColors = ['#d9ecff','#d7f0ff','#fff0b8','#ffe1a6','#ffd0c2','#f8c7ff','#d9c7ff','#c7d8ff','#c8e8ff','#d6f0d6','#efe6c7','#d9d9d9'];
+    var disk = diskColors[((month % 12) + 12) % 12] || '#d9ecff';
+    var topYMap = {1:500,2:420,3:300,4:200,5:100};
+    var topY = topYMap[level] || 500;
+    var stemX = 132;
+    var baseY = 520;
+    var bloomR = {1:18,2:24,3:34,4:42,5:50}[level] || 18;
+    var petalCount = {1:6,2:8,3:10,4:12,5:14}[level] || 6;
+    var petalRx = bloomR * 0.55;
+    var petalRy = bloomR * 1.15;
+    var bloomCx = stemX;
+    var bloomCy = topY;
+    var leftLeafY = Math.min(baseY - 90, topY + 150);
+    var rightLeafY = Math.min(baseY - 130, topY + 220);
+    var petals = '';
+    for (var i=0;i<petalCount;i++) {
+      var ang = (Math.PI * 2 * i) / petalCount;
+      var px = bloomCx + Math.cos(ang) * bloomR * 0.9;
+      var py = bloomCy + Math.sin(ang) * bloomR * 0.9;
+      var rot = (ang * 180 / Math.PI) + 90;
+      var fill = (i % 2 === 0) ? primary : secondary;
+      petals += '<ellipse cx="'+px.toFixed(1)+'" cy="'+py.toFixed(1)+'" rx="'+petalRx.toFixed(1)+'" ry="'+petalRy.toFixed(1)+'" transform="rotate('+rot.toFixed(1)+' '+px.toFixed(1)+' '+py.toFixed(1)+')" fill="'+fill+'" stroke="rgba(0,0,0,0.55)" stroke-width="2" />';
+    }
+    var stem = '<path d="M '+stemX+' '+baseY+' C '+(stemX-10)+' '+(baseY-120)+', '+(stemX+8)+' '+(topY+80)+', '+stemX+' '+topY+'" fill="none" stroke="'+stemCore+'" stroke-width="16" stroke-linecap="round"/>'+
+               '<path d="M '+stemX+' '+baseY+' C '+(stemX-9)+' '+(baseY-120)+', '+(stemX+6)+' '+(topY+80)+', '+(stemX-2)+' '+topY+'" fill="none" stroke="'+stemHi+'" stroke-width="6" stroke-linecap="round" opacity="0.85"/>'+
+               '<path d="M '+stemX+' '+baseY+' C '+(stemX-10)+' '+(baseY-120)+', '+(stemX+8)+' '+(topY+80)+', '+stemX+' '+topY+'" fill="none" stroke="'+stemEdge+'" stroke-width="2.5" stroke-linecap="round" opacity="0.85"/>';
+    var leaves = '<ellipse cx="'+(stemX-22)+'" cy="'+leftLeafY+'" rx="15" ry="38" transform="rotate(-34 '+(stemX-22)+' '+leftLeafY+')" fill="'+stemHi+'" stroke="rgba(0,0,0,0.35)" stroke-width="2"/>'+
+                 '<ellipse cx="'+(stemX+24)+'" cy="'+rightLeafY+'" rx="15" ry="38" transform="rotate(32 '+(stemX+24)+' '+rightLeafY+')" fill="'+stemHi+'" stroke="rgba(0,0,0,0.35)" stroke-width="2"/>';
+    var diskSvg = '<circle cx="'+bloomCx+'" cy="'+bloomCy+'" r="'+(bloomR*0.72).toFixed(1)+'" fill="'+disk+'" stroke="rgba(0,0,0,0.65)" stroke-width="3"/>';
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="265" height="540" viewBox="0 0 265 540" overflow="visible" data-uid="'+uid+'">'+stem+leaves+petals+diskSvg+'</svg>';
+  }
+
   function flatFlowerRasterMul_(){
     return Math.min(3, Math.max(2, Math.ceil(window.devicePixelRatio || 1)));
   }
@@ -11960,7 +12004,7 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
   function rasterizeDayToBase64_(day){
     return new Promise(function(resolve, reject){
       try{
-        var safeSvg = sanitizeSvgForRaster_(flowerSvg(day));
+        var safeSvg = sanitizeSvgForRaster_(renderFlowerSvgCompat_(day));
         var blob = new Blob([safeSvg], { type: 'image/svg+xml;charset=utf-8' });
         var url = URL.createObjectURL(blob);
         var img = new Image();
