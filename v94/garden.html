@@ -22,7 +22,7 @@
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v100.0.76_FlowerGeneratorMode_SelfContainedCompat
+  v100.0.77_FlowerGeneratorMode_UseRealRenderer
     + Consolidate duplicate Photo Reel skybox CSS into one block
     + Merge duplicate selection-ring state rules
     + Remove redundant early wireframe CSS copy
@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.0.76_FlowerGeneratorMode_SelfContainedCompat.html</title>
+<title>garden_v100.0.77_FlowerGeneratorMode_UseRealRenderer.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -2297,7 +2297,7 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 <div id="__versionBanner">LifeLog Garden Walk<br>
 File: <span id="__bannerFileName">garden_v100.0.45_BackRowsResponsiveHillAlign.html</span><br>
 Version: <span id="__bannerVersion">v100.0.45_BackRowsResponsiveHillAlign</span><br>
-Created: 2026-04-03 12:20 PM PT</span></div>
+Created: 2026-04-03 12:27 PM PT</span></div>
 <script>
 (function(){
   try{
@@ -11932,6 +11932,7 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
 
 
   function renderFlowerSvgCompat_(day){
+    if (typeof window.flowerSvg === 'function') return window.flowerSvg(day);
     if (typeof flowerSvg === 'function') return flowerSvg(day);
 
     var level = Math.max(1, Number(day && day.level) || 1);
