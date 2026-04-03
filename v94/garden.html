@@ -11879,7 +11879,7 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
   }
   if (!isGenMode()) return;
 
-  var WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbyGG31KMWzcQ5CIxwy2joEbswlLpvqgpOqBaMCyDd6RzjJ-M22bf4NnoVVC7i_QwlX1/exec';
+  var RELAY_URL = String(window.__FLOWER_ASSET_RELAY_URL__ || localStorage.getItem('FLOWER_ASSET_RELAY_URL') || '').trim();
   var SECRET = String(window.__FLOWER_ASSET_SECRET__ || localStorage.getItem('FLOWER_ASSET_SECRET') || 'inthemiddleofthenight').trim();
   var BOT = String(new URLSearchParams(location.search).get('bot') || window.DEFAULT_BOT || 'WINSTON').trim().toUpperCase();
   var stopRequested = false;
@@ -11897,6 +11897,8 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
       '<div style="font-weight:800; margin-bottom:8px;">Flower Asset Generator Mode</div>'+
       '<div style="margin-bottom:8px; opacity:0.84;">Historical days only. Generates missing flower PNGs and POSTs them to Apps Script.</div>'+'<div style="margin-bottom:8px; opacity:0.84;">Bot: <strong id="fagBot"></strong></div>'+
       '<div style="margin-bottom:8px;">'+
+        '<div style="font-size:11px; opacity:0.72; margin-bottom:4px;">Flower asset relay URL</div>'+
+        '<input id="fagRelay" type="text" placeholder="Paste Cloud Run relay URL" style="width:100%; box-sizing:border-box; padding:8px 10px; border-radius:10px; border:1px solid rgba(255,255,255,0.14); background:rgba(255,255,255,0.06); color:#fff; margin-bottom:8px;">'+
         '<div style="font-size:11px; opacity:0.72; margin-bottom:4px;">Flower asset secret</div>'+
         '<input id="fagSecret" type="password" placeholder="Paste FLOWER_ASSET_SECRET" style="width:100%; box-sizing:border-box; padding:8px 10px; border-radius:10px; border:1px solid rgba(255,255,255,0.14); background:rgba(255,255,255,0.06); color:#fff;">'+
       '</div>'+
@@ -11908,6 +11910,7 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
       '<div id="fagStatus" style="margin-bottom:8px; opacity:0.9;">Idle.</div>'+
       '<pre id="fagLog" style="white-space:pre-wrap; margin:0; max-height:260px; overflow:auto; background:rgba(255,255,255,0.04); padding:8px; border-radius:10px;">Ready.</pre>';
     document.body.appendChild(panel);
+    document.getElementById('fagRelay').value = RELAY_URL;
     document.getElementById('fagSecret').value = SECRET;
     document.getElementById('fagBot').textContent = BOT;
     return panel;
@@ -11978,7 +11981,8 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
   }
 
   async function fetchExistingDateKeys_(beforeDate){
-    var url = WEBAPP_URL + '?r=flower_assets_manifest&bot=' + encodeURIComponent(BOT) + '&secret=' + encodeURIComponent(SECRET) + '&beforeDate=' + encodeURIComponent(beforeDate);
+    if (!RELAY_URL) throw new Error('Missing flower asset relay URL');
+    var url = RELAY_URL.replace(/\/$/, '') + '/flower-assets-manifest?bot=' + encodeURIComponent(BOT) + '&secret=' + encodeURIComponent(SECRET) + '&beforeDate=' + encodeURIComponent(beforeDate);
     var res = await fetch(url, { method: 'GET' });
     var json = await res.json();
     if (!json.ok) throw new Error(json.error || 'manifest failed');
@@ -12022,7 +12026,8 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
       generatorVersion: 'garden-generator-mode-v1',
       bot: BOT
     };
-    var res = await fetch(WEBAPP_URL + '?r=flower_asset_upsert&bot=' + encodeURIComponent(BOT), {
+    if (!RELAY_URL) throw new Error('Missing flower asset relay URL');
+    var res = await fetch(RELAY_URL.replace(/\/$/, '') + '/flower-asset-upsert?bot=' + encodeURIComponent(BOT), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -12064,14 +12069,11 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
 
   mkPanel();
   document.getElementById('fagSaveSecret').addEventListener('click', function(){
+    RELAY_URL = String(document.getElementById('fagRelay').value || '').trim();
     SECRET = String(document.getElementById('fagSecret').value || '').trim();
-    if (SECRET) {
-      localStorage.setItem('FLOWER_ASSET_SECRET', SECRET);
-      setStatus('Secret saved in localStorage for this browser.');
-    } else {
-      localStorage.removeItem('FLOWER_ASSET_SECRET');
-      setStatus('Secret cleared.');
-    }
+    if (RELAY_URL) localStorage.setItem('FLOWER_ASSET_RELAY_URL', RELAY_URL); else localStorage.removeItem('FLOWER_ASSET_RELAY_URL');
+    if (SECRET) localStorage.setItem('FLOWER_ASSET_SECRET', SECRET); else localStorage.removeItem('FLOWER_ASSET_SECRET');
+    setStatus('Relay URL / secret saved in localStorage for this browser.');
   });
   document.getElementById('fagRun').addEventListener('click', function(){ runGenerator_().catch(function(err){ log('ERROR ' + err.message); setStatus('Failed.'); }); });
   document.getElementById('fagStop').addEventListener('click', function(){ stopRequested = true; });
