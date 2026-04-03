@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden.html</title>
+<title>garden_v100.0.88_UsePngFromGardenExport.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -2297,7 +2297,7 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 <div id="__versionBanner">LifeLog Garden Walk<br>
 File: <span id="__bannerFileName">garden_v100.0.45_BackRowsResponsiveHillAlign.html</span><br>
 Version: <span id="__bannerVersion">v100.0.45_BackRowsResponsiveHillAlign</span><br>
-Created: 2026-04-03 2:24 PM PT</span></div>
+Created: 2026-04-03 3:05 PM PT</span></div>
 <script>
 (function(){
   try{
@@ -4491,6 +4491,15 @@ const days = [];
     let reflection = "";
     let themeCloudUrl = "";
 
+    // Flower asset fields from GardenExport / FlowerAssets mirror
+    let flowerImageUrl = "";
+    let flowerHotspotCx = "";
+    let flowerHotspotCy = "";
+    let flowerHotspotR = "";
+    let flowerImageWidth = "";
+    let flowerImageHeight = "";
+    let flowerGeneratorVersion = "";
+
     // v99.3.28_TodayPoll_ApplyUpdateAndDebug: Lifetime metrics per-day (from GardenExport JSON)
     let streakIndex = "";
     let cumulativeScore = "";
@@ -4558,6 +4567,14 @@ const days = [];
       haiku = getFieldCI_(exportRow, ["Haiku", "DailyHaiku", "HaikuText", "DailyHaikuText"]) || "";
       reflection = getFieldCI_(exportRow, ["DailyReflection", "Reflection", "Daily_Reflection", "DailyReflectionText"]) || "";
       themeCloudUrl = getFieldCI_(exportRow, ["ThemeCloudPngUrl", "ThemeCloudUrl", "ThemeCloudPNG", "ThemeCloudPng"]) || "";
+
+      flowerImageUrl = getFieldCI_(exportRow, ["ImageUrl", "FlowerAssetImageUrl"]) || "";
+      flowerHotspotCx = getFieldCI_(exportRow, ["HotspotCx", "FlowerAssetHotspotCx"]) || "";
+      flowerHotspotCy = getFieldCI_(exportRow, ["HotspotCy", "FlowerAssetHotspotCy"]) || "";
+      flowerHotspotR = getFieldCI_(exportRow, ["HotspotR", "FlowerAssetHotspotR"]) || "";
+      flowerImageWidth = getFieldCI_(exportRow, ["ImageWidth", "FlowerAssetImageWidth"]) || "";
+      flowerImageHeight = getFieldCI_(exportRow, ["ImageHeight", "FlowerAssetImageHeight"]) || "";
+      flowerGeneratorVersion = getFieldCI_(exportRow, ["GeneratorVersion", "FlowerAssetGeneratorVersion"]) || "";
 
       // Week label override (if present and not already set)
       if (!weekLevelLabel && exportRow.WeekLevelLabel != null) weekLevelLabel = String(exportRow.WeekLevelLabel);
@@ -4670,6 +4687,13 @@ const stemColors = stemColorsForMonthIndex_(monthIndex);
       haiku,
       reflection,
       themeCloudUrl,
+      flowerImageUrl,
+      flowerHotspotCx,
+      flowerHotspotCy,
+      flowerHotspotR,
+      flowerImageWidth,
+      flowerImageHeight,
+      flowerGeneratorVersion,
       stemCore: stemColors.stem,
       stemDark: stemColors.stemDark,
       // Compatibility with flowerSvg() renderer which expects `stemHi`.
@@ -5181,7 +5205,7 @@ flowerWrapEls.push(wrap);
     wrap.style.setProperty("--tdur", tdur.toFixed(2) + "s");
     wrap.style.setProperty("--tdel", (w.del + twr()*1.2).toFixed(2) + "s");
 
-    wrap.innerHTML = `<div class="flowerWind">${flowerSvg(dayData)}</div>`;
+    wrap.innerHTML = `<div class="flowerWind">${(dayData.flowerImageUrl ? flowerPngSvg(dayData) : flowerSvg(dayData))}</div>`;
 
     const baseTuft = document.createElement("div");
     baseTuft.className = "baseTuft";
