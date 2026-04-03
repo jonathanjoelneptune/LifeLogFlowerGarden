@@ -22,7 +22,7 @@
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v100.0.78_FlowerGeneratorMode_ResetAndNativeOnly
+  v100.0.79_FlowerGeneratorMode_ExposeNativeRenderer
     + Consolidate duplicate Photo Reel skybox CSS into one block
     + Merge duplicate selection-ring state rules
     + Remove redundant early wireframe CSS copy
@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.0.78_FlowerGeneratorMode_ResetAndNativeOnly.html</title>
+<title>garden_v100.0.79_FlowerGeneratorMode_ExposeNativeRenderer.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -2297,7 +2297,7 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 <div id="__versionBanner">LifeLog Garden Walk<br>
 File: <span id="__bannerFileName">garden_v100.0.45_BackRowsResponsiveHillAlign.html</span><br>
 Version: <span id="__bannerVersion">v100.0.45_BackRowsResponsiveHillAlign</span><br>
-Created: 2026-04-03 12:39 PM PT</span></div>
+Created: 2026-04-03 12:48 PM PT</span></div>
 <script>
 (function(){
   try{
@@ -4694,6 +4694,7 @@ const stemColors = stemColorsForMonthIndex_(monthIndex);
 // Expose small hooks for post-script features
 window.__LL = window.__LL || {};
 window.__LL.getEpoch = () => ({ dateKey: GARDEN_EPOCH_DATEKEY, epochMon: new Date(__EPOCH_MON__) });
+window.__LL.flowerSvg = (typeof flowerSvg === 'function') ? flowerSvg : null;
 window.__LL.weekIndexFromDate = (d)=> weekIndexFromDate_(d instanceof Date ? d : new Date(d));
 window.__LL.getFocusWeekIndex = ()=> (typeof __rt.nav.lastFrontIndex === 'number' ? __rt.nav.lastFrontIndex : todayWeekIndex_());
 
@@ -11933,11 +11934,12 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
 
 
   function hasNativeFlowerRenderer_(){
-    return (typeof window.flowerSvg === 'function') || (typeof flowerSvg === 'function');
+    return (typeof window.flowerSvg === 'function') || (window.__LL && typeof window.__LL.flowerSvg === 'function') || (typeof flowerSvg === 'function');
   }
 
   function renderFlowerSvgCompat_(day){
     if (typeof window.flowerSvg === 'function') return window.flowerSvg(day);
+    if (window.__LL && typeof window.__LL.flowerSvg === 'function') return window.__LL.flowerSvg(day);
     if (typeof flowerSvg === 'function') return flowerSvg(day);
     throw new Error('Native flowerSvg renderer is not available in this garden build. Use the exact generator file and hard refresh.');
   }
