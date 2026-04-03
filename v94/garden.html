@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.0.88_UsePngFromGardenExport.html</title>
+<title>garden_v100.0.89_PngSvgDebugFiltered.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -2297,7 +2297,7 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 <div id="__versionBanner">LifeLog Garden Walk<br>
 File: <span id="__bannerFileName">garden_v100.0.45_BackRowsResponsiveHillAlign.html</span><br>
 Version: <span id="__bannerVersion">v100.0.45_BackRowsResponsiveHillAlign</span><br>
-Created: 2026-04-03 3:05 PM PT</span></div>
+Created: 2026-04-03 3:18 PM PT</span></div>
 <script>
 (function(){
   try{
@@ -2918,16 +2918,94 @@ window.__LL_hillTopAtX_fill = function(x, yTopGuess, yBottom){
 <!-- Debug Panel -->
 <div aria-hidden="false" id="dbgPanel">
   <div class="hdr">
-    <div class="t">LifeLog DEBUG v100.0.45_BackRowsResponsiveHillAlign (press D)</div>
+    <div class="t">LifeLog DEBUG v100.0.89 PNG/SVG Render Debug (press D)</div>
     <div class="btns">
       <button id="dbgCopy" type="button">Copy</button>
       <button id="dbgClear" type="button">Clear</button>
-      <button id="dbgExportFront" type="button">Export Front Flowers</button>
+      <button id="dbgExportFront" type="button" style="display:none;">Export Front Flowers</button>
       <button id="dbgHide" type="button">Hide</button>
     </div>
   </div>
   <pre id="dbgLog">Debug ready.</pre>
 </div>
+
+
+<script>
+(function(){
+  const g = window;
+  g.__LL_DEBUG_ERRORS__ = g.__LL_DEBUG_ERRORS__ || [];
+
+  g.appendDebugLog_ = function appendDebugLog_(msg){
+    try {
+      const s = String(msg || '');
+      if (/(error|failed|exception)/i.test(s)) {
+        g.__LL_DEBUG_ERRORS__.push(s);
+        if (g.__LL_DEBUG_ERRORS__.length > 40) g.__LL_DEBUG_ERRORS__.shift();
+      }
+    } catch(_) {}
+  };
+
+  function getHref_(img){
+    try {
+      if (!img) return '';
+      return img.getAttribute('href') || img.getAttributeNS('http://www.w3.org/1999/xlink','href') || (img.href && img.href.baseVal) || '';
+    } catch(_e) { return ''; }
+  }
+
+  function collectFlowerDebug_(){
+    const wraps = Array.from(document.querySelectorAll('.flowerWrap'));
+    let pngCount = 0, svgCount = 0;
+    const lines = [];
+    wraps.forEach((wrap) => {
+      const dateKey = (wrap.dataset && (wrap.dataset.dateKey || wrap.dataset.datekey)) || '';
+      const level = (wrap.dataset && wrap.dataset.level) || '';
+      const pngSvg = wrap.querySelector('.flowerPngSvg');
+      const stdSvg = pngSvg ? null : wrap.querySelector('.flowerSvg');
+      const type = pngSvg ? 'PNG' : (stdSvg ? 'SVG' : 'NONE');
+      if (type === 'PNG') pngCount++;
+      if (type === 'SVG') svgCount++;
+      if (type === 'NONE') return;
+      const svg = pngSvg || stdSvg;
+      const img = pngSvg ? pngSvg.querySelector('image') : null;
+      const href = getHref_(img);
+      const vb = svg ? (svg.getAttribute('viewBox') || '') : '';
+      const rect = wrap.getBoundingClientRect();
+      const hs = svg ? svg.querySelector('.hsCore,[data-role="hotspot"]') : null;
+      const hsCx = hs ? hs.getAttribute('cx') : '';
+      const hsCy = hs ? hs.getAttribute('cy') : '';
+      const hsR = hs ? hs.getAttribute('r') : '';
+      lines.push(`${dateKey} | L${level} | ${type} | box=${Math.round(rect.left)},${Math.round(rect.top)} ${Math.round(rect.width)}x${Math.round(rect.height)} | vb=${vb} | hs=${hsCx},${hsCy},${hsR}${href ? ' | url=' + href : ''}`);
+    });
+    lines.sort();
+    return { pngCount, svgCount, lines };
+  }
+
+  function renderDebug_(){
+    try {
+      const el = document.getElementById('dbgLog');
+      if (!el) return;
+      const info = collectFlowerDebug_();
+      const errs = (g.__LL_DEBUG_ERRORS__ || []).slice(-12);
+      const parts = [];
+      parts.push(`PNG count: ${info.pngCount}`);
+      parts.push(`SVG count: ${info.svgCount}`);
+      parts.push('');
+      parts.push('Errors:');
+      parts.push(errs.length ? errs.join('
+') : '(none)');
+      parts.push('');
+      parts.push('Flower render info:');
+      parts.push(info.lines.length ? info.lines.join('
+') : '(none)');
+      el.textContent = parts.join('
+');
+    } catch(_e) {}
+  }
+
+  setInterval(renderDebug_, 1000);
+  window.addEventListener('load', renderDebug_);
+})();
+</script>
 
 <script>
 
