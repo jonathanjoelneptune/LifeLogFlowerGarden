@@ -11992,6 +11992,20 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
     return new Set(json.dateKeys || []);
   }
 
+
+  function getTodayWeekIndexCompat_(){
+    try {
+      if (typeof todayWeekIndex_ === 'function') return todayWeekIndex_()|0;
+      if (window.__LL && typeof window.__LL.getFocusWeekIndex === 'function') return window.__LL.getFocusWeekIndex()|0;
+      if (window.__rt && window.__rt.nav && typeof window.__rt.nav.lastFrontIndex === 'number') return window.__rt.nav.lastFrontIndex|0;
+    } catch(_e){}
+    return 0;
+  }
+  function getWeekModelCompat_(weekIndex){
+    if (typeof weekModelForIndex_ === 'function') return weekModelForIndex_(weekIndex);
+    throw new Error('weekModelForIndex_ is not defined in this garden build');
+  }
+
   function fmtDateKeyLocal_(d){
     var yyyy = d.getFullYear();
     var mm = String(d.getMonth()+1).padStart(2,'0');
@@ -12001,10 +12015,10 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
 
   function collectHistoricalDays_(){
     var days = [];
-    var todayIdx = todayWeekIndex_();
+    var todayIdx = getTodayWeekIndexCompat_();
     var todayKey = fmtDateKeyLocal_(new Date());
     for (var wi = 0; wi <= todayIdx; wi++) {
-      var week = weekModelForIndex_(wi);
+      var week = getWeekModelCompat_(wi);
       if (!week || !Array.isArray(week.days)) continue;
       week.days.forEach(function(day){
         if (!day || !day.dateKey) return;
