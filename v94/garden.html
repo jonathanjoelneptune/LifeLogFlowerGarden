@@ -5032,7 +5032,7 @@ if(window.__llForceTodayAfterExport_ && fullRebuild){
     }
   }
 
-  const minIdx = (focusWeekIndex|0) - PAST_WEEKS_RENDERED;
+  const minIdx = Math.max(0, (focusWeekIndex|0) - PAST_WEEKS_RENDERED);
   const maxIdx = (focusWeekIndex|0) + FUTURE_WEEKS_RENDERED;
 
   // Create needed weeks
