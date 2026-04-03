@@ -22,7 +22,7 @@
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v100.0.80_FlowerGeneratorMode_UseRenderedFlowers
+  v100.0.81_FlowerGeneratorMode_RemoveHotspots_Uncrop
     + Consolidate duplicate Photo Reel skybox CSS into one block
     + Merge duplicate selection-ring state rules
     + Remove redundant early wireframe CSS copy
@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.0.80_FlowerGeneratorMode_UseRenderedFlowers.html</title>
+<title>garden_v100.0.81_FlowerGeneratorMode_RemoveHotspots_Uncrop.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -2297,7 +2297,7 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 <div id="__versionBanner">LifeLog Garden Walk<br>
 File: <span id="__bannerFileName">garden_v100.0.45_BackRowsResponsiveHillAlign.html</span><br>
 Version: <span id="__bannerVersion">v100.0.45_BackRowsResponsiveHillAlign</span><br>
-Created: 2026-04-03 1:02 PM PT</span></div>
+Created: 2026-04-03 1:12 PM PT</span></div>
 <script>
 (function(){
   try{
@@ -11944,6 +11944,15 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
     throw new Error('Native flowerSvg renderer is not available in this garden build. Use the exact generator file and hard refresh.');
   }
 
+  function rasterSizeFromSvgMarkup_(svgMarkup){
+    var mul = flatFlowerRasterMul_();
+    var m = /viewBox\s*=\s*"\s*0\s+0\s+([0-9.]+)\s+([0-9.]+)\s*"/i.exec(String(svgMarkup || ''));
+    if (m) {
+      return { w: Math.max(400, Math.round(Number(m[1]) * mul)), h: Math.max(940, Math.round(Number(m[2]) * mul)) };
+    }
+    return { w: Math.round(400 * mul), h: Math.round(940 * mul) };
+  }
+
   function flatFlowerRasterMul_(){
 
     return Math.min(3, Math.max(2, Math.ceil(window.devicePixelRatio || 1)));
@@ -11969,10 +11978,19 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
   }
 
   function getRenderedFlowerSvgMarkup_(dateKey){
+    function serializeCleanSvg_(svg){
+      if (!svg) return '';
+      var clone = svg.cloneNode(true);
+      try {
+        clone.querySelectorAll('.hsCore,[data-role="hotspot"],.llCoreHotspotSvg,[data-datekey],[data-date-key]').forEach(function(n){ n.remove(); });
+      } catch(_e) {}
+      try { clone.removeAttribute('aria-label'); } catch(_e2) {}
+      return clone.outerHTML || '';
+    }
     try {
       var sel = '.flowerWrap[data-datekey="' + CSS.escape(String(dateKey)) + '"] .flowerWind svg, .flowerWrap[data-date-key="' + CSS.escape(String(dateKey)) + '"] .flowerWind svg';
       var svg = document.querySelector(sel);
-      if (svg && svg.outerHTML) return svg.outerHTML;
+      if (svg && svg.outerHTML) return serializeCleanSvg_(svg);
     } catch(_e) {}
     try {
       var wraps = Array.prototype.slice.call(document.querySelectorAll('.flowerWrap'));
@@ -11981,7 +11999,7 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
         var dk = (w.dataset && (w.dataset.dateKey || w.dataset.datekey)) || '';
         if (String(dk) !== String(dateKey)) continue;
         var svg2 = w.querySelector('.flowerWind svg');
-        if (svg2 && svg2.outerHTML) return svg2.outerHTML;
+        if (svg2 && svg2.outerHTML) return serializeCleanSvg_(svg2);
       }
     } catch(_e2) {}
     return '';
@@ -12002,7 +12020,7 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
         var img = new Image();
         img.onload = function(){
           try{
-            var size = flatFlowerRasterSize_();
+            var size = liveSvg ? rasterSizeFromSvgMarkup_(liveSvg) : flatFlowerRasterSize_();
             var canvas = document.createElement('canvas');
             canvas.width = size.w;
             canvas.height = size.h;
