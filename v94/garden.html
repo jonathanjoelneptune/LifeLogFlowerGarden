@@ -18,6 +18,7 @@
 
 
 
+
 <!DOCTYPE html>
 <!--
   CHANGELOG
@@ -11869,6 +11870,210 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
   <button class="wbtn today" type="button" aria-label="Return to current week">This Week</button>
   <button class="wbtn down" type="button" aria-label="Advance 1 week forward">▼</button>
 </div>
+
+
+<script>
+(function(){
+  function isGenMode(){
+    try { return new URLSearchParams(location.search).get('flowerAssetGen') === '1'; } catch (e) { return false; }
+  }
+  if (!isGenMode()) return;
+
+  var WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbyGG31KMWzcQ5CIxwy2joEbswlLpvqgpOqBaMCyDd6RzjJ-M22bf4NnoVVC7i_QwlX1/exec';
+  var SECRET = String(window.__FLOWER_ASSET_SECRET__ || localStorage.getItem('FLOWER_ASSET_SECRET') || '').trim();
+  var stopRequested = false;
+
+  function mkPanel(){
+    var panel = document.createElement('div');
+    panel.id = 'flowerAssetGenPanel';
+    panel.style.cssText = [
+      'position:fixed','left:12px','bottom:12px','z-index:999999',
+      'width:420px','max-height:56vh','overflow:auto','padding:12px',
+      'background:rgba(0,0,0,0.82)','color:#fff','border:1px solid rgba(255,255,255,0.18)',
+      'border-radius:14px','font:12px/1.35 system-ui,Segoe UI,Arial,sans-serif','box-shadow:0 10px 30px rgba(0,0,0,0.25)'
+    ].join(';');
+    panel.innerHTML = ''+
+      '<div style="font-weight:800; margin-bottom:8px;">Flower Asset Generator Mode</div>'+
+      '<div style="margin-bottom:8px; opacity:0.84;">Historical days only. Generates missing flower PNGs and POSTs them to Apps Script.</div>'+
+      '<div style="margin-bottom:8px;">'+
+        '<div style="font-size:11px; opacity:0.72; margin-bottom:4px;">Flower asset secret</div>'+
+        '<input id="fagSecret" type="password" placeholder="Paste FLOWER_ASSET_SECRET" style="width:100%; box-sizing:border-box; padding:8px 10px; border-radius:10px; border:1px solid rgba(255,255,255,0.14); background:rgba(255,255,255,0.06); color:#fff;">'+
+      '</div>'+
+      '<div style="display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap;">'+
+        '<button id="fagSaveSecret" type="button">Save Secret</button>'+
+        '<button id="fagRun" type="button">Generate Missing Historical Flower PNGs</button>'+
+        '<button id="fagStop" type="button">Stop</button>'+
+      '</div>'+
+      '<div id="fagStatus" style="margin-bottom:8px; opacity:0.9;">Idle.</div>'+
+      '<pre id="fagLog" style="white-space:pre-wrap; margin:0; max-height:260px; overflow:auto; background:rgba(255,255,255,0.04); padding:8px; border-radius:10px;">Ready.</pre>';
+    document.body.appendChild(panel);
+    document.getElementById('fagSecret').value = SECRET;
+    return panel;
+  }
+
+  function log(msg){
+    var el = document.getElementById('fagLog');
+    if (!el) return;
+    el.textContent = String(msg) + '\n' + el.textContent;
+  }
+  function setStatus(msg){
+    var el = document.getElementById('fagStatus');
+    if (el) el.textContent = msg;
+  }
+
+  function flatFlowerRasterMul_(){
+    return Math.min(3, Math.max(2, Math.ceil(window.devicePixelRatio || 1)));
+  }
+  function flatFlowerRasterSize_(){
+    var m = flatFlowerRasterMul_();
+    return { w: Math.round(265 * m), h: Math.round(540 * m) };
+  }
+  function hotspotGeomForDay_(day){
+    var lvl = Number(day.level) || 1;
+    var topY = ({1:500,2:420,3:300,4:200,5:100})[lvl] || 500;
+    var bloom = {
+      1:{s:1.06*1.5,y:-34,r:20},
+      2:{s:1.06*1.5,y:-62,r:28},
+      3:{s:1.18,y:-72,r:40},
+      4:{s:1.32,y:-78,r:48},
+      5:{s:1.46,y:-82,r:56}
+    }[lvl];
+    return { cx:200, cy:(topY + bloom.y * bloom.s), r:(bloom.r * 2.25 * bloom.s) };
+  }
+  function flowerKeyForDay_(day){
+    return [day.level, day.primary, day.secondary, day.month, day.uid].join('|');
+  }
+  function sanitizeSvgForRaster_(svgMarkup){
+    return String(svgMarkup || '')
+      .replaceAll('var(--strokeLeaf)', 'rgba(0,0,0,0.30)')
+      .replaceAll('var(--strokeBranch)', 'rgba(0,0,0,0.42)');
+  }
+  function rasterizeDayToBase64_(day){
+    return new Promise(function(resolve, reject){
+      try{
+        var safeSvg = sanitizeSvgForRaster_(flowerSvg(day));
+        var blob = new Blob([safeSvg], { type: 'image/svg+xml;charset=utf-8' });
+        var url = URL.createObjectURL(blob);
+        var img = new Image();
+        img.onload = function(){
+          try{
+            var size = flatFlowerRasterSize_();
+            var canvas = document.createElement('canvas');
+            canvas.width = size.w;
+            canvas.height = size.h;
+            var ctx = canvas.getContext('2d');
+            ctx.clearRect(0,0,size.w,size.h);
+            ctx.drawImage(img, 0, 0, size.w, size.h);
+            URL.revokeObjectURL(url);
+            var dataUrl = canvas.toDataURL('image/png');
+            resolve({ pngBase64: dataUrl.split(',')[1], imageWidth: size.w, imageHeight: size.h, hotspot: hotspotGeomForDay_(day) });
+          } catch (err){ reject(err); }
+        };
+        img.onerror = function(err){ try{ URL.revokeObjectURL(url); }catch(_e){} reject(err); };
+        img.src = url;
+      } catch (err){ reject(err); }
+    });
+  }
+
+  async function fetchExistingDateKeys_(beforeDate){
+    var url = WEBAPP_URL + '?r=flower_assets_manifest&secret=' + encodeURIComponent(SECRET) + '&beforeDate=' + encodeURIComponent(beforeDate);
+    var res = await fetch(url, { method: 'GET' });
+    var json = await res.json();
+    if (!json.ok) throw new Error(json.error || 'manifest failed');
+    return new Set(json.dateKeys || []);
+  }
+
+  function fmtDateKeyLocal_(d){
+    var yyyy = d.getFullYear();
+    var mm = String(d.getMonth()+1).padStart(2,'0');
+    var dd = String(d.getDate()).padStart(2,'0');
+    return yyyy + '-' + mm + '-' + dd;
+  }
+
+  function collectHistoricalDays_(){
+    var days = [];
+    var todayIdx = todayWeekIndex_();
+    var todayKey = fmtDateKeyLocal_(new Date());
+    for (var wi = 0; wi <= todayIdx; wi++) {
+      var week = weekModelForIndex_(wi);
+      if (!week || !Array.isArray(week.days)) continue;
+      week.days.forEach(function(day){
+        if (!day || !day.dateKey) return;
+        if (day.dateKey >= todayKey) return;
+        days.push(day);
+      });
+    }
+    days.sort(function(a,b){ return String(a.dateKey).localeCompare(String(b.dateKey)); });
+    return days;
+  }
+
+  async function upsertDayAsset_(day){
+    var rendered = await rasterizeDayToBase64_(day);
+    var payload = {
+      secret: SECRET,
+      dateKey: day.dateKey,
+      flowerKey: flowerKeyForDay_(day),
+      pngBase64: rendered.pngBase64,
+      imageWidth: rendered.imageWidth,
+      imageHeight: rendered.imageHeight,
+      hotspot: rendered.hotspot,
+      generatorVersion: 'garden-generator-mode-v1'
+    };
+    var res = await fetch(WEBAPP_URL + '?r=flower_asset_upsert', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    var json = await res.json();
+    if (!json.ok) throw new Error(json.error || 'upsert failed');
+    return json;
+  }
+
+  async function runGenerator_(){
+    if (!SECRET) {
+      setStatus('Missing FLOWER_ASSET_SECRET. Paste it above and click Save Secret.');
+      log('ERROR missing FLOWER_ASSET_SECRET');
+      return;
+    }
+    stopRequested = false;
+    var yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    var beforeDate = fmtDateKeyLocal_(yesterday);
+    setStatus('Fetching manifest...');
+    var existing = await fetchExistingDateKeys_(beforeDate);
+    var all = collectHistoricalDays_();
+    var missing = all.filter(function(day){ return !existing.has(day.dateKey); });
+    setStatus('Missing historical flowers: ' + missing.length);
+    log('Historical days: ' + all.length + ' | Missing: ' + missing.length);
+    for (var i = 0; i < missing.length; i++) {
+      if (stopRequested) break;
+      var day = missing[i];
+      setStatus('Generating ' + day.dateKey + ' (' + (i+1) + '/' + missing.length + ')');
+      try {
+        await upsertDayAsset_(day);
+        log('OK ' + day.dateKey);
+      } catch (err) {
+        log('ERROR ' + day.dateKey + ' :: ' + String(err && err.message || err));
+      }
+    }
+    setStatus(stopRequested ? 'Stopped.' : 'Done.');
+  }
+
+  mkPanel();
+  document.getElementById('fagSaveSecret').addEventListener('click', function(){
+    SECRET = String(document.getElementById('fagSecret').value || '').trim();
+    if (SECRET) {
+      localStorage.setItem('FLOWER_ASSET_SECRET', SECRET);
+      setStatus('Secret saved in localStorage for this browser.');
+    } else {
+      localStorage.removeItem('FLOWER_ASSET_SECRET');
+      setStatus('Secret cleared.');
+    }
+  });
+  document.getElementById('fagRun').addEventListener('click', function(){ runGenerator_().catch(function(err){ log('ERROR ' + err.message); setStatus('Failed.'); }); });
+  document.getElementById('fagStop').addEventListener('click', function(){ stopRequested = true; });
+})();
+</script>
 
 </body>
 </html>
