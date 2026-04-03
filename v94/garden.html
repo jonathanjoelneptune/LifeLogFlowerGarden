@@ -22,7 +22,7 @@
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v100.0.82_FlowerGeneratorMode_BBoxCropFix
+  v100.0.83_FlowerGeneratorMode_Level45Padding
     + Consolidate duplicate Photo Reel skybox CSS into one block
     + Merge duplicate selection-ring state rules
     + Remove redundant early wireframe CSS copy
@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.0.82_FlowerGeneratorMode_BBoxCropFix.html</title>
+<title>garden_v100.0.83_FlowerGeneratorMode_Level45Padding.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -2297,7 +2297,7 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 <div id="__versionBanner">LifeLog Garden Walk<br>
 File: <span id="__bannerFileName">garden_v100.0.45_BackRowsResponsiveHillAlign.html</span><br>
 Version: <span id="__bannerVersion">v100.0.45_BackRowsResponsiveHillAlign</span><br>
-Created: 2026-04-03 1:22 PM PT</span></div>
+Created: 2026-04-03 1:31 PM PT</span></div>
 <script>
 (function(){
   try{
@@ -11981,7 +11981,7 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
   }
 
   function getRenderedFlowerSvgSnapshot_(dateKey){
-    function buildSnapshot_(svg){
+    function buildSnapshot_(svg, level){
       if (!svg) return null;
       var clone = svg.cloneNode(true);
       try {
@@ -11992,18 +11992,40 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
       var box = null;
       try { box = g.getBBox(); } catch(_e3) {}
       if (!box) return { markup: clone.outerHTML || '', width: 400, height: 940 };
-      var pad = Math.max(28, Math.round(Math.max(box.width, box.height) * 0.08));
-      var vbX = Math.floor(box.x - pad);
-      var vbY = Math.floor(box.y - pad);
-      var vbW = Math.ceil(box.width + pad * 2);
-      var vbH = Math.ceil(box.height + pad * 2);
+
+      var basePad = Math.max(28, Math.round(Math.max(box.width, box.height) * 0.08));
+      var extraX = 0, extraTop = 0, extraBottom = 0;
+      if (Number(level) >= 4) {
+        extraX = Math.round(Math.max(40, box.width * 0.18));
+        extraTop = Math.round(Math.max(24, box.height * 0.06));
+        extraBottom = Math.round(Math.max(18, box.height * 0.04));
+      }
+      if (Number(level) >= 5) {
+        extraX = Math.round(Math.max(extraX, box.width * 0.24));
+        extraTop = Math.round(Math.max(extraTop, box.height * 0.08));
+        extraBottom = Math.round(Math.max(extraBottom, box.height * 0.05));
+      }
+
+      var leftPad = basePad + extraX;
+      var rightPad = basePad + extraX;
+      var topPad = basePad + extraTop;
+      var bottomPad = basePad + extraBottom;
+
+      var vbX = Math.floor(box.x - leftPad);
+      var vbY = Math.floor(box.y - topPad);
+      var vbW = Math.ceil(box.width + leftPad + rightPad);
+      var vbH = Math.ceil(box.height + topPad + bottomPad);
       var wrapped = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + vbX + ' ' + vbY + ' ' + vbW + ' ' + vbH + '">' + clone.innerHTML + '</svg>';
       return { markup: wrapped, width: vbW, height: vbH };
     }
     try {
       var sel = '.flowerWrap[data-datekey="' + CSS.escape(String(dateKey)) + '"] .flowerWind svg, .flowerWrap[data-date-key="' + CSS.escape(String(dateKey)) + '"] .flowerWind svg';
       var svg = document.querySelector(sel);
-      if (svg && svg.outerHTML) return buildSnapshot_(svg);
+      if (svg && svg.outerHTML) {
+        var wrap0 = svg.closest('.flowerWrap');
+        var lvl0 = wrap0 && wrap0.dataset ? Number(wrap0.dataset.level || 0) : 0;
+        return buildSnapshot_(svg, lvl0);
+      }
     } catch(_e) {}
     try {
       var wraps = Array.prototype.slice.call(document.querySelectorAll('.flowerWrap'));
@@ -12012,7 +12034,7 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
         var dk = (w.dataset && (w.dataset.dateKey || w.dataset.datekey)) || '';
         if (String(dk) !== String(dateKey)) continue;
         var svg2 = w.querySelector('.flowerWind svg');
-        if (svg2 && svg2.outerHTML) return buildSnapshot_(svg2);
+        if (svg2 && svg2.outerHTML) return buildSnapshot_(svg2, Number(w.dataset.level || 0));
       }
     } catch(_e2) {}
     return null;
