@@ -22,7 +22,7 @@
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v100.0.79_FlowerGeneratorMode_ExposeNativeRenderer
+  v100.0.80_FlowerGeneratorMode_UseRenderedFlowers
     + Consolidate duplicate Photo Reel skybox CSS into one block
     + Merge duplicate selection-ring state rules
     + Remove redundant early wireframe CSS copy
@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.0.79_FlowerGeneratorMode_ExposeNativeRenderer.html</title>
+<title>garden_v100.0.80_FlowerGeneratorMode_UseRenderedFlowers.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -2297,7 +2297,7 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 <div id="__versionBanner">LifeLog Garden Walk<br>
 File: <span id="__bannerFileName">garden_v100.0.45_BackRowsResponsiveHillAlign.html</span><br>
 Version: <span id="__bannerVersion">v100.0.45_BackRowsResponsiveHillAlign</span><br>
-Created: 2026-04-03 12:48 PM PT</span></div>
+Created: 2026-04-03 1:02 PM PT</span></div>
 <script>
 (function(){
   try{
@@ -11967,6 +11967,26 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
   function flowerKeyForDay_(day){
     return [day.level, day.primary, day.secondary, day.month, day.uid].join('|');
   }
+
+  function getRenderedFlowerSvgMarkup_(dateKey){
+    try {
+      var sel = '.flowerWrap[data-datekey="' + CSS.escape(String(dateKey)) + '"] .flowerWind svg, .flowerWrap[data-date-key="' + CSS.escape(String(dateKey)) + '"] .flowerWind svg';
+      var svg = document.querySelector(sel);
+      if (svg && svg.outerHTML) return svg.outerHTML;
+    } catch(_e) {}
+    try {
+      var wraps = Array.prototype.slice.call(document.querySelectorAll('.flowerWrap'));
+      for (var i=0;i<wraps.length;i++) {
+        var w = wraps[i];
+        var dk = (w.dataset && (w.dataset.dateKey || w.dataset.datekey)) || '';
+        if (String(dk) !== String(dateKey)) continue;
+        var svg2 = w.querySelector('.flowerWind svg');
+        if (svg2 && svg2.outerHTML) return svg2.outerHTML;
+      }
+    } catch(_e2) {}
+    return '';
+  }
+
   function sanitizeSvgForRaster_(svgMarkup){
     return String(svgMarkup || '')
       .replaceAll('var(--strokeLeaf)', 'rgba(0,0,0,0.30)')
@@ -11975,7 +11995,8 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
   function rasterizeDayToBase64_(day){
     return new Promise(function(resolve, reject){
       try{
-        var safeSvg = sanitizeSvgForRaster_(renderFlowerSvgCompat_(day));
+        var liveSvg = getRenderedFlowerSvgMarkup_(day && day.dateKey);
+        var safeSvg = sanitizeSvgForRaster_(liveSvg || renderFlowerSvgCompat_(day));
         var blob = new Blob([safeSvg], { type: 'image/svg+xml;charset=utf-8' });
         var url = URL.createObjectURL(blob);
         var img = new Image();
@@ -12120,9 +12141,6 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
       setStatus('Missing FLOWER_ASSET_SECRET. Paste it above and click Save Secret + Relay.');
       log('ERROR missing FLOWER_ASSET_SECRET');
       return;
-    }
-    if (!hasNativeFlowerRenderer_()) {
-      throw new Error('Native flowerSvg renderer is not available in this garden build. Hard refresh and use this exact generator file.');
     }
     stopRequested = false;
     var yesterday = new Date();
