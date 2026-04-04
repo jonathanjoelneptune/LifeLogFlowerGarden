@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.0.88_UsePngFromGardenExport.html</title>
+<title>garden_v100.0.93_UseFlowerAssetProxy.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -4079,6 +4079,38 @@ function tuftSvg(uid, weekLevel, size=1.0){
 // ============================================
 // Flower SVG Generation
 // ============================================
+
+const FLOWER_ASSET_PROXY_BASE = (new URLSearchParams(location.search).get("flowerProxyBase") || "https://flower-assets-relay-501002014766.us-central1.run.app").replace(/\/$/, "");
+
+function parseDriveFileId_(raw){
+  const s = String(raw || "").trim();
+  if (!s) return "";
+  if (/^[A-Za-z0-9_-]{20,}$/.test(s)) return s;
+  const m1 = s.match(/[?&]id=([A-Za-z0-9_-]+)/i);
+  if (m1) return m1[1];
+  const m2 = s.match(/\/d\/([A-Za-z0-9_-]+)/i);
+  if (m2) return m2[1];
+  return "";
+}
+
+function proxiedFlowerImageUrl_(urlOrId){
+  const fileId = parseDriveFileId_(urlOrId);
+  if (!fileId) return String(urlOrId || "");
+  return FLOWER_ASSET_PROXY_BASE + "/flower_asset_image?fileId=" + encodeURIComponent(fileId);
+}
+
+function flowerPngSvg(day){
+  const url = proxiedFlowerImageUrl_(day.flowerImageUrl || day.flowerDriveFileId || "");
+  const imgW = Math.max(1, Number(day.flowerImageWidth) || 400);
+  const imgH = Math.max(1, Number(day.flowerImageHeight) || 940);
+  const vbW = 400;
+  const vbH = 940;
+  const hsx = (Number(day.flowerHotspotCx) || 200) * (vbW / imgW);
+  const hsy = (Number(day.flowerHotspotCy) || 470) * (vbH / imgH);
+  const hsr = Math.max(12, (Number(day.flowerHotspotR) || 72) * Math.min(vbW / imgW, vbH / imgH));
+  return `<svg class="flowerSvg flowerPngSvg" viewBox="0 0 ${vbW} ${vbH}" xmlns="http://www.w3.org/2000/svg" aria-label="flower png"><image href="${url}" x="0" y="0" width="${vbW}" height="${vbH}" preserveAspectRatio="xMidYMid meet" crossorigin="anonymous"/><circle data-role="hotspot" cx="${hsx.toFixed(2)}" cy="${hsy.toFixed(2)}" r="${hsr.toFixed(2)}" fill="rgba(0,0,0,0)" /></svg>`;
+}
+
 function flowerSvg(day){
   const { level, primary, secondary, month, uid, stemCore, stemHi, stemEdge } = day;
   const dateKey = day.dateKey || fmtDateKey(day.dateObj);
@@ -4499,6 +4531,7 @@ const days = [];
     let flowerImageWidth = "";
     let flowerImageHeight = "";
     let flowerGeneratorVersion = "";
+    let flowerDriveFileId = "";
 
     // v99.3.28_TodayPoll_ApplyUpdateAndDebug: Lifetime metrics per-day (from GardenExport JSON)
     let streakIndex = "";
@@ -4569,33 +4602,14 @@ const days = [];
       themeCloudUrl = getFieldCI_(exportRow, ["ThemeCloudPngUrl", "ThemeCloudUrl", "ThemeCloudPNG", "ThemeCloudPng"]) || "";
 
       flowerImageUrl = getFieldCI_(exportRow, ["ImageUrl", "FlowerAssetImageUrl"]) || "";
+      flowerDriveFileId = getFieldCI_(exportRow, ["DriveFileId", "FlowerAssetDriveFileId"]) || parseDriveFileId_(flowerImageUrl);
+      if (flowerDriveFileId) flowerImageUrl = proxiedFlowerImageUrl_(flowerDriveFileId);
       flowerHotspotCx = getFieldCI_(exportRow, ["HotspotCx", "FlowerAssetHotspotCx"]) || "";
       flowerHotspotCy = getFieldCI_(exportRow, ["HotspotCy", "FlowerAssetHotspotCy"]) || "";
       flowerHotspotR = getFieldCI_(exportRow, ["HotspotR", "FlowerAssetHotspotR"]) || "";
       flowerImageWidth = getFieldCI_(exportRow, ["ImageWidth", "FlowerAssetImageWidth"]) || "";
       flowerImageHeight = getFieldCI_(exportRow, ["ImageHeight", "FlowerAssetImageHeight"]) || "";
       flowerGeneratorVersion = getFieldCI_(exportRow, ["GeneratorVersion", "FlowerAssetGeneratorVersion"]) || "";
-      const flowerDriveFileId = getFieldCI_(exportRow, ["DriveFileId", "FlowerAssetDriveFileId"]) || "";
-      if (!flowerImageUrl && flowerDriveFileId) {
-        flowerImageUrl = "https://drive.google.com/uc?export=view&id=" + encodeURIComponent(flowerDriveFileId);
-      }
-      try {
-        window.__PNG_DEBUG_EXPORT__ = window.__PNG_DEBUG_EXPORT__ || {};
-        window.__PNG_DEBUG_EXPORT__[dateKey] = {
-          dateKey: dateKey,
-          hasExportRow: !!exportRow,
-          dayLevel: exportRow && exportRow.DayLevel,
-          imageUrl: flowerImageUrl || "",
-          driveFileId: flowerDriveFileId || "",
-          hotspotCx: flowerHotspotCx || "",
-          hotspotCy: flowerHotspotCy || "",
-          hotspotR: flowerHotspotR || "",
-          imageWidth: flowerImageWidth || "",
-          imageHeight: flowerImageHeight || "",
-          generatorVersion: flowerGeneratorVersion || "",
-          exportKeys: exportRow ? Object.keys(exportRow).slice(0, 80) : []
-        };
-      } catch(_e) {}
 
       // Week label override (if present and not already set)
       if (!weekLevelLabel && exportRow.WeekLevelLabel != null) weekLevelLabel = String(exportRow.WeekLevelLabel);
@@ -4715,6 +4729,7 @@ const stemColors = stemColorsForMonthIndex_(monthIndex);
       flowerImageWidth,
       flowerImageHeight,
       flowerGeneratorVersion,
+      flowerDriveFileId,
       stemCore: stemColors.stem,
       stemDark: stemColors.stemDark,
       // Compatibility with flowerSvg() renderer which expects `stemHi`.
@@ -12327,69 +12342,6 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
   document.getElementById('fagRun').addEventListener('click', function(){ runGenerator_().catch(function(err){ log('ERROR ' + err.message); setStatus('Failed.'); }); });
   document.getElementById('fagReset').addEventListener('click', function(){ resetGeneratorAssets_().catch(function(err){ log('ERROR ' + err.message); setStatus('Reset failed.'); }); });
   document.getElementById('fagStop').addEventListener('click', function(){ stopRequested = true; });
-})();
-</script>
-
-
-<script>
-(function(){
-  var ERR = [];
-  function isErrorLine(s){ s = String(s || '').toLowerCase(); return s.indexOf('error') >= 0 || s.indexOf('failed') >= 0 || s.indexOf('exception') >= 0; }
-  function lineForDate(key){
-    var exp = (window.__PNG_DEBUG_EXPORT__ && window.__PNG_DEBUG_EXPORT__[key]) || {};
-    return key +
-      ' | exportRow=' + (exp.hasExportRow ? 'Y' : 'N') +
-      ' | dayLevel=' + (exp.dayLevel || '-') +
-      ' | imageUrl=' + (exp.imageUrl ? ('Y ' + exp.imageUrl) : 'N') +
-      ' | driveFileId=' + (exp.driveFileId || '-') +
-      ' | hotspot=' + (exp.hotspotCx || '-') + ',' + (exp.hotspotCy || '-') + ',' + (exp.hotspotR || '-') +
-      ' | size=' + (exp.imageWidth || '-') + 'x' + (exp.imageHeight || '-') +
-      ' | gen=' + (exp.generatorVersion || '-');
-  }
-  function renderDbg(){
-    var el = document.getElementById('dbgLog');
-    if (!el) return;
-    var wraps = Array.prototype.slice.call(document.querySelectorAll('.flowerWrap[data-date-key]'));
-    var pngCount = 0, svgCount = 0;
-    var lines = [];
-    wraps.forEach(function(w){
-      var key = w.dataset.dateKey || '';
-      var img = w.querySelector('image');
-      if (img) pngCount++; else svgCount++;
-      lines.push(lineForDate(key));
-    });
-    var out = [];
-    out.push('PNG count: ' + pngCount);
-    out.push('SVG count: ' + svgCount);
-    out.push('');
-    if (ERR.length) {
-      out.push('Errors:');
-      Array.prototype.push.apply(out, ERR.slice(-20));
-      out.push('');
-    }
-    out.push('Visible flower export debug:');
-    Array.prototype.push.apply(out, lines);
-    el.textContent = out.join('\n');
-  }
-  window.appendDebugLog_ = function(msg){ if (isErrorLine(msg)) ERR.push(String(msg)); renderDbg(); };
-  window.dbgLog = window.appendDebugLog_;
-  var ce = console.error;
-  console.error = function(){
-    try {
-      var s = Array.prototype.slice.call(arguments).map(function(a){
-        if (typeof a === 'string') return a;
-        try { return JSON.stringify(a); } catch(e) { return String(a); }
-      }).join(' ');
-      if (isErrorLine(s)) ERR.push(s);
-    } catch(_) {}
-    try { renderDbg(); } catch(_) {}
-    return ce && ce.apply(console, arguments);
-  };
-  window.addEventListener('load', function(){
-    setTimeout(renderDbg, 100);
-    setTimeout(renderDbg, 1000);
-    setInterval(renderDbg, 1500);
-  });
 })();
 </script>
 
