@@ -4582,7 +4582,7 @@ const days = [];
       try {
         window.__PNG_DEBUG_EXPORT__ = window.__PNG_DEBUG_EXPORT__ || {};
         window.__PNG_DEBUG_EXPORT__[dateKey] = {
-          dateKey,
+          dateKey: dateKey,
           hasExportRow: !!exportRow,
           dayLevel: exportRow && exportRow.DayLevel,
           imageUrl: flowerImageUrl || "",
@@ -12333,34 +12333,63 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
 
 <script>
 (function(){
-  const ERR=[];
-  function isErrorLine(s){ s=String(s||'').toLowerCase(); return s.includes('error')||s.includes('failed')||s.includes('exception'); }
+  var ERR = [];
+  function isErrorLine(s){ s = String(s || '').toLowerCase(); return s.indexOf('error') >= 0 || s.indexOf('failed') >= 0 || s.indexOf('exception') >= 0; }
   function lineForDate(key){
-    const exp=(window.__PNG_DEBUG_EXPORT__&&window.__PNG_DEBUG_EXPORT__[key])||{};
-    return `${key} | exportRow=${exp.hasExportRow?'Y':'N'} | dayLevel=${exp.dayLevel||'-'} | imageUrl=${exp.imageUrl?('Y '+exp.imageUrl):'N'} | driveFileId=${exp.driveFileId||'-'} | hotspot=${exp.hotspotCx||'-'},${exp.hotspotCy||'-'},${exp.hotspotR||'-'} | size=${exp.imageWidth||'-'}x${exp.imageHeight||'-'} | gen=${exp.generatorVersion||'-'}`;
+    var exp = (window.__PNG_DEBUG_EXPORT__ && window.__PNG_DEBUG_EXPORT__[key]) || {};
+    return key +
+      ' | exportRow=' + (exp.hasExportRow ? 'Y' : 'N') +
+      ' | dayLevel=' + (exp.dayLevel || '-') +
+      ' | imageUrl=' + (exp.imageUrl ? ('Y ' + exp.imageUrl) : 'N') +
+      ' | driveFileId=' + (exp.driveFileId || '-') +
+      ' | hotspot=' + (exp.hotspotCx || '-') + ',' + (exp.hotspotCy || '-') + ',' + (exp.hotspotR || '-') +
+      ' | size=' + (exp.imageWidth || '-') + 'x' + (exp.imageHeight || '-') +
+      ' | gen=' + (exp.generatorVersion || '-');
   }
   function renderDbg(){
-    const el=document.getElementById('dbgLog'); if(!el) return;
-    const wraps=[...document.querySelectorAll('.flowerWrap[data-date-key]')];
-    let pngCount=0, svgCount=0;
-    const lines=[];
-    wraps.forEach(w=>{
-      const key=w.dataset.dateKey||'';
-      const img=w.querySelector('image');
-      if(img) pngCount++; else svgCount++;
+    var el = document.getElementById('dbgLog');
+    if (!el) return;
+    var wraps = Array.prototype.slice.call(document.querySelectorAll('.flowerWrap[data-date-key]'));
+    var pngCount = 0, svgCount = 0;
+    var lines = [];
+    wraps.forEach(function(w){
+      var key = w.dataset.dateKey || '';
+      var img = w.querySelector('image');
+      if (img) pngCount++; else svgCount++;
       lines.push(lineForDate(key));
     });
-    const out=[`PNG count: ${pngCount}`, `SVG count: ${svgCount}`, ''];
-    if(ERR.length){ out.push('Errors:'); out.push(...ERR.slice(-20)); out.push(''); }
+    var out = [];
+    out.push('PNG count: ' + pngCount);
+    out.push('SVG count: ' + svgCount);
+    out.push('');
+    if (ERR.length) {
+      out.push('Errors:');
+      Array.prototype.push.apply(out, ERR.slice(-20));
+      out.push('');
+    }
     out.push('Visible flower export debug:');
-    out.push(...lines);
-    el.textContent=out.join('
-');
+    Array.prototype.push.apply(out, lines);
+    el.textContent = out.join('\n');
   }
-  window.appendDebugLog_=function(msg){ if(isErrorLine(msg)) ERR.push(String(msg)); renderDbg(); };
-  window.dbgLog=window.appendDebugLog_;
-  const ce=console.error; console.error=function(...args){ try{ const s=args.map(a=>typeof a==='string'?a:JSON.stringify(a)).join(' '); if(isErrorLine(s)) ERR.push(s);}catch(_){} renderDbg(); return ce&&ce.apply(console,args); };
-  window.addEventListener('load',()=>{ setTimeout(renderDbg,100); setTimeout(renderDbg,1000); setInterval(renderDbg,1500); });
+  window.appendDebugLog_ = function(msg){ if (isErrorLine(msg)) ERR.push(String(msg)); renderDbg(); };
+  window.dbgLog = window.appendDebugLog_;
+  var ce = console.error;
+  console.error = function(){
+    try {
+      var s = Array.prototype.slice.call(arguments).map(function(a){
+        if (typeof a === 'string') return a;
+        try { return JSON.stringify(a); } catch(e) { return String(a); }
+      }).join(' ');
+      if (isErrorLine(s)) ERR.push(s);
+    } catch(_) {}
+    try { renderDbg(); } catch(_) {}
+    return ce && ce.apply(console, arguments);
+  };
+  window.addEventListener('load', function(){
+    setTimeout(renderDbg, 100);
+    setTimeout(renderDbg, 1000);
+    setInterval(renderDbg, 1500);
+  });
 })();
 </script>
 
