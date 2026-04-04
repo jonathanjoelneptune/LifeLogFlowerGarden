@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.0.99_FlowerGenerator_Fixed2500x3000.html</title>
+<title>garden_v100.1.00_FlowerGenerator_Fixed2500x3000_NoHotspots.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -12005,8 +12005,20 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
       .replaceAll('var(--strokeBranch)', 'rgba(0,0,0,0.42)');
   }
 
+  function stripHotspotsFromSvg_(s){
+    return String(s || '')
+      .replace(/<circle[^>]*class="[^"]*hsCore[^"]*"[^>]*><\/circle>/gi, '')
+      .replace(/<circle[^>]*class='[^']*hsCore[^']*'[^>]*><\/circle>/gi, '')
+      .replace(/<circle[^>]*data-role="hotspot"[^>]*><\/circle>/gi, '')
+      .replace(/<circle[^>]*data-role='hotspot'[^>]*><\/circle>/gi, '')
+      .replace(/<circle[^>]*class="[^"]*hsCore[^"]*"[^>]*\/?>/gi, '')
+      .replace(/<circle[^>]*class='[^']*hsCore[^']*'[^>]*\/?>/gi, '')
+      .replace(/<circle[^>]*data-role="hotspot"[^>]*\/?>/gi, '')
+      .replace(/<circle[^>]*data-role='hotspot'[^>]*\/?>/gi, '');
+  }
+
   function svgInnerFromMarkup_(svgMarkup){
-    var s = String(svgMarkup || '');
+    var s = stripHotspotsFromSvg_(String(svgMarkup || ''));
     var i = s.indexOf('>');
     var j = s.lastIndexOf('</svg>');
     if (i >= 0 && j > i) return s.slice(i + 1, j);
@@ -12163,7 +12175,7 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
       imageWidth: rendered.imageWidth,
       imageHeight: rendered.imageHeight,
       hotspot: rendered.hotspot,
-      generatorVersion: 'garden-generator-mode-v5-fixed2500x3000',
+      generatorVersion: 'garden-generator-mode-v6-fixed2500x3000-nohotspots',
       bot: BOT
     };
     var res = await fetch(RELAY_URL + '/flower_asset_upsert', {
