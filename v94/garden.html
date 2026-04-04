@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.0.89_PngSvgDebugFiltered.html</title>
+<title>garden_v100.0.88_UsePngFromGardenExport.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -2297,7 +2297,7 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 <div id="__versionBanner">LifeLog Garden Walk<br>
 File: <span id="__bannerFileName">garden_v100.0.45_BackRowsResponsiveHillAlign.html</span><br>
 Version: <span id="__bannerVersion">v100.0.45_BackRowsResponsiveHillAlign</span><br>
-Created: 2026-04-03 3:18 PM PT</span></div>
+Created: 2026-04-03 3:05 PM PT</span></div>
 <script>
 (function(){
   try{
@@ -2918,94 +2918,16 @@ window.__LL_hillTopAtX_fill = function(x, yTopGuess, yBottom){
 <!-- Debug Panel -->
 <div aria-hidden="false" id="dbgPanel">
   <div class="hdr">
-    <div class="t">LifeLog DEBUG v100.0.89 PNG/SVG Render Debug (press D)</div>
+    <div class="t">LifeLog DEBUG v100.0.45_BackRowsResponsiveHillAlign (press D)</div>
     <div class="btns">
       <button id="dbgCopy" type="button">Copy</button>
       <button id="dbgClear" type="button">Clear</button>
-      <button id="dbgExportFront" type="button" style="display:none;">Export Front Flowers</button>
+      <button id="dbgExportFront" type="button">Export Front Flowers</button>
       <button id="dbgHide" type="button">Hide</button>
     </div>
   </div>
   <pre id="dbgLog">Debug ready.</pre>
 </div>
-
-
-<script>
-(function(){
-  const g = window;
-  g.__LL_DEBUG_ERRORS__ = g.__LL_DEBUG_ERRORS__ || [];
-
-  g.appendDebugLog_ = function appendDebugLog_(msg){
-    try {
-      const s = String(msg || '');
-      if (/(error|failed|exception)/i.test(s)) {
-        g.__LL_DEBUG_ERRORS__.push(s);
-        if (g.__LL_DEBUG_ERRORS__.length > 40) g.__LL_DEBUG_ERRORS__.shift();
-      }
-    } catch(_) {}
-  };
-
-  function getHref_(img){
-    try {
-      if (!img) return '';
-      return img.getAttribute('href') || img.getAttributeNS('http://www.w3.org/1999/xlink','href') || (img.href && img.href.baseVal) || '';
-    } catch(_e) { return ''; }
-  }
-
-  function collectFlowerDebug_(){
-    const wraps = Array.from(document.querySelectorAll('.flowerWrap'));
-    let pngCount = 0, svgCount = 0;
-    const lines = [];
-    wraps.forEach((wrap) => {
-      const dateKey = (wrap.dataset && (wrap.dataset.dateKey || wrap.dataset.datekey)) || '';
-      const level = (wrap.dataset && wrap.dataset.level) || '';
-      const pngSvg = wrap.querySelector('.flowerPngSvg');
-      const stdSvg = pngSvg ? null : wrap.querySelector('.flowerSvg');
-      const type = pngSvg ? 'PNG' : (stdSvg ? 'SVG' : 'NONE');
-      if (type === 'PNG') pngCount++;
-      if (type === 'SVG') svgCount++;
-      if (type === 'NONE') return;
-      const svg = pngSvg || stdSvg;
-      const img = pngSvg ? pngSvg.querySelector('image') : null;
-      const href = getHref_(img);
-      const vb = svg ? (svg.getAttribute('viewBox') || '') : '';
-      const rect = wrap.getBoundingClientRect();
-      const hs = svg ? svg.querySelector('.hsCore,[data-role="hotspot"]') : null;
-      const hsCx = hs ? hs.getAttribute('cx') : '';
-      const hsCy = hs ? hs.getAttribute('cy') : '';
-      const hsR = hs ? hs.getAttribute('r') : '';
-      lines.push(`${dateKey} | L${level} | ${type} | box=${Math.round(rect.left)},${Math.round(rect.top)} ${Math.round(rect.width)}x${Math.round(rect.height)} | vb=${vb} | hs=${hsCx},${hsCy},${hsR}${href ? ' | url=' + href : ''}`);
-    });
-    lines.sort();
-    return { pngCount, svgCount, lines };
-  }
-
-  function renderDebug_(){
-    try {
-      const el = document.getElementById('dbgLog');
-      if (!el) return;
-      const info = collectFlowerDebug_();
-      const errs = (g.__LL_DEBUG_ERRORS__ || []).slice(-12);
-      const parts = [];
-      parts.push(`PNG count: ${info.pngCount}`);
-      parts.push(`SVG count: ${info.svgCount}`);
-      parts.push('');
-      parts.push('Errors:');
-      parts.push(errs.length ? errs.join('
-') : '(none)');
-      parts.push('');
-      parts.push('Flower render info:');
-      parts.push(info.lines.length ? info.lines.join('
-') : '(none)');
-      el.textContent = parts.join('
-');
-    } catch(_e) {}
-  }
-
-  setInterval(renderDebug_, 1000);
-  window.addEventListener('load', renderDebug_);
-})();
-</script>
 
 <script>
 
@@ -4653,6 +4575,27 @@ const days = [];
       flowerImageWidth = getFieldCI_(exportRow, ["ImageWidth", "FlowerAssetImageWidth"]) || "";
       flowerImageHeight = getFieldCI_(exportRow, ["ImageHeight", "FlowerAssetImageHeight"]) || "";
       flowerGeneratorVersion = getFieldCI_(exportRow, ["GeneratorVersion", "FlowerAssetGeneratorVersion"]) || "";
+      const flowerDriveFileId = getFieldCI_(exportRow, ["DriveFileId", "FlowerAssetDriveFileId"]) || "";
+      if (!flowerImageUrl && flowerDriveFileId) {
+        flowerImageUrl = "https://drive.google.com/uc?export=view&id=" + encodeURIComponent(flowerDriveFileId);
+      }
+      try {
+        window.__PNG_DEBUG_EXPORT__ = window.__PNG_DEBUG_EXPORT__ || {};
+        window.__PNG_DEBUG_EXPORT__[dateKey] = {
+          dateKey,
+          hasExportRow: !!exportRow,
+          dayLevel: exportRow && exportRow.DayLevel,
+          imageUrl: flowerImageUrl || "",
+          driveFileId: flowerDriveFileId || "",
+          hotspotCx: flowerHotspotCx || "",
+          hotspotCy: flowerHotspotCy || "",
+          hotspotR: flowerHotspotR || "",
+          imageWidth: flowerImageWidth || "",
+          imageHeight: flowerImageHeight || "",
+          generatorVersion: flowerGeneratorVersion || "",
+          exportKeys: exportRow ? Object.keys(exportRow).slice(0, 80) : []
+        };
+      } catch(_e) {}
 
       // Week label override (if present and not already set)
       if (!weekLevelLabel && exportRow.WeekLevelLabel != null) weekLevelLabel = String(exportRow.WeekLevelLabel);
@@ -12391,39 +12334,33 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
 <script>
 (function(){
   const ERR=[];
-  function norm(s){ return String(s==null?'':s); }
-  function isErrorLine(s){ s=s.toLowerCase(); return s.includes('error')||s.includes('failed')||s.includes('exception'); }
-  function clearAndRender(){
-    const el=document.getElementById('dbgLog'); if(!el) return;
-    const flowers=[...document.querySelectorAll('[data-date-key], [data-date]')];
-    let pngCount=0, svgCount=0; const lines=[]; const seen=new Set();
-    for(const node of flowers){
-      const key=node.getAttribute('data-date-key')||node.getAttribute('data-date')||'';
-      if(!key || seen.has(key)) continue; seen.add(key);
-      const img=node.querySelector('image');
-      const svg=node.querySelector('svg');
-      const wrap=(node.matches && (node.matches('svg')||node.matches('g'))) ? node : (node.querySelector('svg, g')||node);
-      const rect=(node.getBoundingClientRect?node.getBoundingClientRect():{x:0,y:0,width:0,height:0});
-      const vb=(svg&&svg.getAttribute?svg.getAttribute('viewBox'):'') || (wrap&&wrap.getAttribute?wrap.getAttribute('viewBox'):'');
-      const hs=node.querySelector('[data-role="hotspot"], .hsCore, .llCoreHotspotSvg');
-      const hsx=hs&&(hs.getAttribute('cx')||hs.getAttribute('x')||'');
-      const hsy=hs&&(hs.getAttribute('cy')||hs.getAttribute('y')||'');
-      const hsr=hs&&hs.getAttribute&&hs.getAttribute('r');
-      const level=node.getAttribute('data-day-level')||node.getAttribute('data-level')||'';
-      if(img){ pngCount++; lines.push(`${key} | lvl=${level} | PNG | x=${rect.x.toFixed(1)} y=${rect.y.toFixed(1)} w=${rect.width.toFixed(1)} h=${rect.height.toFixed(1)} | viewBox=${vb||'-'} | hotspot=${hsx||'-'},${hsy||'-'},${hsr||'-'} | url=${img.getAttribute('href')||img.getAttribute('xlink:href')||''}`); }
-      else { svgCount++; lines.push(`${key} | lvl=${level} | SVG | x=${rect.x.toFixed(1)} y=${rect.y.toFixed(1)} w=${rect.width.toFixed(1)} h=${rect.height.toFixed(1)} | viewBox=${vb||'-'} | hotspot=${hsx||'-'},${hsy||'-'},${hsr||'-'}`); }
-    }
-    const out=[];
-    out.push(`PNG count: ${pngCount}`);
-    out.push(`SVG count: ${svgCount}`);
-    if(ERR.length){ out.push(''); out.push('Errors:'); out.push(...ERR.slice(-20)); }
-    out.push(''); out.push('Flower render info:'); out.push(...lines.slice(0,200));
-    el.textContent=out.join('\n');
+  function isErrorLine(s){ s=String(s||'').toLowerCase(); return s.includes('error')||s.includes('failed')||s.includes('exception'); }
+  function lineForDate(key){
+    const exp=(window.__PNG_DEBUG_EXPORT__&&window.__PNG_DEBUG_EXPORT__[key])||{};
+    return `${key} | exportRow=${exp.hasExportRow?'Y':'N'} | dayLevel=${exp.dayLevel||'-'} | imageUrl=${exp.imageUrl?('Y '+exp.imageUrl):'N'} | driveFileId=${exp.driveFileId||'-'} | hotspot=${exp.hotspotCx||'-'},${exp.hotspotCy||'-'},${exp.hotspotR||'-'} | size=${exp.imageWidth||'-'}x${exp.imageHeight||'-'} | gen=${exp.generatorVersion||'-'}`;
   }
-  window.appendDebugLog_=function(msg){ const s=norm(msg); if(isErrorLine(s)) ERR.push(s); clearAndRender(); };
+  function renderDbg(){
+    const el=document.getElementById('dbgLog'); if(!el) return;
+    const wraps=[...document.querySelectorAll('.flowerWrap[data-date-key]')];
+    let pngCount=0, svgCount=0;
+    const lines=[];
+    wraps.forEach(w=>{
+      const key=w.dataset.dateKey||'';
+      const img=w.querySelector('image');
+      if(img) pngCount++; else svgCount++;
+      lines.push(lineForDate(key));
+    });
+    const out=[`PNG count: ${pngCount}`, `SVG count: ${svgCount}`, ''];
+    if(ERR.length){ out.push('Errors:'); out.push(...ERR.slice(-20)); out.push(''); }
+    out.push('Visible flower export debug:');
+    out.push(...lines);
+    el.textContent=out.join('
+');
+  }
+  window.appendDebugLog_=function(msg){ if(isErrorLine(msg)) ERR.push(String(msg)); renderDbg(); };
   window.dbgLog=window.appendDebugLog_;
-  const origErr=console.error; console.error=function(...args){ try{ const s=args.map(a=>typeof a==='string'?a:JSON.stringify(a)).join(' '); if(isErrorLine(s)) ERR.push(s); }catch(_){} try{clearAndRender();}catch(_){} return origErr&&origErr.apply(console,args); };
-  window.addEventListener('load', ()=>{ setTimeout(clearAndRender,50); setTimeout(clearAndRender,500); setInterval(clearAndRender,1500); });
+  const ce=console.error; console.error=function(...args){ try{ const s=args.map(a=>typeof a==='string'?a:JSON.stringify(a)).join(' '); if(isErrorLine(s)) ERR.push(s);}catch(_){} renderDbg(); return ce&&ce.apply(console,args); };
+  window.addEventListener('load',()=>{ setTimeout(renderDbg,100); setTimeout(renderDbg,1000); setInterval(renderDbg,1500); });
 })();
 </script>
 
