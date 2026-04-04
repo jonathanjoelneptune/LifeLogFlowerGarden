@@ -135,7 +135,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.06_PNGPreferred_StemXYCounts';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.07_PNGFallbackAndActualCounts';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -263,7 +263,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 function renderBackRows(){ /* disabled */ }
 
 (function(){
-  const VERSION = 'v100.1.06_PNGPreferred_StemXYCounts';
+  const VERSION = 'v100.1.07_PNGFallbackAndActualCounts';
 
   // ---- Canonical version globals ----
   window.APP_VERSION = VERSION;
@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.1.06_PNGPreferred_StemXYCounts0_SaveStem.html</title>
+<title>garden_v100.1.07_PNGFallbackAndActualCounts0_SaveStem.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -5174,9 +5174,18 @@ function requestFlowerAssetCountRefresh_(){
       var pngCount = 0;
       var svgCount = 0;
       for (var i = 0; i < wraps.length; i++) {
-        var kind = String((wraps[i].dataset && wraps[i].dataset.renderAsset) || '').toLowerCase();
-        if (kind === 'png') pngCount++;
-        else if (kind === 'svg') svgCount++;
+        var wrap = wraps[i];
+        var kind = String((wrap.dataset && wrap.dataset.renderAsset) || '').toLowerCase();
+        if (kind === 'png') {
+          pngCount++;
+          continue;
+        }
+        if (kind === 'svg') {
+          svgCount++;
+          continue;
+        }
+        if (wrap.querySelector('.flowerPngAsset')) pngCount++;
+        else if (wrap.querySelector('.flowerSvgWrap, .flowerSvg')) svgCount++;
       }
       var svgEl = document.getElementById('vSvgCount');
       var pngEl = document.getElementById('vPngCount');
@@ -5280,8 +5289,48 @@ flowerWrapEls.push(wrap);
     wrap.style.setProperty("--tdel", (w.del + twr()*1.2).toFixed(2) + "s");
 
     var assetUrl = flowerAssetRenderUrl_(dayData);
-    wrap.dataset.renderAsset = assetUrl ? "png" : "svg";
+    wrap.dataset.renderAsset = assetUrl ? "pending" : "svg";
     wrap.innerHTML = `<div class="flowerWind">${buildFlowerMarkupForDay_(dayData)}</div>`;
+
+    if (assetUrl) {
+      (function(wrapEl, dayForFallback){
+        function swapToSvgFallback_(){
+          try {
+            wrapEl.dataset.renderAsset = "svg";
+            wrapEl.innerHTML = `<div class="flowerWind"><div class="flowerSvgWrap">${flowerSvg(dayForFallback)}</div></div>`;
+          } catch(_fallbackErr) {
+            try { wrapEl.dataset.renderAsset = "svg"; } catch(_e2) {}
+          }
+          requestFlowerAssetCountRefresh_();
+        }
+        try {
+          var imgEl = wrapEl.querySelector('.flowerPngAsset');
+          if (!imgEl) {
+            swapToSvgFallback_();
+            return;
+          }
+          imgEl.addEventListener('load', function(){
+            wrapEl.dataset.renderAsset = (imgEl.naturalWidth > 0 && imgEl.naturalHeight > 0) ? "png" : "svg";
+            if (wrapEl.dataset.renderAsset !== "png") swapToSvgFallback_();
+            else requestFlowerAssetCountRefresh_();
+          }, { once: true });
+          imgEl.addEventListener('error', function(){
+            swapToSvgFallback_();
+          }, { once: true });
+
+          if (imgEl.complete) {
+            if (imgEl.naturalWidth > 0 && imgEl.naturalHeight > 0) {
+              wrapEl.dataset.renderAsset = "png";
+              requestFlowerAssetCountRefresh_();
+            } else {
+              swapToSvgFallback_();
+            }
+          }
+        } catch(_assetInitErr) {
+          swapToSvgFallback_();
+        }
+      })(wrap, dayData);
+    }
 
     const baseTuft = document.createElement("div");
     baseTuft.className = "baseTuft";
@@ -12247,7 +12296,9 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
           secondary: String(exportRow.SecondaryColor || '#FFFFFF').trim(),
           stemCore: stem.stemCore,
           stemHi: stem.stemHi,
-          stemEdge: stem.stemEdge
+          stemEdge: stem.stemEdge,
+          flowerAssetDriveFileId: String(exportRow.DriveFileId || '').trim(),
+          flowerAssetImageUrl: String(exportRow.ImageUrl || '').trim()
         });
       });
       days.sort(function(a,b){ return String(a.dateKey).localeCompare(String(b.dateKey)); });
@@ -12321,9 +12372,13 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
     setStatus('Fetching manifest...');
     var existing = await fetchExistingDateKeys_(beforeDate);
     var all = collectHistoricalDays_();
-    var missing = all.filter(function(day){ return !existing.has(day.dateKey); });
+    var missing = all.filter(function(day){
+      var hasLocalAsset = !!String(day && (day.flowerAssetDriveFileId || day.flowerAssetImageUrl || '')).trim();
+      return !existing.has(day.dateKey) && !hasLocalAsset;
+    });
+    var skippedExisting = all.length - missing.length;
     setStatus('Missing historical flowers: ' + missing.length);
-    log('Historical days: ' + all.length + ' | Missing: ' + missing.length);
+    log('Historical days: ' + all.length + ' | Existing/skipped: ' + skippedExisting + ' | Missing: ' + missing.length);
     for (var i = 0; i < missing.length; i++) {
       if (stopRequested) break;
       var day = missing[i];
