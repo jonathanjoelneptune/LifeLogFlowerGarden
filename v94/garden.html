@@ -135,7 +135,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v100.0.45_BackRowsResponsiveHillAlign';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.06_PNGPreferred_StemXYCounts';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -263,7 +263,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 function renderBackRows(){ /* disabled */ }
 
 (function(){
-  const VERSION = 'v100.0.45_BackRowsResponsiveHillAlign';
+  const VERSION = 'v100.1.06_PNGPreferred_StemXYCounts';
 
   // ---- Canonical version globals ----
   window.APP_VERSION = VERSION;
@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.1.05_FlowerGenerator_Fixed2500x3000_SaveStem.html</title>
+<title>garden_v100.1.06_PNGPreferred_StemXYCounts0_SaveStem.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -883,6 +883,37 @@ body.llScreenSaverLowPower .flowerWind{
   height: calc(540px * var(--flowerScale, 1));
   overflow: visible;
   display: block;
+}
+
+.flowerAssetPngWrap {
+  position: relative;
+  width: calc(265px * var(--flowerScale, 1));
+  height: calc(540px * var(--flowerScale, 1));
+  display: block;
+}
+.flowerPngAsset {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.flowerHitSvg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  display: block;
+}
+.flowerWrap.llSilSelected .flowerPngAsset {
+  filter:
+    drop-shadow(1px 0px 0px rgba(255,255,255,0.98))
+    drop-shadow(-1px 0px 0px rgba(255,255,255,0.98))
+    drop-shadow(0px 1px 0px rgba(255,255,255,0.98))
+    drop-shadow(0px -1px 0px rgba(255,255,255,0.98));
 }
 
 /* Base tuft */
@@ -3388,6 +3419,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
       Time Source: <span id="vTimeSource">Fixed Defaults</span>
     </div>
     <div class="hint" style="margin-top:2px; opacity:0.92;">Garden Data Source: <span id="vDataSource">Offline</span></div>
+    <div class="hint" style="margin-top:2px; opacity:0.92;">Garden Flower Assets: SVGs <span id="vSvgCount">0</span> | PNGs <span id="vPngCount">0</span></div>
     <hr style="border:none;border-top:1px solid rgba(255,255,255,0.22);margin:10px 0;"/>
     <div class="utilNote">Skybox body text controls. Header titles stay unchanged.</div>
     <div class="row">
@@ -4489,6 +4521,10 @@ const days = [];
     let haiku = "";
     let reflection = "";
     let themeCloudUrl = "";
+    let flowerAssetDriveFileId = "";
+    let flowerAssetImageUrl = "";
+    let flowerAssetStemBaseX = "";
+    let flowerAssetStemBaseY = "";
 
     // v99.3.28_TodayPoll_ApplyUpdateAndDebug: Lifetime metrics per-day (from GardenExport JSON)
     let streakIndex = "";
@@ -4557,6 +4593,10 @@ const days = [];
       haiku = getFieldCI_(exportRow, ["Haiku", "DailyHaiku", "HaikuText", "DailyHaikuText"]) || "";
       reflection = getFieldCI_(exportRow, ["DailyReflection", "Reflection", "Daily_Reflection", "DailyReflectionText"]) || "";
       themeCloudUrl = getFieldCI_(exportRow, ["ThemeCloudPngUrl", "ThemeCloudUrl", "ThemeCloudPNG", "ThemeCloudPng"]) || "";
+      flowerAssetDriveFileId = getFieldCI_(exportRow, ["DriveFileId"]) || "";
+      flowerAssetImageUrl = getFieldCI_(exportRow, ["ImageUrl"]) || "";
+      flowerAssetStemBaseX = getFieldCI_(exportRow, ["StemBaseX"]) || "";
+      flowerAssetStemBaseY = getFieldCI_(exportRow, ["StemBaseY"]) || "";
 
       // Week label override (if present and not already set)
       if (!weekLevelLabel && exportRow.WeekLevelLabel != null) weekLevelLabel = String(exportRow.WeekLevelLabel);
@@ -4669,6 +4709,10 @@ const stemColors = stemColorsForMonthIndex_(monthIndex);
       haiku,
       reflection,
       themeCloudUrl,
+      flowerAssetDriveFileId,
+      flowerAssetImageUrl,
+      flowerAssetStemBaseX,
+      flowerAssetStemBaseY,
       stemCore: stemColors.stem,
       stemDark: stemColors.stemDark,
       // Compatibility with flowerSvg() renderer which expects `stemHi`.
@@ -5087,6 +5131,61 @@ try { window.__LL_getFrontIndex = () => (typeof frontIndex === "number" ? frontI
 
 // v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: Lazy render flowers for a band
 
+function getFlowerAssetRelayBase_(){
+  try {
+    return String(window.__FLOWER_ASSET_RELAY_URL__ || localStorage.getItem('FLOWER_ASSET_RELAY_URL') || 'https://flower-assets-relay-501002014766.us-central1.run.app').trim().replace(/\/$/, '');
+  } catch(_e) {}
+  return 'https://flower-assets-relay-501002014766.us-central1.run.app';
+}
+
+function flowerAssetRenderUrl_(day){
+  if (!day) return '';
+  var relayBase = getFlowerAssetRelayBase_();
+  var driveFileId = String(day.flowerAssetDriveFileId || day.DriveFileId || '').trim();
+  var imageUrl = String(day.flowerAssetImageUrl || day.ImageUrl || '').trim();
+  if (driveFileId && relayBase) return relayBase + '/flower_asset_image?fileId=' + encodeURIComponent(driveFileId);
+  return imageUrl;
+}
+
+function buildFlowerMarkupForDay_(day){
+  var pngUrl = flowerAssetRenderUrl_(day);
+  if (pngUrl) {
+    var hs = hotspotGeomForDay_(day);
+    var dateKey = String(day.dateKey || '');
+    return `
+      <div class="flowerAssetPngWrap">
+        <img class="flowerPngAsset" src="${pngUrl}" alt="" crossorigin="anonymous" loading="eager" decoding="async"/>
+        <svg class="flowerHitSvg" viewBox="0 0 400 940" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <circle class="hsCore llCoreHotspotSvg" data-role="hotspot" data-datekey="${dateKey}" cx="${hs.cx}" cy="${hs.cy}" r="${hs.r}"/>
+        </svg>
+      </div>`;
+  }
+  return `<div class="flowerSvgWrap">${flowerSvg(day)}</div>`;
+}
+
+let __llAssetCountPending = 0;
+function requestFlowerAssetCountRefresh_(){
+  if (__llAssetCountPending) return;
+  __llAssetCountPending = 1;
+  requestAnimationFrame(function(){
+    __llAssetCountPending = 0;
+    try {
+      var wraps = Array.prototype.slice.call(document.querySelectorAll('.flowerWrap'));
+      var pngCount = 0;
+      var svgCount = 0;
+      for (var i = 0; i < wraps.length; i++) {
+        var kind = String((wraps[i].dataset && wraps[i].dataset.renderAsset) || '').toLowerCase();
+        if (kind === 'png') pngCount++;
+        else if (kind === 'svg') svgCount++;
+      }
+      var svgEl = document.getElementById('vSvgCount');
+      var pngEl = document.getElementById('vPngCount');
+      if (svgEl) svgEl.textContent = String(svgCount);
+      if (pngEl) pngEl.textContent = String(pngCount);
+    } catch(_e) {}
+  });
+}
+
 function renderBandFlowers(band){
   if (!band || band.dataset.rendered === "true") return;
 
@@ -5180,7 +5279,9 @@ flowerWrapEls.push(wrap);
     wrap.style.setProperty("--tdur", tdur.toFixed(2) + "s");
     wrap.style.setProperty("--tdel", (w.del + twr()*1.2).toFixed(2) + "s");
 
-    wrap.innerHTML = `<div class="flowerWind">${flowerSvg(dayData)}</div>`;
+    var assetUrl = flowerAssetRenderUrl_(dayData);
+    wrap.dataset.renderAsset = assetUrl ? "png" : "svg";
+    wrap.innerHTML = `<div class="flowerWind">${buildFlowerMarkupForDay_(dayData)}</div>`;
 
     const baseTuft = document.createElement("div");
     baseTuft.className = "baseTuft";
@@ -5193,6 +5294,7 @@ flowerWrapEls.push(wrap);
   }
 
   band.dataset.rendered = "true";
+  requestFlowerAssetCountRefresh_();
 }
 
 // v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: Render bands within a range
@@ -11088,6 +11190,7 @@ const LS_KEY = "LL_V94_HOST_CFG";
 
     // Force a rebuild so already-rendered weeks pick up export data.
     try{ forceRebuild(); }catch(e){}
+    try{ requestFlowerAssetCountRefresh_(); }catch(e){}
   }
 
   function forceRebuild(){
