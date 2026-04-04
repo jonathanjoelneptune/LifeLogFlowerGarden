@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.0.93_UseFlowerAssetProxy.html</title>
+<title>garden_v100.0.94_PngImgRenderer.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -881,6 +881,35 @@ body.llScreenSaverLowPower .flowerWind{
 .flowerSvg {
   width: calc(265px * var(--flowerScale, 1));
   height: calc(540px * var(--flowerScale, 1));
+  overflow: visible;
+  display: block;
+}
+
+.flowerPngShell {
+  position: relative;
+  width: calc(265px * var(--flowerScale, 1));
+  height: calc(540px * var(--flowerScale, 1));
+  display: block;
+}
+
+.flowerPngImg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+  object-position: center bottom;
+  pointer-events: none;
+}
+
+.flowerPngHitSvg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
   overflow: visible;
   display: block;
 }
@@ -4080,27 +4109,7 @@ function tuftSvg(uid, weekLevel, size=1.0){
 // Flower SVG Generation
 // ============================================
 
-const FLOWER_ASSET_PROXY_BASE = (new URLSearchParams(location.search).get("flowerProxyBase") || "https://flower-assets-relay-501002014766.us-central1.run.app").replace(/\/$/, "");
-
-function parseDriveFileId_(raw){
-  const s = String(raw || "").trim();
-  if (!s) return "";
-  if (/^[A-Za-z0-9_-]{20,}$/.test(s)) return s;
-  const m1 = s.match(/[?&]id=([A-Za-z0-9_-]+)/i);
-  if (m1) return m1[1];
-  const m2 = s.match(/\/d\/([A-Za-z0-9_-]+)/i);
-  if (m2) return m2[1];
-  return "";
-}
-
-function proxiedFlowerImageUrl_(urlOrId){
-  const fileId = parseDriveFileId_(urlOrId);
-  if (!fileId) return String(urlOrId || "");
-  return FLOWER_ASSET_PROXY_BASE + "/flower_asset_image?fileId=" + encodeURIComponent(fileId);
-}
-
-function flowerPngSvg(day){
-  const url = proxiedFlowerImageUrl_(day.flowerImageUrl || day.flowerDriveFileId || "");
+function flowerPngHtml(day){
   const imgW = Math.max(1, Number(day.flowerImageWidth) || 400);
   const imgH = Math.max(1, Number(day.flowerImageHeight) || 940);
   const vbW = 400;
@@ -4108,7 +4117,8 @@ function flowerPngSvg(day){
   const hsx = (Number(day.flowerHotspotCx) || 200) * (vbW / imgW);
   const hsy = (Number(day.flowerHotspotCy) || 470) * (vbH / imgH);
   const hsr = Math.max(12, (Number(day.flowerHotspotR) || 72) * Math.min(vbW / imgW, vbH / imgH));
-  return `<svg class="flowerSvg flowerPngSvg" viewBox="0 0 ${vbW} ${vbH}" xmlns="http://www.w3.org/2000/svg" aria-label="flower png"><image href="${url}" x="0" y="0" width="${vbW}" height="${vbH}" preserveAspectRatio="xMidYMid meet" crossorigin="anonymous"/><circle data-role="hotspot" cx="${hsx.toFixed(2)}" cy="${hsy.toFixed(2)}" r="${hsr.toFixed(2)}" fill="rgba(0,0,0,0)" /></svg>`;
+  const url = String(day.flowerImageUrl || '').trim();
+  return `<div class="flowerPngShell"><img class="flowerPngImg" src="${url}" alt="flower" loading="lazy" decoding="async" referrerpolicy="no-referrer"/><svg class="flowerSvg flowerPngHitSvg" viewBox="0 0 ${vbW} ${vbH}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle class="hsCore llCoreHotspotSvg" data-role="hotspot" data-datekey="${day.dateKey || ''}" cx="${hsx.toFixed(2)}" cy="${hsy.toFixed(2)}" r="${hsr.toFixed(2)}" fill="rgba(0,0,0,0)" /></svg></div>`;
 }
 
 function flowerSvg(day){
@@ -4531,7 +4541,6 @@ const days = [];
     let flowerImageWidth = "";
     let flowerImageHeight = "";
     let flowerGeneratorVersion = "";
-    let flowerDriveFileId = "";
 
     // v99.3.28_TodayPoll_ApplyUpdateAndDebug: Lifetime metrics per-day (from GardenExport JSON)
     let streakIndex = "";
@@ -4602,8 +4611,6 @@ const days = [];
       themeCloudUrl = getFieldCI_(exportRow, ["ThemeCloudPngUrl", "ThemeCloudUrl", "ThemeCloudPNG", "ThemeCloudPng"]) || "";
 
       flowerImageUrl = getFieldCI_(exportRow, ["ImageUrl", "FlowerAssetImageUrl"]) || "";
-      flowerDriveFileId = getFieldCI_(exportRow, ["DriveFileId", "FlowerAssetDriveFileId"]) || parseDriveFileId_(flowerImageUrl);
-      if (flowerDriveFileId) flowerImageUrl = proxiedFlowerImageUrl_(flowerDriveFileId);
       flowerHotspotCx = getFieldCI_(exportRow, ["HotspotCx", "FlowerAssetHotspotCx"]) || "";
       flowerHotspotCy = getFieldCI_(exportRow, ["HotspotCy", "FlowerAssetHotspotCy"]) || "";
       flowerHotspotR = getFieldCI_(exportRow, ["HotspotR", "FlowerAssetHotspotR"]) || "";
@@ -4729,7 +4736,6 @@ const stemColors = stemColorsForMonthIndex_(monthIndex);
       flowerImageWidth,
       flowerImageHeight,
       flowerGeneratorVersion,
-      flowerDriveFileId,
       stemCore: stemColors.stem,
       stemDark: stemColors.stemDark,
       // Compatibility with flowerSvg() renderer which expects `stemHi`.
@@ -5241,7 +5247,7 @@ flowerWrapEls.push(wrap);
     wrap.style.setProperty("--tdur", tdur.toFixed(2) + "s");
     wrap.style.setProperty("--tdel", (w.del + twr()*1.2).toFixed(2) + "s");
 
-    wrap.innerHTML = `<div class="flowerWind">${(dayData.flowerImageUrl ? flowerPngSvg(dayData) : flowerSvg(dayData))}</div>`;
+    wrap.innerHTML = `<div class="flowerWind">${(dayData.flowerImageUrl ? flowerPngHtml(dayData) : flowerSvg(dayData))}</div>`;
 
     const baseTuft = document.createElement("div");
     baseTuft.className = "baseTuft";
