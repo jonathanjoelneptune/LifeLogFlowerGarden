@@ -135,7 +135,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.07_PNGFallbackAndActualCounts';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.08_PNGProxyAndCountFix';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -263,7 +263,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 function renderBackRows(){ /* disabled */ }
 
 (function(){
-  const VERSION = 'v100.1.07_PNGFallbackAndActualCounts';
+  const VERSION = 'v100.1.08_PNGProxyAndCountFix';
 
   // ---- Canonical version globals ----
   window.APP_VERSION = VERSION;
@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.1.07_PNGFallbackAndActualCounts0_SaveStem.html</title>
+<title>garden_v100.1.08_PNGProxyAndCountFix0_SaveStem.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -1328,6 +1328,24 @@ input[type="range"] { width: 100%; }
 #dbgPanel button { border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.18); color: #eaf2ff; padding: 4px 8px; border-radius: 9px; cursor: pointer; }
 #dbgPanel button:hover { background: rgba(255,255,255,0.14); }
 #dbgLog { margin: 0; padding: 0 10px 10px 10px; white-space: pre-wrap; overflow: auto; max-height: calc(42vh - 44px); }
+
+#assetCountDebug {
+  position: fixed;
+  left: 12px;
+  bottom: 12px;
+  z-index: 100000;
+  background: rgba(0,0,0,0.74);
+  color: #eaf2ff;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 12px;
+  padding: 8px 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.24);
+  pointer-events: none;
+}
+#assetCountDebug .lab { opacity: 0.82; }
 
 /* ---------- Hotspot Selection ---------- */
 .hsCore { fill: transparent; stroke: transparent; stroke-width: 1; cursor: pointer; pointer-events: all; }
@@ -5138,11 +5156,26 @@ function getFlowerAssetRelayBase_(){
   return 'https://flower-assets-relay-501002014766.us-central1.run.app';
 }
 
+function extractDriveFileIdFromUrl_(url){
+  try {
+    var s = String(url || '').trim();
+    if (!s) return '';
+    var m = s.match(/[?&]id=([A-Za-z0-9_-]+)/i);
+    if (m && m[1]) return m[1];
+    m = s.match(/\/d\/([A-Za-z0-9_-]+)/i);
+    if (m && m[1]) return m[1];
+    m = s.match(/\/file\/d\/([A-Za-z0-9_-]+)/i);
+    if (m && m[1]) return m[1];
+  } catch(_e) {}
+  return '';
+}
+
 function flowerAssetRenderUrl_(day){
   if (!day) return '';
   var relayBase = getFlowerAssetRelayBase_();
   var driveFileId = String(day.flowerAssetDriveFileId || day.DriveFileId || '').trim();
   var imageUrl = String(day.flowerAssetImageUrl || day.ImageUrl || '').trim();
+  if (!driveFileId && imageUrl) driveFileId = extractDriveFileIdFromUrl_(imageUrl);
   if (driveFileId && relayBase) return relayBase + '/flower_asset_image?fileId=' + encodeURIComponent(driveFileId);
   return imageUrl;
 }
@@ -5150,7 +5183,20 @@ function flowerAssetRenderUrl_(day){
 function buildFlowerMarkupForDay_(day){
   var pngUrl = flowerAssetRenderUrl_(day);
   if (pngUrl) {
-    var hs = hotspotGeomForDay_(day);
+    var hs = (typeof hotspotGeomForDay_ === 'function')
+      ? hotspotGeomForDay_(day)
+      : (function(dd){
+          var lvl = Number(dd && dd.level) || 1;
+          var topY = ({1:500,2:420,3:300,4:200,5:100})[lvl] || 500;
+          var bloom = {
+            1:{s:1.06*1.5,y:-34,r:20},
+            2:{s:1.06*1.5,y:-62,r:28},
+            3:{s:1.18,y:-72,r:40},
+            4:{s:1.32,y:-78,r:48},
+            5:{s:1.46,y:-82,r:56}
+          }[lvl] || {s:1.06*1.5,y:-34,r:20};
+          return { cx:200, cy:(topY + bloom.y * bloom.s), r:(bloom.r * 2.25 * bloom.s) };
+        })(day);
     var dateKey = String(day.dateKey || '');
     return `
       <div class="flowerAssetPngWrap">
@@ -5189,8 +5235,12 @@ function requestFlowerAssetCountRefresh_(){
       }
       var svgEl = document.getElementById('vSvgCount');
       var pngEl = document.getElementById('vPngCount');
+      var svgDbgEl = document.getElementById('assetCountDebugSvg');
+      var pngDbgEl = document.getElementById('assetCountDebugPng');
       if (svgEl) svgEl.textContent = String(svgCount);
       if (pngEl) pngEl.textContent = String(pngCount);
+      if (svgDbgEl) svgDbgEl.textContent = String(svgCount);
+      if (pngDbgEl) pngDbgEl.textContent = String(pngCount);
     } catch(_e) {}
   });
 }
