@@ -135,7 +135,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v100.0.45_BackRowsResponsiveHillAlign';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.03_PngLevelTuned_MinDebugFixed';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.1.01_PngLevelTuned_MinDebug.html</title>
+<title>garden_v100.1.03_PngLevelTuned_MinDebugFixed.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -2314,7 +2314,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.0.45_BackRowsResponsiveHillAlign.html • v100.0.6_DailyHeadlinesAiryRotation • Built: 2026-04-01T00:00:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.1.03_PngLevelTuned_MinDebugFixed.html • v100.1.03_PngLevelTuned_MinDebugFixed • Built: 2026-04-04 19:35 PT</div>
 
 
 <script>
@@ -2330,7 +2330,7 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 <div id="__versionBanner">LifeLog Garden Walk<br>
 File: <span id="__bannerFileName">garden_v100.0.45_BackRowsResponsiveHillAlign.html</span><br>
 Version: <span id="__bannerVersion">v100.0.45_BackRowsResponsiveHillAlign</span><br>
-Created: 2026-04-03 3:05 PM PT</span></div>
+Created: 2026-04-04 7:35 PM PT</span></div>
 <script>
 (function(){
   try{
@@ -12371,14 +12371,17 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
 
 <script>
 (function(){
-  var ERR=[];
-  function isErr(s){ s=String(s||'').toLowerCase(); return s.indexOf('error')>=0 || s.indexOf('failed')>=0 || s.indexOf('exception')>=0; }
+  var ERR = [];
+  function isErr(s){
+    s = String(s || '').toLowerCase();
+    return s.indexOf('error') >= 0 || s.indexOf('failed') >= 0 || s.indexOf('exception') >= 0 || s.indexOf('unauthorized') >= 0;
+  }
   function renderDbg(){
-    var el=document.getElementById('dbgLog');
-    if(!el) return;
-    var pngCount=document.querySelectorAll('img.flowerPngImg').length;
-    var svgCount=document.querySelectorAll('.flowerWrap .flowerSvg:not(.flowerPngHitSvg)').length;
-    var out=[];
+    var el = document.getElementById('dbgLog');
+    if (!el) return;
+    var pngCount = document.querySelectorAll('img.flowerPngImg').length;
+    var svgCount = document.querySelectorAll('.flowerWrap .flowerSvg:not(.flowerPngHitSvg)').length;
+    var out = [];
     out.push('PNG count: ' + pngCount);
     out.push('SVG count: ' + svgCount);
     if (ERR.length) {
@@ -12386,21 +12389,41 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
       out.push('Errors:');
       Array.prototype.push.apply(out, ERR.slice(-20));
     }
-    el.textContent=out.join('
-');
+    el.textContent = out.join('\n');
+
+    ['dbgCopyBtn','dbgClearBtn'].forEach(function(id){
+      var b = document.getElementById(id);
+      if (b) b.style.display = 'none';
+    });
+    var x = document.getElementById('dbgExportFrontBtn');
+    if (x) x.style.display = 'none';
   }
-  window.appendDebugLog_=function(msg){ if(isErr(msg)) ERR.push(String(msg)); renderDbg(); };
-  window.dbgLog=window.appendDebugLog_;
-  var oldErr=console.error;
-  console.error=function(){
+
+  window.appendDebugLog_ = function(msg){
+    if (isErr(msg)) ERR.push(String(msg));
+    renderDbg();
+  };
+  window.dbgLog = window.appendDebugLog_;
+
+  var ce = console.error;
+  console.error = function(){
     try {
-      var s=Array.prototype.slice.call(arguments).map(function(a){ try{return typeof a==='string'?a:JSON.stringify(a);}catch(_e){return String(a);} }).join(' ');
-      if(isErr(s)) ERR.push(s);
+      var s = Array.prototype.slice.call(arguments).map(function(a){
+        try { return typeof a === 'string' ? a : JSON.stringify(a); }
+        catch(_e){ return String(a); }
+      }).join(' ');
+      if (isErr(s)) ERR.push(s);
     } catch(_e2) {}
     try { renderDbg(); } catch(_e3) {}
-    return oldErr && oldErr.apply(console, arguments);
+    return ce && ce.apply(console, arguments);
   };
-  window.addEventListener('load', function(){ setTimeout(renderDbg,100); setTimeout(renderDbg,1000); setInterval(renderDbg,1500); });
+
+  window.addEventListener('load', function(){
+    setTimeout(renderDbg, 50);
+    setTimeout(renderDbg, 500);
+    setTimeout(renderDbg, 1500);
+    setInterval(renderDbg, 2000);
+  });
 })();
 </script>
 
