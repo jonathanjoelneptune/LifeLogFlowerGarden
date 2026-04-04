@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.0.97_PngScaledAnchored.html</title>
+<title>garden_v100.0.98_PngLevelTuned.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -902,7 +902,7 @@ body.llScreenSaverLowPower .flowerWind{
   object-fit: contain;
   object-position: center bottom;
   pointer-events: none;
-  transform: translateY(118px) scale(1.82);
+  transform: translateY(var(--pngShiftY, 0px)) scale(var(--pngScale, 1));
   transform-origin: 50% 100%;
 }
 
@@ -914,7 +914,7 @@ body.llScreenSaverLowPower .flowerWind{
   height: 100%;
   overflow: visible;
   display: block;
-  transform: translateY(118px) scale(1.82);
+  transform: translateY(var(--pngShiftY, 0px)) scale(var(--pngScale, 1));
   transform-origin: 50% 100%;
 }
 
@@ -4129,7 +4129,10 @@ function flowerPngHtml(day){
   const hsy = (Number(day.flowerHotspotCy) || 470) * (vbH / imgH);
   const hsr = Math.max(12, (Number(day.flowerHotspotR) || 72) * Math.min(vbW / imgW, vbH / imgH));
   const url = flowerImageDirectUrl_(day.flowerImageUrl, day.flowerDriveFileId);
-  return `<div class="flowerPngShell"><img class="flowerPngImg" src="${url}" alt="flower" loading="lazy" decoding="async" referrerpolicy="no-referrer"/><svg class="flowerSvg flowerPngHitSvg" viewBox="0 0 ${vbW} ${vbH}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle class="hsCore llCoreHotspotSvg" data-role="hotspot" data-datekey="${day.dateKey || ''}" cx="${hsx.toFixed(2)}" cy="${hsy.toFixed(2)}" r="${hsr.toFixed(2)}" fill="rgba(0,0,0,0)" /></svg></div>`;
+  const level = Number(day.level || day.dayLevel || 1) || 1;
+  const pngScale = (level >= 5) ? 1.00 : (level === 4) ? 1.08 : (level === 3) ? 1.42 : (level === 2) ? 1.70 : 1.88;
+  const pngShiftY = (level >= 5) ? 0 : (level === 4) ? 12 : (level === 3) ? 68 : (level === 2) ? 108 : 126;
+  return `<div class="flowerPngShell" style="--pngScale:${pngScale};--pngShiftY:${pngShiftY}px;"><img class="flowerPngImg" src="${url}" alt="flower" loading="lazy" decoding="async" referrerpolicy="no-referrer"/><svg class="flowerSvg flowerPngHitSvg" viewBox="0 0 ${vbW} ${vbH}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle class="hsCore llCoreHotspotSvg" data-role="hotspot" data-datekey="${day.dateKey || ''}" cx="${hsx.toFixed(2)}" cy="${hsy.toFixed(2)}" r="${hsr.toFixed(2)}" fill="rgba(0,0,0,0)" /></svg></div>`;
 }
 
 function flowerSvg(day){
