@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.0.94_PngImgRenderer.html</title>
+<title>garden_v100.0.95_PngGoogleusercontent.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -4109,6 +4109,16 @@ function tuftSvg(uid, weekLevel, size=1.0){
 // Flower SVG Generation
 // ============================================
 
+
+function flowerImageDirectUrl_(imageUrl, driveFileId){
+  const fid = String(driveFileId || '').trim();
+  if (fid) return `https://drive.googleusercontent.com/uc?id=${encodeURIComponent(fid)}`;
+  const src = String(imageUrl || '').trim();
+  const m = src.match(/[?&]id=([^&]+)/i);
+  if (m) return `https://drive.googleusercontent.com/uc?id=${encodeURIComponent(m[1])}`;
+  return src;
+}
+
 function flowerPngHtml(day){
   const imgW = Math.max(1, Number(day.flowerImageWidth) || 400);
   const imgH = Math.max(1, Number(day.flowerImageHeight) || 940);
@@ -4117,7 +4127,7 @@ function flowerPngHtml(day){
   const hsx = (Number(day.flowerHotspotCx) || 200) * (vbW / imgW);
   const hsy = (Number(day.flowerHotspotCy) || 470) * (vbH / imgH);
   const hsr = Math.max(12, (Number(day.flowerHotspotR) || 72) * Math.min(vbW / imgW, vbH / imgH));
-  const url = String(day.flowerImageUrl || '').trim();
+  const url = flowerImageDirectUrl_(day.flowerImageUrl, day.flowerDriveFileId);
   return `<div class="flowerPngShell"><img class="flowerPngImg" src="${url}" alt="flower" loading="lazy" decoding="async" referrerpolicy="no-referrer"/><svg class="flowerSvg flowerPngHitSvg" viewBox="0 0 ${vbW} ${vbH}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle class="hsCore llCoreHotspotSvg" data-role="hotspot" data-datekey="${day.dateKey || ''}" cx="${hsx.toFixed(2)}" cy="${hsy.toFixed(2)}" r="${hsr.toFixed(2)}" fill="rgba(0,0,0,0)" /></svg></div>`;
 }
 
@@ -4541,6 +4551,7 @@ const days = [];
     let flowerImageWidth = "";
     let flowerImageHeight = "";
     let flowerGeneratorVersion = "";
+    let flowerDriveFileId = "";
 
     // v99.3.28_TodayPoll_ApplyUpdateAndDebug: Lifetime metrics per-day (from GardenExport JSON)
     let streakIndex = "";
@@ -4611,6 +4622,7 @@ const days = [];
       themeCloudUrl = getFieldCI_(exportRow, ["ThemeCloudPngUrl", "ThemeCloudUrl", "ThemeCloudPNG", "ThemeCloudPng"]) || "";
 
       flowerImageUrl = getFieldCI_(exportRow, ["ImageUrl", "FlowerAssetImageUrl"]) || "";
+      flowerDriveFileId = getFieldCI_(exportRow, ["DriveFileId", "FlowerAssetDriveFileId"]) || "";
       flowerHotspotCx = getFieldCI_(exportRow, ["HotspotCx", "FlowerAssetHotspotCx"]) || "";
       flowerHotspotCy = getFieldCI_(exportRow, ["HotspotCy", "FlowerAssetHotspotCy"]) || "";
       flowerHotspotR = getFieldCI_(exportRow, ["HotspotR", "FlowerAssetHotspotR"]) || "";
@@ -4736,6 +4748,7 @@ const stemColors = stemColorsForMonthIndex_(monthIndex);
       flowerImageWidth,
       flowerImageHeight,
       flowerGeneratorVersion,
+      flowerDriveFileId,
       stemCore: stemColors.stem,
       stemDark: stemColors.stemDark,
       // Compatibility with flowerSvg() renderer which expects `stemHi`.
