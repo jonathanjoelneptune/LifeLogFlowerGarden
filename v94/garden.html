@@ -22,7 +22,7 @@
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v100.0.85_FlowerGeneratorMode_PixelStemBase
+  v100.0.87_FlowerGeneratorMode_StemDebugTopLevel
     + Consolidate duplicate Photo Reel skybox CSS into one block
     + Merge duplicate selection-ring state rules
     + Remove redundant early wireframe CSS copy
@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.1.00_FlowerGenerator_Fixed2500x3000_NoHotspots.html</title>
+<title>garden_v100.1.01_PngLevelTuned_MinDebug.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -883,6 +883,39 @@ body.llScreenSaverLowPower .flowerWind{
   height: calc(540px * var(--flowerScale, 1));
   overflow: visible;
   display: block;
+}
+
+.flowerPngShell {
+  position: relative;
+  width: calc(265px * var(--flowerScale, 1));
+  height: calc(540px * var(--flowerScale, 1));
+  display: block;
+}
+
+.flowerPngImg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+  object-position: center bottom;
+  pointer-events: none;
+  transform: translateY(var(--pngShiftY, 0px)) scale(var(--pngScale, 1));
+  transform-origin: 50% 100%;
+}
+
+.flowerPngHitSvg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  display: block;
+  transform: translateY(var(--pngShiftY, 0px)) scale(var(--pngScale, 1));
+  transform-origin: 50% 100%;
 }
 
 /* Base tuft */
@@ -2297,7 +2330,7 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 <div id="__versionBanner">LifeLog Garden Walk<br>
 File: <span id="__bannerFileName">garden_v100.0.45_BackRowsResponsiveHillAlign.html</span><br>
 Version: <span id="__bannerVersion">v100.0.45_BackRowsResponsiveHillAlign</span><br>
-Created: 2026-04-03 1:58 PM PT</span></div>
+Created: 2026-04-03 3:05 PM PT</span></div>
 <script>
 (function(){
   try{
@@ -4079,6 +4112,29 @@ function tuftSvg(uid, weekLevel, size=1.0){
 // ============================================
 // Flower SVG Generation
 // ============================================
+
+
+function flowerImageDirectUrl_(imageUrl, driveFileId){
+  const fid = String(driveFileId || '').trim() || ((String(imageUrl||'').match(/[?&]id=([^&]+)/i)||[])[1] || '');
+  if (fid) return `https://lh3.googleusercontent.com/d/${encodeURIComponent(fid)}=s2000?authuser=0`;
+  return String(imageUrl || '').trim();
+}
+
+function flowerPngHtml(day){
+  const imgW = Math.max(1, Number(day.flowerImageWidth) || 400);
+  const imgH = Math.max(1, Number(day.flowerImageHeight) || 940);
+  const vbW = 400;
+  const vbH = 940;
+  const hsx = (Number(day.flowerHotspotCx) || 200) * (vbW / imgW);
+  const hsy = (Number(day.flowerHotspotCy) || 470) * (vbH / imgH);
+  const hsr = Math.max(12, (Number(day.flowerHotspotR) || 72) * Math.min(vbW / imgW, vbH / imgH));
+  const url = flowerImageDirectUrl_(day.flowerImageUrl, day.flowerDriveFileId);
+  const level = Number(day.level || day.dayLevel || 1) || 1;
+  const pngScale = (level >= 5) ? 1.00 : (level === 4) ? 1.08 : (level === 3) ? 1.42 : (level === 2) ? 1.70 : 1.88;
+  const pngShiftY = (level >= 5) ? 0 : (level === 4) ? 12 : (level === 3) ? 68 : (level === 2) ? 108 : 126;
+  return `<div class="flowerPngShell" style="--pngScale:${pngScale};--pngShiftY:${pngShiftY}px;"><img class="flowerPngImg" src="${url}" alt="flower" loading="lazy" decoding="async" referrerpolicy="no-referrer"/><svg class="flowerSvg flowerPngHitSvg" viewBox="0 0 ${vbW} ${vbH}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle class="hsCore llCoreHotspotSvg" data-role="hotspot" data-datekey="${day.dateKey || ''}" cx="${hsx.toFixed(2)}" cy="${hsy.toFixed(2)}" r="${hsr.toFixed(2)}" fill="rgba(0,0,0,0)" /></svg></div>`;
+}
+
 function flowerSvg(day){
   const { level, primary, secondary, month, uid, stemCore, stemHi, stemEdge } = day;
   const dateKey = day.dateKey || fmtDateKey(day.dateObj);
@@ -4237,6 +4293,7 @@ const monthC = (MONTH_COLORS[month] || "#C7D4E2");
       ${petals}${inner}
       ${disk(0,yHead,diskR)}
       ${deedsIndicator(0, yHead, level, diskR)}
+      <circle class="stemBaseMarker" data-role="stem-base" cx="200" cy="940" r="1" fill="transparent" opacity="0"/>
       <circle class="hsCore llCoreHotspotSvg" data-role="hotspot" data-datekey="${dateKey}" cx="0" cy="${yHead}" r="${(diskR*2.25).toFixed(2)}"/>
     </g>`;
   }
@@ -4490,6 +4547,16 @@ const days = [];
     let reflection = "";
     let themeCloudUrl = "";
 
+    // Flower asset fields from GardenExport / FlowerAssets mirror
+    let flowerImageUrl = "";
+    let flowerHotspotCx = "";
+    let flowerHotspotCy = "";
+    let flowerHotspotR = "";
+    let flowerImageWidth = "";
+    let flowerImageHeight = "";
+    let flowerGeneratorVersion = "";
+    let flowerDriveFileId = "";
+
     // v99.3.28_TodayPoll_ApplyUpdateAndDebug: Lifetime metrics per-day (from GardenExport JSON)
     let streakIndex = "";
     let cumulativeScore = "";
@@ -4557,6 +4624,15 @@ const days = [];
       haiku = getFieldCI_(exportRow, ["Haiku", "DailyHaiku", "HaikuText", "DailyHaikuText"]) || "";
       reflection = getFieldCI_(exportRow, ["DailyReflection", "Reflection", "Daily_Reflection", "DailyReflectionText"]) || "";
       themeCloudUrl = getFieldCI_(exportRow, ["ThemeCloudPngUrl", "ThemeCloudUrl", "ThemeCloudPNG", "ThemeCloudPng"]) || "";
+
+      flowerImageUrl = getFieldCI_(exportRow, ["ImageUrl", "FlowerAssetImageUrl"]) || "";
+      flowerDriveFileId = getFieldCI_(exportRow, ["DriveFileId", "FlowerAssetDriveFileId"]) || "";
+      flowerHotspotCx = getFieldCI_(exportRow, ["HotspotCx", "FlowerAssetHotspotCx"]) || "";
+      flowerHotspotCy = getFieldCI_(exportRow, ["HotspotCy", "FlowerAssetHotspotCy"]) || "";
+      flowerHotspotR = getFieldCI_(exportRow, ["HotspotR", "FlowerAssetHotspotR"]) || "";
+      flowerImageWidth = getFieldCI_(exportRow, ["ImageWidth", "FlowerAssetImageWidth"]) || "";
+      flowerImageHeight = getFieldCI_(exportRow, ["ImageHeight", "FlowerAssetImageHeight"]) || "";
+      flowerGeneratorVersion = getFieldCI_(exportRow, ["GeneratorVersion", "FlowerAssetGeneratorVersion"]) || "";
 
       // Week label override (if present and not already set)
       if (!weekLevelLabel && exportRow.WeekLevelLabel != null) weekLevelLabel = String(exportRow.WeekLevelLabel);
@@ -4669,6 +4745,14 @@ const stemColors = stemColorsForMonthIndex_(monthIndex);
       haiku,
       reflection,
       themeCloudUrl,
+      flowerImageUrl,
+      flowerHotspotCx,
+      flowerHotspotCy,
+      flowerHotspotR,
+      flowerImageWidth,
+      flowerImageHeight,
+      flowerGeneratorVersion,
+      flowerDriveFileId,
       stemCore: stemColors.stem,
       stemDark: stemColors.stemDark,
       // Compatibility with flowerSvg() renderer which expects `stemHi`.
@@ -5180,7 +5264,7 @@ flowerWrapEls.push(wrap);
     wrap.style.setProperty("--tdur", tdur.toFixed(2) + "s");
     wrap.style.setProperty("--tdel", (w.del + twr()*1.2).toFixed(2) + "s");
 
-    wrap.innerHTML = `<div class="flowerWind">${flowerSvg(dayData)}</div>`;
+    wrap.innerHTML = `<div class="flowerWind">${(dayData.flowerImageUrl ? flowerPngHtml(dayData) : flowerSvg(dayData))}</div>`;
 
     const baseTuft = document.createElement("div");
     baseTuft.className = "baseTuft";
@@ -11944,23 +12028,44 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
     throw new Error('Native flowerSvg renderer is not available in this garden build. Use the exact generator file and hard refresh.');
   }
 
-  const FIXED_FLOWER_EXPORT_ = {
-    width: 2500,
-    height: 3000,
-    stemX: 1250,
-    stemY: 3000,
-    artScale: 2
-  };
+  function detectStemBaseFromCanvas_(canvas){
+    try {
+      var ctx = canvas.getContext('2d', { willReadFrequently: true });
+      var w = canvas.width, h = canvas.height;
+      var data = ctx.getImageData(0, 0, w, h).data;
+      for (var y = h - 1; y >= 0; y--) {
+        var sumX = 0, count = 0;
+        for (var x = 0; x < w; x++) {
+          var a = data[(y * w + x) * 4 + 3];
+          if (a > 16) { sumX += x; count++; }
+        }
+        if (count > 0) {
+          return { x: sumX / count, y: y };
+        }
+      }
+    } catch(_e) {}
+    return null;
+  }
 
   function rasterSizeFromSvgMarkup_(svgMarkup, fallback){
-    return { w: FIXED_FLOWER_EXPORT_.width, h: FIXED_FLOWER_EXPORT_.height };
+    var mul = flatFlowerRasterMul_();
+    if (fallback && fallback.width && fallback.height) {
+      return { w: Math.round(Number(fallback.width) * mul), h: Math.round(Number(fallback.height) * mul) };
+    }
+    var m = /viewBox\s*=\s*"\s*([0-9.-]+)\s+([0-9.-]+)\s+([0-9.]+)\s+([0-9.]+)\s*"/i.exec(String(svgMarkup || ''));
+    if (m) {
+      return { w: Math.max(400, Math.round(Number(m[3]) * mul)), h: Math.max(940, Math.round(Number(m[4]) * mul)) };
+    }
+    return { w: Math.round(400 * mul), h: Math.round(940 * mul) };
   }
 
   function flatFlowerRasterMul_(){
-    return 1;
+
+    return Math.min(3, Math.max(2, Math.ceil(window.devicePixelRatio || 1)));
   }
   function flatFlowerRasterSize_(){
-    return { w: FIXED_FLOWER_EXPORT_.width, h: FIXED_FLOWER_EXPORT_.height };
+    var m = flatFlowerRasterMul_();
+    return { w: Math.round(265 * m), h: Math.round(540 * m) };
   }
   function hotspotGeomForDay_(day){
     var lvl = Number(day.level) || 1;
@@ -11979,11 +12084,60 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
   }
 
   function getRenderedFlowerSvgSnapshot_(dateKey){
+    function buildSnapshot_(svg, level){
+      if (!svg) return null;
+      var clone = svg.cloneNode(true);
+      var stemMarker = null;
+      try { stemMarker = svg.querySelector('[data-role="stem-base"]'); } catch(_e0) {}
+      try {
+        clone.querySelectorAll('.hsCore,[data-role="hotspot"],.llCoreHotspotSvg,.stemBaseMarker,[data-datekey],[data-date-key]').forEach(function(n){ n.remove(); });
+      } catch(_e) {}
+      try { clone.removeAttribute('aria-label'); } catch(_e2) {}
+      var g = svg.querySelector('g') || svg;
+      var box = null;
+      try { box = g.getBBox(); } catch(_e3) {}
+      var stemBaseCx = 200;
+      var stemBaseCy = 940;
+      try {
+        if (stemMarker) {
+          stemBaseCx = Number(stemMarker.getAttribute('cx') || 200);
+          stemBaseCy = Number(stemMarker.getAttribute('cy') || 940);
+        }
+      } catch(_e4) {}
+      if (!box) return { markup: clone.outerHTML || '', width: 400, height: 940, stemBaseX: stemBaseCx, stemBaseY: stemBaseCy };
+
+      var basePad = Math.max(28, Math.round(Math.max(box.width, box.height) * 0.08));
+      var extraX = 0, extraTop = 0, extraBottom = 0;
+      if (Number(level) >= 4) {
+        extraX = Math.round(Math.max(40, box.width * 0.18));
+        extraTop = Math.round(Math.max(24, box.height * 0.06));
+        extraBottom = Math.round(Math.max(18, box.height * 0.04));
+      }
+      if (Number(level) >= 5) {
+        extraX = Math.round(Math.max(extraX, box.width * 0.24));
+        extraTop = Math.round(Math.max(extraTop, box.height * 0.08));
+        extraBottom = Math.round(Math.max(extraBottom, box.height * 0.05));
+      }
+
+      var leftPad = basePad + extraX;
+      var rightPad = basePad + extraX;
+      var topPad = basePad + extraTop;
+      var bottomPad = basePad + extraBottom;
+
+      var vbX = Math.floor(box.x - leftPad);
+      var vbY = Math.floor(box.y - topPad);
+      var vbW = Math.ceil(box.width + leftPad + rightPad);
+      var vbH = Math.ceil(box.height + topPad + bottomPad);
+      var wrapped = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + vbX + ' ' + vbY + ' ' + vbW + ' ' + vbH + '">' + clone.innerHTML + '</svg>';
+      return { markup: wrapped, width: vbW, height: vbH, stemBaseX: (stemBaseCx - vbX), stemBaseY: (stemBaseCy - vbY) };
+    }
     try {
       var sel = '.flowerWrap[data-datekey="' + CSS.escape(String(dateKey)) + '"] .flowerWind svg, .flowerWrap[data-date-key="' + CSS.escape(String(dateKey)) + '"] .flowerWind svg';
       var svg = document.querySelector(sel);
       if (svg && svg.outerHTML) {
-        return { markup: svg.outerHTML || '', width: 400, height: 940, stemBaseX: 200, stemBaseY: 940 };
+        var wrap0 = svg.closest('.flowerWrap');
+        var lvl0 = wrap0 && wrap0.dataset ? Number(wrap0.dataset.level || 0) : 0;
+        return buildSnapshot_(svg, lvl0);
       }
     } catch(_e) {}
     try {
@@ -11993,7 +12147,7 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
         var dk = (w.dataset && (w.dataset.dateKey || w.dataset.datekey)) || '';
         if (String(dk) !== String(dateKey)) continue;
         var svg2 = w.querySelector('.flowerWind svg');
-        if (svg2 && svg2.outerHTML) return { markup: svg2.outerHTML || '', width: 400, height: 940, stemBaseX: 200, stemBaseY: 940 };
+        if (svg2 && svg2.outerHTML) return buildSnapshot_(svg2, Number(w.dataset.level || 0));
       }
     } catch(_e2) {}
     return null;
@@ -12004,79 +12158,36 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
       .replaceAll('var(--strokeLeaf)', 'rgba(0,0,0,0.30)')
       .replaceAll('var(--strokeBranch)', 'rgba(0,0,0,0.42)');
   }
-
-  function stripHotspotsFromSvg_(s){
-    return String(s || '')
-      .replace(/<circle[^>]*class="[^"]*hsCore[^"]*"[^>]*><\/circle>/gi, '')
-      .replace(/<circle[^>]*class='[^']*hsCore[^']*'[^>]*><\/circle>/gi, '')
-      .replace(/<circle[^>]*data-role="hotspot"[^>]*><\/circle>/gi, '')
-      .replace(/<circle[^>]*data-role='hotspot'[^>]*><\/circle>/gi, '')
-      .replace(/<circle[^>]*class="[^"]*hsCore[^"]*"[^>]*\/?>/gi, '')
-      .replace(/<circle[^>]*class='[^']*hsCore[^']*'[^>]*\/?>/gi, '')
-      .replace(/<circle[^>]*data-role="hotspot"[^>]*\/?>/gi, '')
-      .replace(/<circle[^>]*data-role='hotspot'[^>]*\/?>/gi, '');
-  }
-
-  function svgInnerFromMarkup_(svgMarkup){
-    var s = stripHotspotsFromSvg_(String(svgMarkup || ''));
-    var i = s.indexOf('>');
-    var j = s.lastIndexOf('</svg>');
-    if (i >= 0 && j > i) return s.slice(i + 1, j);
-    return s;
-  }
-
-  function buildFixedExportSvg_(day){
-    var liveSnapshot = getRenderedFlowerSvgSnapshot_(day && day.dateKey);
-    var sourceMarkup = liveSnapshot && liveSnapshot.markup ? liveSnapshot.markup : renderFlowerSvgCompat_(day);
-    var safeSvg = sanitizeSvgForRaster_(sourceMarkup);
-    var inner = svgInnerFromMarkup_(safeSvg);
-    var baseStemX = (liveSnapshot && liveSnapshot.stemBaseX != null) ? Number(liveSnapshot.stemBaseX) : 200;
-    var baseStemY = (liveSnapshot && liveSnapshot.stemBaseY != null) ? Number(liveSnapshot.stemBaseY) : 940;
-    var scale = FIXED_FLOWER_EXPORT_.artScale;
-    var dx = FIXED_FLOWER_EXPORT_.stemX - (baseStemX * scale);
-    var dy = FIXED_FLOWER_EXPORT_.stemY - (baseStemY * scale);
-    var fixedSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + FIXED_FLOWER_EXPORT_.width + ' ' + FIXED_FLOWER_EXPORT_.height + '"><g transform="translate(' + dx + ',' + dy + ') scale(' + scale + ')">' + inner + '</g></svg>';
-    var hs = hotspotGeomForDay_(day);
-    return {
-      svg: fixedSvg,
-      imageWidth: FIXED_FLOWER_EXPORT_.width,
-      imageHeight: FIXED_FLOWER_EXPORT_.height,
-      stemBase: { x: FIXED_FLOWER_EXPORT_.stemX, y: FIXED_FLOWER_EXPORT_.stemY },
-      hotspot: {
-        x: dx + (hs.cx * scale),
-        y: dy + (hs.cy * scale),
-        r: hs.r * scale
-      }
-    };
-  }
-
   function rasterizeDayToBase64_(day){
     return new Promise(function(resolve, reject){
       try{
-        var fixed = buildFixedExportSvg_(day);
-        var blob = new Blob([fixed.svg], { type: 'image/svg+xml;charset=utf-8' });
+        var liveSnapshot = getRenderedFlowerSvgSnapshot_(day && day.dateKey);
+        var liveSvg = liveSnapshot && liveSnapshot.markup ? liveSnapshot.markup : '';
+        var safeSvg = sanitizeSvgForRaster_(liveSvg || renderFlowerSvgCompat_(day));
+        var blob = new Blob([safeSvg], { type: 'image/svg+xml;charset=utf-8' });
         var url = URL.createObjectURL(blob);
         var img = new Image();
         img.onload = function(){
           try{
+            var size = liveSvg ? rasterSizeFromSvgMarkup_(liveSvg, liveSnapshot) : flatFlowerRasterSize_();
             var canvas = document.createElement('canvas');
-            canvas.width = FIXED_FLOWER_EXPORT_.width;
-            canvas.height = FIXED_FLOWER_EXPORT_.height;
+            canvas.width = size.w;
+            canvas.height = size.h;
             var ctx = canvas.getContext('2d');
-            ctx.clearRect(0,0,canvas.width,canvas.height);
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            ctx.clearRect(0,0,size.w,size.h);
+            ctx.drawImage(img, 0, 0, size.w, size.h);
             URL.revokeObjectURL(url);
+            var detectedStemBase = detectStemBaseFromCanvas_(canvas);
             var dataUrl = canvas.toDataURL('image/png');
             resolve({
               pngBase64: dataUrl.split(',')[1],
-              imageWidth: FIXED_FLOWER_EXPORT_.width,
-              imageHeight: FIXED_FLOWER_EXPORT_.height,
-              hotspot: {
-                cx: fixed.hotspot.x,
-                cy: fixed.hotspot.y,
-                r: fixed.hotspot.r
-              },
-              stemBase: fixed.stemBase
+              imageWidth: size.w,
+              imageHeight: size.h,
+              hotspot: hotspotGeomForDay_(day),
+              stemBase: detectedStemBase || {
+                x: (liveSnapshot && liveSnapshot.stemBaseX != null) ? liveSnapshot.stemBaseX : 200,
+                y: (liveSnapshot && liveSnapshot.stemBaseY != null) ? liveSnapshot.stemBaseY : 940
+              }
             });
           } catch (err){ reject(err); }
         };
@@ -12175,9 +12286,13 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
       imageWidth: rendered.imageWidth,
       imageHeight: rendered.imageHeight,
       hotspot: rendered.hotspot,
-      generatorVersion: 'garden-generator-mode-v6-fixed2500x3000-nohotspots',
+      stemBase: rendered.stemBase,
+      stemBaseX: rendered.stemBase && rendered.stemBase.x,
+      stemBaseY: rendered.stemBase && rendered.stemBase.y,
+      generatorVersion: 'garden-generator-mode-v4-stem-top-level',
       bot: BOT
     };
+    log('PAYLOAD ' + day.dateKey + ' stemBaseX=' + String(payload.stemBaseX) + ' stemBaseY=' + String(payload.stemBaseY));
     var res = await fetch(RELAY_URL + '/flower_asset_upsert', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -12250,6 +12365,42 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
   document.getElementById('fagRun').addEventListener('click', function(){ runGenerator_().catch(function(err){ log('ERROR ' + err.message); setStatus('Failed.'); }); });
   document.getElementById('fagReset').addEventListener('click', function(){ resetGeneratorAssets_().catch(function(err){ log('ERROR ' + err.message); setStatus('Reset failed.'); }); });
   document.getElementById('fagStop').addEventListener('click', function(){ stopRequested = true; });
+})();
+</script>
+
+
+<script>
+(function(){
+  var ERR=[];
+  function isErr(s){ s=String(s||'').toLowerCase(); return s.indexOf('error')>=0 || s.indexOf('failed')>=0 || s.indexOf('exception')>=0; }
+  function renderDbg(){
+    var el=document.getElementById('dbgLog');
+    if(!el) return;
+    var pngCount=document.querySelectorAll('img.flowerPngImg').length;
+    var svgCount=document.querySelectorAll('.flowerWrap .flowerSvg:not(.flowerPngHitSvg)').length;
+    var out=[];
+    out.push('PNG count: ' + pngCount);
+    out.push('SVG count: ' + svgCount);
+    if (ERR.length) {
+      out.push('');
+      out.push('Errors:');
+      Array.prototype.push.apply(out, ERR.slice(-20));
+    }
+    el.textContent=out.join('
+');
+  }
+  window.appendDebugLog_=function(msg){ if(isErr(msg)) ERR.push(String(msg)); renderDbg(); };
+  window.dbgLog=window.appendDebugLog_;
+  var oldErr=console.error;
+  console.error=function(){
+    try {
+      var s=Array.prototype.slice.call(arguments).map(function(a){ try{return typeof a==='string'?a:JSON.stringify(a);}catch(_e){return String(a);} }).join(' ');
+      if(isErr(s)) ERR.push(s);
+    } catch(_e2) {}
+    try { renderDbg(); } catch(_e3) {}
+    return oldErr && oldErr.apply(console, arguments);
+  };
+  window.addEventListener('load', function(){ setTimeout(renderDbg,100); setTimeout(renderDbg,1000); setInterval(renderDbg,1500); });
 })();
 </script>
 
