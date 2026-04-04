@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.0.95_PngGoogleusercontent.html</title>
+<title>garden_v100.0.96_PngLh3Direct.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -4111,12 +4111,9 @@ function tuftSvg(uid, weekLevel, size=1.0){
 
 
 function flowerImageDirectUrl_(imageUrl, driveFileId){
-  const fid = String(driveFileId || '').trim();
-  if (fid) return `https://drive.googleusercontent.com/uc?id=${encodeURIComponent(fid)}`;
-  const src = String(imageUrl || '').trim();
-  const m = src.match(/[?&]id=([^&]+)/i);
-  if (m) return `https://drive.googleusercontent.com/uc?id=${encodeURIComponent(m[1])}`;
-  return src;
+  const fid = String(driveFileId || '').trim() || ((String(imageUrl||'').match(/[?&]id=([^&]+)/i)||[])[1] || '');
+  if (fid) return `https://lh3.googleusercontent.com/d/${encodeURIComponent(fid)}=s2000?authuser=0`;
+  return String(imageUrl || '').trim();
 }
 
 function flowerPngHtml(day){
