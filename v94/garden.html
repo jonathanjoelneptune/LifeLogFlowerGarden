@@ -135,7 +135,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.08_PNGProxyAndCountFix';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.09_PNGSizingAndPicturesUtility';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -263,7 +263,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 function renderBackRows(){ /* disabled */ }
 
 (function(){
-  const VERSION = 'v100.1.08_PNGProxyAndCountFix';
+  const VERSION = 'v100.1.09_PNGSizingAndPicturesUtility';
 
   // ---- Canonical version globals ----
   window.APP_VERSION = VERSION;
@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.1.08_PNGProxyAndCountFix0_SaveStem.html</title>
+<title>garden_v100.1.09_PNGSizingAndPicturesUtility0_SaveStem.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -841,7 +841,7 @@ body.llScreenSaverLowPower .flowerWind{
   position: absolute;
   left: 50%;
   bottom: 0;
-  transform: translate3d(calc(-50% + var(--jx)), 0px, 0px) scaleY(var(--fsy, 1));
+  transform: translate3d(calc(-50% + var(--jx) + var(--anchorShift, 0px)), 0px, 0px) scaleY(var(--fsy, 1));
   z-index: 6;
 }
 
@@ -887,8 +887,8 @@ body.llScreenSaverLowPower .flowerWind{
 
 .flowerAssetPngWrap {
   position: relative;
-  width: calc(265px * var(--flowerScale, 1));
-  height: calc(540px * var(--flowerScale, 1));
+  width: calc(var(--assetDisplayW, 450px) * var(--flowerScale, 1));
+  height: calc(var(--assetDisplayH, 540px) * var(--flowerScale, 1));
   display: block;
 }
 .flowerPngAsset {
@@ -1346,6 +1346,29 @@ input[type="range"] { width: 100%; }
   pointer-events: none;
 }
 #assetCountDebug .lab { opacity: 0.82; }
+
+#picturesUtil {
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+  z-index: 100001;
+  min-width: 220px;
+  background: rgba(0,0,0,0.78);
+  color: #eaf2ff;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.24);
+  display: none;
+}
+#picturesUtil.open { display:block; }
+#picturesUtil .tit { font-weight:700; margin-bottom:6px; }
+#picturesUtil .sub { opacity:0.78; margin-bottom:8px; }
+#picturesUtil .line { display:flex; justify-content:space-between; gap:12px; margin:4px 0; }
+#picturesUtil .lab { opacity:0.82; }
 
 /* ---------- Hotspot Selection ---------- */
 .hsCore { fill: transparent; stroke: transparent; stroke-width: 1; cursor: pointer; pointer-events: all; }
@@ -2330,7 +2353,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.0.45_BackRowsResponsiveHillAlign.html • v100.0.6_DailyHeadlinesAiryRotation • Built: 2026-04-01T00:00:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.1.09_PNGSizingAndPicturesUtility.html • v100.0.6_DailyHeadlinesAiryRotation • Built: 2026-04-01T00:00:00Z UTC</div>
 
 
 <script>
@@ -2344,8 +2367,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v100.0.45_BackRowsResponsiveHillAlign.html</span><br>
-Version: <span id="__bannerVersion">v100.0.45_BackRowsResponsiveHillAlign</span><br>
+File: <span id="__bannerFileName">garden_v100.1.09_PNGSizingAndPicturesUtility.html</span><br>
+Version: <span id="__bannerVersion">v100.1.09_PNGSizingAndPicturesUtility</span><br>
 Created: 2026-04-03 1:58 PM PT</span></div>
 <script>
 (function(){
@@ -2361,7 +2384,7 @@ Created: 2026-04-03 1:58 PM PT</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v100.0.45_BackRowsResponsiveHillAlign loaded", new Date().toISOString());
+  console.log("[VERSION] v100.1.09_PNGSizingAndPicturesUtility loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -2967,7 +2990,7 @@ window.__LL_hillTopAtX_fill = function(x, yTopGuess, yBottom){
 <!-- Debug Panel -->
 <div aria-hidden="false" id="dbgPanel">
   <div class="hdr">
-    <div class="t">LifeLog DEBUG v100.0.45_BackRowsResponsiveHillAlign (press D)</div>
+    <div class="t">LifeLog DEBUG v100.1.09_PNGSizingAndPicturesUtility (press D)</div>
     <div class="btns">
       <button id="dbgCopy" type="button">Copy</button>
       <button id="dbgClear" type="button">Clear</button>
@@ -3184,6 +3207,10 @@ window.__LL_hillTopAtX_fill = function(x, yTopGuess, yBottom){
       document.body.classList.toggle('llHitboxOn');
       log('[HS] hitbox toggle => ' + (document.body.classList.contains('llHitboxOn') ? 'ON' : 'OFF'));
     }
+    if (ev.key === 'p' || ev.key === 'P'){
+      var pic = document.getElementById('picturesUtil');
+      if (pic) pic.classList.toggle('open');
+    }
   });
 
   btnClear.addEventListener('click', ()=>{ buf.length = 0; pre.textContent=''; });
@@ -3331,7 +3358,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   </div>
 
   <div class="util hidden" id="util">
-    <div class="utilTitle">LifeLog Garden Walk v100.0.45_BackRowsResponsiveHillAlign</div>
+    <div class="utilTitle">LifeLog Garden Walk v100.1.09_PNGSizingAndPicturesUtility</div>
     <div class="utilSub">Scroll to walk through weeks. Press H to hide/show this panel.</div>
 	    <div class="row">
 	      <label>Wireframe</label>
@@ -3468,8 +3495,15 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
       <div class="val" id="vHeadlinesTextSize">Auto</div>
     </div>
     <div class="hint">
-      Hotkeys: <code>H</code> hide utilities, <code>D</code> toggle debug, <code>B</code> toggle hitboxes.
+      Hotkeys: <code>H</code> hide utilities, <code>D</code> toggle debug, <code>B</code> toggle hitboxes, <code>P</code> pictures utility.
     </div>
+  </div>
+
+  <div id="picturesUtil" aria-hidden="true">
+    <div class="tit">Pictures Utility</div>
+    <div class="sub">Press P to hide/show</div>
+    <div class="line"><span class="lab">SVGs</span><span id="pSvgCount">0</span></div>
+    <div class="line"><span class="lab">PNGs</span><span id="pPngCount">0</span></div>
   </div>
 
   <div id="gardenBand">
@@ -3541,7 +3575,7 @@ function wrapLLDBGStep_(){
     }
   }catch(e){}
 }
-dbg_('v100.0.45_BackRowsResponsiveHillAlign.0: Main script starting');
+dbg_('v100.1.09_PNGSizingAndPicturesUtility.0: Main script starting');
 
 // ============================================
 // Constants
@@ -5198,11 +5232,26 @@ function buildFlowerMarkupForDay_(day){
           return { cx:200, cy:(topY + bloom.y * bloom.s), r:(bloom.r * 2.25 * bloom.s) };
         })(day);
     var dateKey = String(day.dateKey || '');
+    var imgW = Math.max(1, Number(day.imageWidth || day.ImageWidth || 2500) || 2500);
+    var imgH = Math.max(1, Number(day.imageHeight || day.ImageHeight || 3000) || 3000);
+    var stemX = Number(day.flowerAssetStemBaseX || day.StemBaseX || (imgW / 2));
+    var stemY = Number(day.flowerAssetStemBaseY || day.StemBaseY || imgH);
+    if (!isFinite(stemX)) stemX = imgW / 2;
+    if (!isFinite(stemY)) stemY = imgH;
+    var displayH = 540;
+    var displayW = displayH * (imgW / imgH);
+    var anchorRatioX = stemX / imgW;
+    var anchorShift = (0.5 - anchorRatioX) * displayW;
+    var hsScaleX = displayW / imgW;
+    var hsScaleY = displayH / imgH;
+    var hsCx = hs.cx * hsScaleX;
+    var hsCy = hs.cy * hsScaleY;
+    var hsR = hs.r * Math.max(hsScaleX, hsScaleY);
     return `
-      <div class="flowerAssetPngWrap">
+      <div class="flowerAssetPngWrap" style="--assetDisplayW:${displayW.toFixed(2)}px;--assetDisplayH:${displayH.toFixed(2)}px;">
         <img class="flowerPngAsset" src="${pngUrl}" alt="" crossorigin="anonymous" loading="eager" decoding="async"/>
-        <svg class="flowerHitSvg" viewBox="0 0 400 940" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <circle class="hsCore llCoreHotspotSvg" data-role="hotspot" data-datekey="${dateKey}" cx="${hs.cx}" cy="${hs.cy}" r="${hs.r}"/>
+        <svg class="flowerHitSvg" viewBox="0 0 ${displayW.toFixed(2)} ${displayH.toFixed(2)}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <circle class="hsCore llCoreHotspotSvg" data-role="hotspot" data-datekey="${dateKey}" cx="${hsCx.toFixed(2)}" cy="${hsCy.toFixed(2)}" r="${hsR.toFixed(2)}"/>
         </svg>
       </div>`;
   }
@@ -5237,10 +5286,14 @@ function requestFlowerAssetCountRefresh_(){
       var pngEl = document.getElementById('vPngCount');
       var svgDbgEl = document.getElementById('assetCountDebugSvg');
       var pngDbgEl = document.getElementById('assetCountDebugPng');
+      var svgPicEl = document.getElementById('pSvgCount');
+      var pngPicEl = document.getElementById('pPngCount');
       if (svgEl) svgEl.textContent = String(svgCount);
       if (pngEl) pngEl.textContent = String(pngCount);
       if (svgDbgEl) svgDbgEl.textContent = String(svgCount);
       if (pngDbgEl) pngDbgEl.textContent = String(pngCount);
+      if (svgPicEl) svgPicEl.textContent = String(svgCount);
+      if (pngPicEl) pngPicEl.textContent = String(pngCount);
     } catch(_e) {}
   });
 }
@@ -5339,6 +5392,18 @@ flowerWrapEls.push(wrap);
     wrap.style.setProperty("--tdel", (w.del + twr()*1.2).toFixed(2) + "s");
 
     var assetUrl = flowerAssetRenderUrl_(dayData);
+    if (assetUrl) {
+      var __imgW = Math.max(1, Number(dayData.imageWidth || dayData.ImageWidth || 2500) || 2500);
+      var __imgH = Math.max(1, Number(dayData.imageHeight || dayData.ImageHeight || 3000) || 3000);
+      var __stemX = Number(dayData.flowerAssetStemBaseX || dayData.StemBaseX || (__imgW / 2));
+      if (!isFinite(__stemX)) __stemX = __imgW / 2;
+      var __displayH = 540;
+      var __displayW = __displayH * (__imgW / __imgH);
+      var __anchorShift = (0.5 - (__stemX / __imgW)) * __displayW;
+      wrap.style.setProperty('--anchorShift', __anchorShift.toFixed(2) + 'px');
+    } else {
+      wrap.style.setProperty('--anchorShift', '0px');
+    }
     wrap.dataset.renderAsset = assetUrl ? "pending" : "svg";
     wrap.innerHTML = `<div class="flowerWind">${buildFlowerMarkupForDay_(dayData)}</div>`;
 
@@ -5444,7 +5509,7 @@ function refreshFrontGrass(){
 // ============================================
 
 // ============================================
-// v100.0.45_BackRowsResponsiveHillAlign: keep back-row flowers horizontally de-clumped
+// v100.1.09_PNGSizingAndPicturesUtility: keep back-row flowers horizontally de-clumped
 // ============================================
 const __LL_BACK_SPREAD_MAX_BEHIND = 5;    // reach near-full spread quickly (about 4-6 rows back)
 const __LL_BACK_SPREAD_EDGE_PAD   = 0.006; // keep a tiny inset so nothing clips at extreme edges
@@ -5469,7 +5534,7 @@ const __LL_EVEN_NEARFRONT_BLEND_BEHIND = 1.35; // rows: 0..~1.35 blends from day
 
 
 // ============================================
-// v100.0.45_BackRowsResponsiveHillAlign: offline back-hill port constants
+// v100.1.09_PNGSizingAndPicturesUtility: offline back-hill port constants
 // ============================================
 const FRONT_VISIBLE_WEEKS = 10;
 const CREST_BUFFER_WEEKS = 1;
@@ -10553,7 +10618,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.__LL_LAST_PTR_X__ = window.innerWidth/2;
   window.__LL_LAST_PTR_Y__ = window.innerHeight/2;
   window.addEventListener('pointermove', (ev)=>{ window.__LL_LAST_PTR_X__ = ev.clientX; window.__LL_LAST_PTR_Y__ = ev.clientY; }, {passive:true});
-dbg_('v100.0.45_BackRowsResponsiveHillAlign.0: DOMContentLoaded');
+dbg_('v100.1.09_PNGSizingAndPicturesUtility.0: DOMContentLoaded');
 
   cacheDomRefs();
   try{ wrapLLDBGStep_(); }catch(e){}
@@ -10699,7 +10764,7 @@ window.__LL_BACKROWS_ANCHOR_MATCHED = true; // prevent later global overrides
   }catch(e){}
 
 
-  dbg_('v100.0.45_BackRowsResponsiveHillAlign.0: Initialization complete');
+  dbg_('v100.1.09_PNGSizingAndPicturesUtility.0: Initialization complete');
 });
 })();
 
@@ -11077,7 +11142,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 
 
 <script>
-// v100.0.45_BackRowsResponsiveHillAlign lifecycle manager
+// v100.1.09_PNGSizingAndPicturesUtility lifecycle manager
 (function(){
   if (window.__LL_SYS__) return;
   const SYS = { timeouts:new Set(), intervals:new Set(), observers:new Set(), listeners:[] };
@@ -11093,14 +11158,14 @@ window.applySelectedAdornments = applySelectedAdornments;
 </script>
 
 <script>
-// v100.0.45_BackRowsResponsiveHillAlign: unified BRX/back-row hard-disable controller.
+// v100.1.09_PNGSizingAndPicturesUtility: unified BRX/back-row hard-disable controller.
 (function(){
   try{
     window.__PHASEA_DISABLE_BRX__ = true;
     window.__LL_DISABLE_BACKHILL__ = true;
     window.BRX_DISABLE_LEGACY_BACKROWS = true;
 
-    const VERSION = 'v100.0.45_BackRowsResponsiveHillAlign';
+    const VERSION = 'v100.1.09_PNGSizingAndPicturesUtility';
     const hideLegacyGroups = () => {
       ['backRowsG','gridWeeksG','hillGuidesG','gridOverlayG','gridWeeksOverlay','brxHillPngG','brxHillDbgG']
         .forEach(id => {
