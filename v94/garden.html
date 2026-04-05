@@ -135,7 +135,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.12_PNGScale160_HotspotAnchorFix';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.13_PNGScale160_SvgHitboxProxy';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -263,7 +263,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 function renderBackRows(){ /* disabled */ }
 
 (function(){
-  const VERSION = 'v100.1.12_PNGScale160_HotspotAnchorFix';
+  const VERSION = 'v100.1.13_PNGScale160_SvgHitboxProxy';
 
   // ---- Canonical version globals ----
   window.APP_VERSION = VERSION;
@@ -924,6 +924,36 @@ body.llHitboxOn .flowerHitSvg .hsCore {
   fill: rgba(255,0,0,0.12) !important;
   stroke: rgba(255,0,0,0.95) !important;
   opacity: 1 !important;
+}
+.flowerSvgHitProxy {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: calc(265px * 1.6 * var(--flowerScale, 1));
+  height: calc(540px * 1.6 * var(--flowerScale, 1));
+  transform: translateX(-50%);
+  overflow: visible;
+  display: block;
+}
+.flowerSvgHitProxy .flowerSvg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.flowerSvgHitProxy .flowerSvg * {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+.flowerSvgHitProxy .flowerSvg .hsCore {
+  opacity: 0 !important;
+  fill: transparent !important;
+  stroke: transparent !important;
+  pointer-events: all !important;
+}
+body.llHitboxOn .flowerSvgHitProxy .flowerSvg .hsCore {
+  opacity: 1 !important;
+  fill: rgba(255,0,0,0.12) !important;
+  stroke: rgba(255,0,0,0.95) !important;
 }
 .flowerWrap.llSilSelected .flowerPngAsset {
   filter:
@@ -5280,9 +5310,7 @@ function buildFlowerMarkupForDay_(day){
     return `
       <div class="flowerAssetPngWrap" style="--assetDisplayW:${displayW.toFixed(2)}px;--assetDisplayH:${displayH.toFixed(2)}px;">
         <img class="flowerPngAsset" src="${pngUrl}" alt="" crossorigin="anonymous" loading="eager" decoding="async"/>
-        <svg class="flowerHitSvg" viewBox="0 0 ${displayW.toFixed(2)} ${displayH.toFixed(2)}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <circle class="hsCore llCoreHotspotSvg" data-role="hotspot" data-datekey="${dateKey}" cx="${hsCx.toFixed(2)}" cy="${hsCy.toFixed(2)}" r="${hsR.toFixed(2)}"/>
-        </svg>
+        <div class="flowerSvgHitProxy" aria-hidden="true">${flowerSvg(day)}</div>
       </div>`;
   }
   return `<div class="flowerSvgWrap">${flowerSvg(day)}</div>`;
@@ -10662,7 +10690,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.__LL_LAST_PTR_X__ = window.innerWidth/2;
   window.__LL_LAST_PTR_Y__ = window.innerHeight/2;
   window.addEventListener('pointermove', (ev)=>{ window.__LL_LAST_PTR_X__ = ev.clientX; window.__LL_LAST_PTR_Y__ = ev.clientY; }, {passive:true});
-dbg_('v100.1.12_PNGScale160_HotspotAnchorFix.0: DOMContentLoaded');
+dbg_('v100.1.13_PNGScale160_SvgHitboxProxy.0: DOMContentLoaded');
 
   cacheDomRefs();
   try{ wrapLLDBGStep_(); }catch(e){}
@@ -10808,7 +10836,7 @@ window.__LL_BACKROWS_ANCHOR_MATCHED = true; // prevent later global overrides
   }catch(e){}
 
 
-  dbg_('v100.1.12_PNGScale160_HotspotAnchorFix.0: Initialization complete');
+  dbg_('v100.1.13_PNGScale160_SvgHitboxProxy.0: Initialization complete');
 });
 })();
 
@@ -11186,7 +11214,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 
 
 <script>
-// v100.1.12_PNGScale160_HotspotAnchorFix lifecycle manager
+// v100.1.13_PNGScale160_SvgHitboxProxy lifecycle manager
 (function(){
   if (window.__LL_SYS__) return;
   const SYS = { timeouts:new Set(), intervals:new Set(), observers:new Set(), listeners:[] };
@@ -11202,14 +11230,14 @@ window.applySelectedAdornments = applySelectedAdornments;
 </script>
 
 <script>
-// v100.1.12_PNGScale160_HotspotAnchorFix: unified BRX/back-row hard-disable controller.
+// v100.1.13_PNGScale160_SvgHitboxProxy: unified BRX/back-row hard-disable controller.
 (function(){
   try{
     window.__PHASEA_DISABLE_BRX__ = true;
     window.__LL_DISABLE_BACKHILL__ = true;
     window.BRX_DISABLE_LEGACY_BACKROWS = true;
 
-    const VERSION = 'v100.1.12_PNGScale160_HotspotAnchorFix';
+    const VERSION = 'v100.1.13_PNGScale160_SvgHitboxProxy';
     const hideLegacyGroups = () => {
       ['backRowsG','gridWeeksG','hillGuidesG','gridOverlayG','gridWeeksOverlay','brxHillPngG','brxHillDbgG']
         .forEach(id => {
