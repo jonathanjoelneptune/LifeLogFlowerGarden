@@ -22,7 +22,7 @@
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v100.1.26.3_CleanRowSync_NoSceneRebuild
+  v100.1.29_RowSceneDecoupled_IncrementalRowSync
     + Consolidate duplicate Photo Reel skybox CSS into one block
     + Merge duplicate selection-ring state rules
     + Remove redundant early wireframe CSS copy
@@ -135,7 +135,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.26.3_CleanRowSync_NoSceneRebuild';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.29_RowSceneDecoupled_IncrementalRowSync';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -263,7 +263,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 function renderBackRows(){ /* disabled */ }
 
 (function(){
-  const VERSION = 'v100.1.26.3_CleanRowSync_NoSceneRebuild';
+  const VERSION = 'v100.1.29_RowSceneDecoupled_IncrementalRowSync';
 
   // ---- Canonical version globals ----
   window.APP_VERSION = VERSION;
@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.1.26.3_CleanRowSync_NoSceneRebuild.html</title>
+<title>garden_v100.1.29_RowSceneDecoupled_IncrementalRowSync.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -2429,7 +2429,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.1.26.3_CleanRowSync_NoSceneRebuild.html • v100.1.24_PerformanceHUD_AllWarm_NoDespawn • Built: 2026-04-05T00:35:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.1.29_RowSceneDecoupled_IncrementalRowSync.html • v100.1.24_PerformanceHUD_AllWarm_NoDespawn • Built: 2026-04-05T00:35:00Z UTC</div>
 
 
 <script>
@@ -2443,7 +2443,7 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v100.1.26.3_CleanRowSync_NoSceneRebuild.html</span><br>
+File: <span id="__bannerFileName">garden_v100.1.29_RowSceneDecoupled_IncrementalRowSync.html</span><br>
 Version: <span id="__bannerVersion">v100.1.24_PerformanceHUD_AllWarm_NoDespawn</span><br>
 Created: 2026-04-05 12:35 AM PT</span></div>
 <script>
@@ -5013,6 +5013,8 @@ function requestTransformRefresh_(){
 }
 function requestStructuralRebuild_(opts){
   opts = opts || {};
+  // Comprehensive row/scene separation:
+  // structural rebuilds should only rebuild the row layer window, not the full garden scene.
   CACHED.structureDirty = true;
   if (opts.refreshGrass) CACHED.visualRefreshGrass = true;
   CACHED.transformsDirty = true;
@@ -5034,7 +5036,7 @@ function refreshRenderedBandVisuals_(){
     }
     const focusWeekIndex = Math.max(0, Math.round(__rt.nav.currentOffset));
     try{ updateFrontText(focusWeekIndex|0); }catch(e){}
-    try{ updateRowInteractivity_(focusWeekIndex|0); }catch(e){}
+    try{ updateRowInteractivity_(focusWeekIndex|0, __rt.nav.lastFrontIndex|0); }catch(e){}
     try{ rebindSelectionToVisibleWrap_('visual refresh'); }catch(e){}
   }catch(e){
     console.warn('[RENDER] visual refresh failed', e);
@@ -5043,7 +5045,13 @@ function refreshRenderedBandVisuals_(){
 function flushRenderQueue_(tNow){
   if (CACHED.structureDirty){
     CACHED.structureDirty = false;
-    buildBands();
+    // Rebuild only the row window. Do not rebuild the whole scene.
+    try{
+      const focusWeekIndex = Math.max(0, Math.round(__rt.nav.currentOffset));
+      syncRenderedWeeks_(focusWeekIndex|0, true);
+    }catch(e){
+      console.warn('[RENDER] structural row rebuild failed', e);
+    }
     if (CACHED.visualRefreshGrass){
       try{ refreshFrontGrass(); }catch(e){}
       CACHED.visualRefreshGrass = false;
@@ -5069,7 +5077,7 @@ function flushRenderQueue_(tNow){
 function buildBands(){
   const weeksStack = DOM.weeksStack;
   const grassStack = DOM.grassStack;
-  if (!weeksStack || !grassStack) return false;
+  if (!weeksStack || !grassStack) return;
 
   weeksStack.innerHTML = "";
   grassStack.innerHTML = '<div class="grassHaze" id="grassHaze"></div>';
@@ -5097,11 +5105,11 @@ const __llRenderedWeeks = new Map();      // weekIndex -> { band, gband }
 const __llBandMetaByWeekIndex = new Map(); // weekIndex -> { weekMon, iso, weekLevel, weekIndex }
 
 function ensureWeekNodes_(weekIdx){
-  if (__llRenderedWeeks.has(weekIdx)) return false;
+  if (__llRenderedWeeks.has(weekIdx)) return null;
 
   const weeksStack = DOM.weeksStack;
   const grassStack = DOM.grassStack;
-  if (!weeksStack || !grassStack) return;
+  if (!weeksStack || !grassStack) return null;
 
   const week = weekModelForIndex_(weekIdx);
 
@@ -5114,6 +5122,7 @@ function ensureWeekNodes_(weekIdx){
 
   const gband = document.createElement("div");
   gband.className = "grassBand";
+  gband.dataset.weekIndex = String(weekIdx);
   const rgd = mulberry32(hash32FromString("grassDeform_" + week.iso));
   gband.style.setProperty("--gx", (6 + rgd()*10).toFixed(2) + "px");
   gband.style.setProperty("--gsk", (0.8 + rgd()*2.2).toFixed(2) + "deg");
@@ -5130,7 +5139,7 @@ function ensureWeekNodes_(weekIdx){
   bands.push(band);
   grassBands.push(gband);
   bandMeta.push(Object.assign({ weekIndex: weekIdx }, week));
-  return true;
+  return { band, gband, week };
 }
 
 function disposeWeekNodes_(weekIdx){
@@ -5138,7 +5147,6 @@ function disposeWeekNodes_(weekIdx){
   if (!rec) return;
 
   try{
-    // Clear selection if it lives in the week being removed
     if (__llSelectedWrap && __llSelectedWrap.isConnected){
       const wi = parseInt(__llSelectedWrap.dataset.weekIndex||"-1",10);
       if (wi === weekIdx) clearSelection_('week removed');
@@ -5151,15 +5159,14 @@ function disposeWeekNodes_(weekIdx){
   __llRenderedWeeks.delete(weekIdx);
   __llBandMetaByWeekIndex.delete(weekIdx);
 
-  // Remove from linear arrays (best-effort; these are only used for transforms + selection scans)
   try{
     for (let i=bands.length-1; i>=0; i--){
       const wi = parseInt(bands[i]?.dataset?.weekIndex||"-999999",10);
       if (wi === weekIdx) bands.splice(i,1);
     }
     for (let i=grassBands.length-1; i>=0; i--){
-      // grass band doesn't carry weekIndex; keep arrays aligned by DOM order rebuild below
-      // we will rebuild grassBands from __llRenderedWeeks when syncing
+      const wi = parseInt(grassBands[i]?.dataset?.weekIndex||"-999999",10);
+      if (wi === weekIdx) grassBands.splice(i,1);
     }
     for (let i=bandMeta.length-1; i>=0; i--){
       if ((bandMeta[i]?.weekIndex|0) === (weekIdx|0)) bandMeta.splice(i,1);
@@ -5167,20 +5174,46 @@ function disposeWeekNodes_(weekIdx){
   }catch(e){}
 }
 
+function disposeAllRenderedWeeks_(){
+  for (const wi of Array.from(__llRenderedWeeks.keys()).sort((a,b)=>b-a)){
+    disposeWeekNodes_(wi);
+  }
+  bands.length = 0;
+  grassBands.length = 0;
+  bandMeta.length = 0;
+}
+
 function reflowBandArrays_(){
-  // Keep bands / grassBands in DOM order by weekIndex ascending
   const entries = Array.from(__llRenderedWeeks.entries()).sort((a,b)=>a[0]-b[0]);
   bands.length = 0;
   grassBands.length = 0;
   bandMeta.length = 0;
 
   for (const [wi, rec] of entries){
-    if (rec && rec.band && rec.gband){
-      bands.push(rec.band);
-      grassBands.push(rec.gband);
-    }
+    if (rec && rec.band) bands.push(rec.band);
+    if (rec && rec.gband) grassBands.push(rec.gband);
     const meta = __llBandMetaByWeekIndex.get(wi);
     if (meta) bandMeta.push(meta);
+  }
+}
+
+function reorderRenderedNodes_(){
+  const weeksStack = DOM.weeksStack;
+  const grassStack = DOM.grassStack;
+  const entries = Array.from(__llRenderedWeeks.entries()).sort((a,b)=>a[0]-b[0]);
+  if (weeksStack){
+    for (const [, rec] of entries){
+      if (rec && rec.band) weeksStack.appendChild(rec.band);
+    }
+  }
+  if (grassStack){
+    const haze = grassStack.querySelector('#grassHaze');
+    if (haze && grassStack.firstChild !== haze){
+      grassStack.insertBefore(haze, grassStack.firstChild);
+    }
+    for (const [, rec] of entries){
+      if (rec && rec.gband) grassStack.appendChild(rec.gband);
+    }
   }
 }
 
@@ -5201,33 +5234,26 @@ if(window.__llForceTodayAfterExport_ && fullRebuild){
 
   dbg_("[FRONT] syncRenderedWeeks start focus="+(focusWeekIndex|0)+" fullRebuild="+!!fullRebuild);
 
+  const minIdx = Math.max(0, (focusWeekIndex|0) - PAST_WEEKS_RENDERED);
+  const maxIdx = (focusWeekIndex|0) + FUTURE_WEEKS_RENDERED;
+
+  let createdWeekIndices = [];
   if (fullRebuild){
     try{
-      dbg_("[FRONT] fullRebuild: disposing rendered bands and rebuilding current window");
-      const prevKeys = Array.from(__llRenderedWeeks.keys());
-      for (const wi of prevKeys){
-        disposeWeekNodes_(wi);
-      }
-      __llRenderedWeeks.clear();
-      __llBandMetaByWeekIndex.clear();
-      bands.length = 0;
-      grassBands.length = 0;
-      bandMeta.length = 0;
+      dbg_("[FRONT] fullRebuild: disposing row window and rebuilding cleanly");
+      disposeAllRenderedWeeks_();
     }catch(e){
       console.warn("[FRONT] fullRebuild failed", e);
     }
   }
 
-  const minIdx = Math.max(0, (focusWeekIndex|0) - PAST_WEEKS_RENDERED);
-  const maxIdx = (focusWeekIndex|0) + FUTURE_WEEKS_RENDERED;
-  const newlyCreated = [];
-
-  // Create needed weeks
+  // Create only missing weeks in the target window
   for (let wi=minIdx; wi<=maxIdx; wi++){
-    if (ensureWeekNodes_(wi)) newlyCreated.push(wi);
+    const created = ensureWeekNodes_(wi);
+    if (created && created.band) createdWeekIndices.push(wi);
   }
 
-  // Keep rendered weeks warm once created; do not despawn out-of-range weeks.
+  // Despawn only row-layer weeks outside the active window when keep-warm is disabled
   if (!window.__LL_KEEP_RENDERED_WEEKS__){
     for (const wi of Array.from(__llRenderedWeeks.keys())){
       if (wi < minIdx || wi > maxIdx){
@@ -5236,55 +5262,20 @@ if(window.__llForceTodayAfterExport_ && fullRebuild){
     }
   }
 
-  // Re-order DOM (ascending weekIndex) so transforms are stable
-  const weeksStack = DOM.weeksStack;
-  const grassStack = DOM.grassStack;
-  const entriesSorted = Array.from(__llRenderedWeeks.entries()).sort((a,b)=>a[0]-b[0]);
-  if (weeksStack){
-    const bandsSorted = entriesSorted.map(e=>e[1].band).filter(Boolean);
-    for (const b of bandsSorted){
-      if (b && b.parentNode !== weeksStack) weeksStack.appendChild(b);
-      else if (b) weeksStack.appendChild(b);
-    }
-  }
-  if (grassStack){
-    let haze = grassStack.querySelector('#grassHaze');
-    if (!haze){
-      haze = document.createElement('div');
-      haze.className = 'grassHaze';
-      haze.id = 'grassHaze';
-      grassStack.appendChild(haze);
-    } else if (grassStack.firstChild !== haze) {
-      grassStack.insertBefore(haze, grassStack.firstChild);
-    }
-    const gSorted = entriesSorted.map(e=>e[1].gband).filter(Boolean);
-    for (const g of gSorted){
-      if (!g) continue;
-      grassStack.appendChild(g);
-    }
-  }
-
+  // Reorder row-layer nodes only. Do not clear shared scene layers.
+  reorderRenderedNodes_();
   reflowBandArrays_();
 
-  // Only render newly created / not-yet-rendered bands during normal row sync.
-  if (fullRebuild){
-    for (const rec of __llRenderedWeeks.values()){
-      renderBandFlowers(rec.band);
-    }
-  } else {
-    for (const wi of newlyCreated){
-      const rec = __llRenderedWeeks.get(wi);
-      if (rec && rec.band) renderBandFlowers(rec.band);
-    }
-    for (const rec of __llRenderedWeeks.values()){
-      const band = rec && rec.band;
-      if (band && band.dataset && band.dataset.rendered !== "true"){
-        renderBandFlowers(band);
-      }
+  // Render only newly created or not-yet-rendered bands
+  const renderTargets = new Set(createdWeekIndices);
+  for (const [wi, rec] of __llRenderedWeeks.entries()){
+    const band = rec && rec.band;
+    if (!band) continue;
+    if (renderTargets.has(wi) || band.dataset.rendered !== "true"){
+      renderBandFlowers(band);
     }
   }
 
-  // Update week header and row interactivity immediately
   updateFrontText(focusWeekIndex|0);
   try{ updateRowInteractivity_(focusWeekIndex|0, __rt.nav.lastFrontIndex|0); }catch(e){}
   try{ rebindSelectionToVisibleWrap_('syncRenderedWeeks'); }catch(e){}
@@ -5335,7 +5326,7 @@ window.__LL_ASSET_BOOT__ = window.__LL_ASSET_BOOT__ || {
   offlineFallbackMs: 1500
 };
 
-window.__LL_KEEP_RENDERED_WEEKS__ = false;
+window.__LL_KEEP_RENDERED_WEEKS__ = false; // row sync only keeps the active window live
 window.__LL_FLOWER_IMG_CACHE__ = window.__LL_FLOWER_IMG_CACHE__ || new Map();
 
 function warmFlowerAssetUrl_(url){
@@ -6015,8 +6006,7 @@ function applyTransforms(tNow){
     const prevFront = __rt.nav.lastFrontIndex;
     __llLastRowDir = (prevFront < 0) ? 0 : (frontIndexVisual > prevFront ? +1 : -1);
     __rt.nav.lastFrontIndex = frontIndexVisual;
-    try{ syncRenderedWeeks_(frontIndexVisual); }catch(e){}
-    try{ updateRowInteractivity_(frontIndexVisual, prevFront); }catch(e){}
+    try{ syncRenderedWeeks_(frontIndexVisual, false); }catch(e){}
     try{
       if (typeof hideSkyBoxes_ === 'function') hideSkyBoxes_('row change', __llLastRowDir);
       if (typeof dbg_==='function') dbg_(`Row change -> keep selection (hide boxes) dir=${__llLastRowDir}`);
@@ -7252,12 +7242,12 @@ function tick(tNow){
 
 
 // v99.3.28_TodayPoll_ApplyUpdateAndDebug: Only the current active row is interactive/selectable.
-function updateRowInteractivity_(activeWeekIndex, previousWeekIndex){
+function updateRowInteractivity_(activeWeekIndex, prevWeekIndex){
   try{
     const aw = (activeWeekIndex|0);
-    const pw = Number.isFinite(previousWeekIndex) ? (previousWeekIndex|0) : -2147483648;
+    const pw = (prevWeekIndex|0);
 
-    // Prune disconnected wraps (prevents unbounded growth)
+    // Prune disconnected wraps once, but do not scan the full document.
     try{
       for (let i=(flowerWrapEls||[]).length-1; i>=0; i--){
         const w0 = flowerWrapEls[i];
@@ -7265,21 +7255,22 @@ function updateRowInteractivity_(activeWeekIndex, previousWeekIndex){
       }
     }catch(e){}
 
-    for (const w of (flowerWrapEls || [])){
-      if (!w || !w.isConnected) continue;
-      const wi = parseInt(w.dataset.weekIndex || '-1', 10);
-      if (!Number.isFinite(wi)) continue;
-      if (wi !== aw && wi !== pw) continue;
+    const touchedWeeks = new Set([aw]);
+    if (Number.isFinite(pw) && pw >= 0) touchedWeeks.add(pw);
 
+    touchedWeeks.forEach((wi)=>{
+      const rec = __llRenderedWeeks.get(wi);
+      const band = rec && rec.band;
+      if (!band) return;
       const on = (wi === aw);
-      w.style.pointerEvents = on ? 'auto' : 'none';
-      if (on) w.classList.add('llActiveRow'); else w.classList.remove('llActiveRow');
-
-      const hotspots = w.querySelectorAll('.hsCore,[data-role="hotspot"]');
-      hotspots.forEach(h => {
-        h.style.pointerEvents = on ? 'auto' : 'none';
+      const wraps = band.querySelectorAll('.flowerWrap');
+      wraps.forEach((w)=>{
+        w.style.pointerEvents = on ? 'auto' : 'none';
+        if (on) w.classList.add('llActiveRow'); else w.classList.remove('llActiveRow');
+        const hs = w.querySelectorAll('.hsCore,[data-role="hotspot"]');
+        hs.forEach((h)=>{ h.style.pointerEvents = on ? 'auto' : 'none'; });
       });
-    }
+    });
   }catch(e){}
 }
 
@@ -11365,7 +11356,7 @@ window.applySelectedAdornments = applySelectedAdornments;
     window.__LL_DISABLE_BACKHILL__ = true;
     window.BRX_DISABLE_LEGACY_BACKROWS = true;
 
-    const VERSION = 'v100.1.26.3_CleanRowSync_NoSceneRebuild';
+    const VERSION = 'v100.1.29_RowSceneDecoupled_IncrementalRowSync';
     const hideLegacyGroups = () => {
       ['backRowsG','gridWeeksG','hillGuidesG','gridOverlayG','gridWeeksOverlay','brxHillPngG','brxHillDbgG']
         .forEach(id => {
