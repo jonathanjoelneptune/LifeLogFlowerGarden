@@ -22,7 +22,7 @@
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v100.0.85_FlowerGeneratorMode_PixelStemBase
+  v100.1.26_RowSettleCleanup_SingleXOwner
     + Consolidate duplicate Photo Reel skybox CSS into one block
     + Merge duplicate selection-ring state rules
     + Remove redundant early wireframe CSS copy
@@ -135,7 +135,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.25_RowSettleXLock_TeleportFix';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.26_RowSettleCleanup_SingleXOwner';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -263,7 +263,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 function renderBackRows(){ /* disabled */ }
 
 (function(){
-  const VERSION = 'v100.1.25_RowSettleXLock_TeleportFix';
+  const VERSION = 'v100.1.26_RowSettleCleanup_SingleXOwner';
 
   // ---- Canonical version globals ----
   window.APP_VERSION = VERSION;
@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.1.25_RowSettleXLock_TeleportFix.html</title>
+<title>garden_v100.1.26_RowSettleCleanup_SingleXOwner.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -2429,7 +2429,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.1.25_RowSettleXLock_TeleportFix.html • v100.1.25_RowSettleXLock_TeleportFix • Built: 2026-04-05T00:35:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.1.26_RowSettleCleanup_SingleXOwner.html • v100.1.24_PerformanceHUD_AllWarm_NoDespawn • Built: 2026-04-05T00:35:00Z UTC</div>
 
 
 <script>
@@ -2443,8 +2443,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v100.1.25_RowSettleXLock_TeleportFix.html</span><br>
-Version: <span id="__bannerVersion">v100.1.25_RowSettleXLock_TeleportFix</span><br>
+File: <span id="__bannerFileName">garden_v100.1.26_RowSettleCleanup_SingleXOwner.html</span><br>
+Version: <span id="__bannerVersion">v100.1.24_PerformanceHUD_AllWarm_NoDespawn</span><br>
 Created: 2026-04-05 12:35 AM PT</span></div>
 <script>
 (function(){
@@ -2460,7 +2460,7 @@ Created: 2026-04-05 12:35 AM PT</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v100.1.25_RowSettleXLock_TeleportFix loaded", new Date().toISOString());
+  console.log("[VERSION] v100.1.24_PerformanceHUD_AllWarm_NoDespawn loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -3066,7 +3066,7 @@ window.__LL_hillTopAtX_fill = function(x, yTopGuess, yBottom){
 <!-- Debug Panel -->
 <div aria-hidden="false" id="dbgPanel">
   <div class="hdr">
-    <div class="t">LifeLog DEBUG v100.1.25_RowSettleXLock_TeleportFix (press D)</div>
+    <div class="t">LifeLog DEBUG v100.1.24_PerformanceHUD_AllWarm_NoDespawn (press D)</div>
     <div class="btns">
       <button id="dbgCopy" type="button">Copy</button>
       <button id="dbgClear" type="button">Clear</button>
@@ -3434,7 +3434,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   </div>
 
   <div class="util hidden" id="util">
-    <div class="utilTitle">LifeLog Garden Walk v100.1.25_RowSettleXLock_TeleportFix</div>
+    <div class="utilTitle">LifeLog Garden Walk v100.1.24_PerformanceHUD_AllWarm_NoDespawn</div>
     <div class="utilSub">Scroll to walk through weeks. Press H to hide/show this panel.</div>
 	    <div class="row">
 	      <label>Wireframe</label>
@@ -3664,7 +3664,7 @@ function wrapLLDBGStep_(){
     }
   }catch(e){}
 }
-dbg_('v100.1.25_RowSettleXLock_TeleportFix.0: Main script starting');
+dbg_('v100.1.24_PerformanceHUD_AllWarm_NoDespawn.0: Main script starting');
 
 // ============================================
 // Constants
@@ -5697,7 +5697,7 @@ function refreshFrontGrass(){
 // ============================================
 
 // ============================================
-// v100.1.25_RowSettleXLock_TeleportFix: keep back-row flowers horizontally de-clumped
+// v100.1.24_PerformanceHUD_AllWarm_NoDespawn: keep back-row flowers horizontally de-clumped
 // ============================================
 const __LL_BACK_SPREAD_MAX_BEHIND = 5;    // reach near-full spread quickly (about 4-6 rows back)
 const __LL_BACK_SPREAD_EDGE_PAD   = 0.006; // keep a tiny inset so nothing clips at extreme edges
@@ -5722,7 +5722,7 @@ const __LL_EVEN_NEARFRONT_BLEND_BEHIND = 1.35; // rows: 0..~1.35 blends from day
 
 
 // ============================================
-// v100.1.25_RowSettleXLock_TeleportFix: offline back-hill port constants
+// v100.1.24_PerformanceHUD_AllWarm_NoDespawn: offline back-hill port constants
 // ============================================
 const FRONT_VISIBLE_WEEKS = 10;
 const CREST_BUFFER_WEEKS = 1;
@@ -5755,19 +5755,6 @@ const PRECREST_ROW2_TIGHTEN = 0.88;
 const renderPrefs = { hideFarRows: true, lastWeekToShow: 42 };
 const CREST_HIDE_DROP = 52;
 
-function __llBeginRowSettleXLock_(frames){
-  try{
-    window.__llRowSettleXLockFrames = Math.max(window.__llRowSettleXLockFrames|0, Math.max(1, frames|0));
-  }catch(e){}
-}
-function __llRowSettleXLocked_(){
-  try{
-    return (window.__llRowSettleXLockFrames|0) > 0;
-  }catch(e){
-    return false;
-  }
-}
-
 function setBandFullWidth_(band){
   if (!band) return;
   band.style.left = '0px';
@@ -5780,39 +5767,25 @@ function setBandBackWidth_(band, leftPx, widthPx){
   band.style.right = 'auto';
   band.style.width = `${widthPx.toFixed(1)}px`;
 }
-function setBandContinuous21Mode_(band, subIndex){
+function restoreBandBaseJitter_(band){
   if (!band) return;
-  if (__llRowSettleXLocked_()) return;
-  const slots = band.querySelectorAll('.flowerSlot');
-  slots.forEach((slot)=>{
-    const wrap = slot.querySelector('.flowerWrap');
-    const d = wrap ? parseInt(wrap.dataset.dayIndex || wrap.dataset.dow || '0', 10) : parseInt(slot.dataset.dayIndex || '0', 10);
-    const idx21 = subIndex * 7 + Math.max(0, Math.min(6, d));
-    slot.style.left = ((((idx21 + 0.5) / 21) * 100).toFixed(4)) + '%';
-    if (wrap) wrap.style.setProperty('--jx', '0.0px');
-  });
-}
-function setBandEvenSpacingMode_(band, on){
-  if (!band) return;
-  if (__llRowSettleXLocked_()) return;
   const wraps = band.querySelectorAll('.flowerWrap');
   wraps.forEach((wrap)=>{
     const base = (wrap.dataset && wrap.dataset.baseJx != null) ? parseFloat(wrap.dataset.baseJx || '0') : 0;
-    wrap.style.setProperty('--jx', ((on ? 0 : base) || 0).toFixed(1) + 'px');
+    wrap.style.setProperty('--jx', ((base) || 0).toFixed(1) + 'px');
   });
-  if (!on){
-    const slots = band.querySelectorAll('.flowerSlot');
-    slots.forEach((slot)=>{
-      const wrap = slot.querySelector('.flowerWrap');
-      const d = wrap ? parseInt(wrap.dataset.dayIndex || wrap.dataset.dow || '0', 10) : parseInt(slot.dataset.dayIndex || '0', 10);
-      slot.style.left = ((((Math.max(0, Math.min(6, d)) + 0.5) / 7) * 100).toFixed(4)) + '%';
-    });
-  }
+}
+// Deprecated layout-mode shims kept only for compatibility.
+// Horizontal lane ownership now lives in updateBandSlotSpread_() plus band width.
+function setBandContinuous21Mode_(band, subIndex){
+  restoreBandBaseJitter_(band);
+}
+function setBandEvenSpacingMode_(band, on){
+  restoreBandBaseJitter_(band);
 }
 
 function updateBandSlotSpread_(band, behind, s){
   if (!band) return;
-  if (__llRowSettleXLocked_()) return;
 
   const slots = band.querySelectorAll(".flowerSlot");
   if (!slots || slots.length < 7) return;
@@ -6020,7 +5993,6 @@ function applyTransforms(tNow){
     const prevFront = __rt.nav.lastFrontIndex;
     __llLastRowDir = (prevFront < 0) ? 0 : (frontIndexVisual > prevFront ? +1 : -1);
     __rt.nav.lastFrontIndex = frontIndexVisual;
-    try{ __llBeginRowSettleXLock_(2); }catch(e){}
     try{ syncRenderedWeeks_(frontIndexVisual); }catch(e){}
     try{
       if (typeof hideSkyBoxes_ === 'function') hideSkyBoxes_('row change', __llLastRowDir);
@@ -6072,7 +6044,7 @@ function applyTransforms(tNow){
       // State 1: front readable rows
       if (behind < FRONT_VISIBLE_WEEKS){
         setBandFullWidth_(band);
-        setBandEvenSpacingMode_(band, false);
+        restoreBandBaseJitter_(band);
         const xBase = (baseShift * 55 * behind * staggerStrength) + (yawPx * behind * 0.35);
         const x = xBase;
         const y = -(behind * 15) * yComp;
@@ -6102,7 +6074,7 @@ function applyTransforms(tNow){
       // State 2: hidden crest handoff
       } else if (behind < BACK_TRIPLET_START_WEEKS){
         setBandFullWidth_(band);
-        setBandEvenSpacingMode_(band, false);
+        restoreBandBaseJitter_(band);
         const crestT = (behind - FRONT_VISIBLE_WEEKS) / Math.max(0.001, CREST_BUFFER_WEEKS);
         const x = (baseShift * 42 * (1 + crestT * 0.18)) + (yawPx * 0.22);
         const y = -(82 + crestT * CREST_HIDE_DROP);
@@ -6174,8 +6146,8 @@ function applyTransforms(tNow){
         const rowLeft = responsiveGeom ? (responsiveGeom.centerX - rowWidth * 0.5) : fallbackLeft;
 
         setBandBackWidth_(band, rowLeft, rowWidth);
-        setBandContinuous21Mode_(band, subIndex);
-        setBandEvenSpacingMode_(band, true);
+        restoreBandBaseJitter_(band);
+        try{ updateBandSlotSpread_(band, behind, s); }catch(e){}
         band.style.opacity = tripletOpacityMul.toFixed(3);
         band.style.filter = `brightness(${(0.92 - groupF * 0.03).toFixed(2)}) saturate(${(0.94 - groupF * 0.03).toFixed(2)}) blur(${blur.toFixed(2)}px)`;
         band.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0px) scale(${s.toFixed(3)})`;
@@ -6187,7 +6159,7 @@ function applyTransforms(tNow){
       }
     } else {
       setBandFullWidth_(band);
-      setBandEvenSpacingMode_(band, false);
+      restoreBandBaseJitter_(band);
       const ahead = dist;
       const y = (ahead * depthY);
       const s = Math.min(1.65, 1 + ahead * 0.18);
@@ -6205,12 +6177,6 @@ function applyTransforms(tNow){
       }
     }
   }
-
-  try{
-    if ((window.__llRowSettleXLockFrames|0) > 0){
-      window.__llRowSettleXLockFrames = Math.max(0, (window.__llRowSettleXLockFrames|0) - 1);
-    }
-  }catch(e){}
 }
 
 function __llFmtWeekRangeLong_(mon){
@@ -10830,7 +10796,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.__LL_LAST_PTR_Y__ = window.innerHeight/2;
   window.addEventListener('pointermove', (ev)=>{ window.__LL_LAST_PTR_X__ = ev.clientX; window.__LL_LAST_PTR_Y__ = ev.clientY; }, {passive:true});
 
-  dbg_('v100.1.25_RowSettleXLock_TeleportFix.0: DOMContentLoaded');
+  dbg_('v100.1.24_PerformanceHUD_AllWarm_NoDespawn.0: DOMContentLoaded');
 
   cacheDomRefs();
   try{ wrapLLDBGStep_(); }catch(e){}
@@ -10976,7 +10942,7 @@ window.__LL_BACKROWS_ANCHOR_MATCHED = true; // prevent later global overrides
   }catch(e){}
 
 
-  dbg_('v100.1.25_RowSettleXLock_TeleportFix.0: Initialization complete');
+  dbg_('v100.1.24_PerformanceHUD_AllWarm_NoDespawn.0: Initialization complete');
 });
 })();
 
@@ -11354,7 +11320,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 
 
 <script>
-// v100.1.25_RowSettleXLock_TeleportFix lifecycle manager
+// v100.1.24_PerformanceHUD_AllWarm_NoDespawn lifecycle manager
 (function(){
   if (window.__LL_SYS__) return;
   const SYS = { timeouts:new Set(), intervals:new Set(), observers:new Set(), listeners:[] };
@@ -11370,14 +11336,14 @@ window.applySelectedAdornments = applySelectedAdornments;
 </script>
 
 <script>
-// v100.1.25_RowSettleXLock_TeleportFix: unified BRX/back-row hard-disable controller.
+// v100.1.24_PerformanceHUD_AllWarm_NoDespawn: unified BRX/back-row hard-disable controller.
 (function(){
   try{
     window.__PHASEA_DISABLE_BRX__ = true;
     window.__LL_DISABLE_BACKHILL__ = true;
     window.BRX_DISABLE_LEGACY_BACKROWS = true;
 
-    const VERSION = 'v100.1.25_RowSettleXLock_TeleportFix';
+    const VERSION = 'v100.1.26_RowSettleCleanup_SingleXOwner';
     const hideLegacyGroups = () => {
       ['backRowsG','gridWeeksG','hillGuidesG','gridOverlayG','gridWeeksOverlay','brxHillPngG','brxHillDbgG']
         .forEach(id => {
