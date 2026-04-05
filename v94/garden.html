@@ -135,7 +135,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.19_HTMLHitTargets';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.20_VisibleHTMLHitTargets_WarmCache';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -263,7 +263,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 function renderBackRows(){ /* disabled */ }
 
 (function(){
-  const VERSION = 'v100.1.19_HTMLHitTargets';
+  const VERSION = 'v100.1.20_VisibleHTMLHitTargets_WarmCache';
 
   // ---- Canonical version globals ----
   window.APP_VERSION = VERSION;
@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.1.19_HTMLHitTargets.html</title>
+<title>garden_v100.1.20_VisibleHTMLHitTargets_WarmCache.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -887,6 +887,7 @@ body.llScreenSaverLowPower .flowerWind{
 
 .flowerAssetPngWrap {
   position: relative;
+  z-index: 1;
   width: calc(var(--assetDisplayW, 450px) * var(--flowerScale, 1));
   height: calc(var(--assetDisplayH, 540px) * var(--flowerScale, 1));
   display: block;
@@ -918,24 +919,26 @@ body.llScreenSaverLowPower .flowerWind{
 .flowerHtmlHit {
   position:absolute;
   pointer-events:auto;
-  z-index:7;
+  z-index:50;
   border-radius:999px;
   left:0; top:0;
   transform:translate(-50%,-50%);
-  background: transparent;
-  border: 0 solid transparent;
+  background: rgba(255,0,0,0.18);
+  border: 2px solid rgba(255,0,0,0.92);
+  box-sizing: border-box;
 }
 .flowerHtmlHit.hsCore {
-  fill: transparent;
-  stroke: transparent;
-  stroke-width: 1;
   cursor: pointer;
   pointer-events: all;
+}
+body:not(.llHitboxOn) .flowerHtmlHit.hsCore {
+  background: rgba(255,0,0,0.18);
+  border-color: rgba(255,0,0,0.92);
 }
 body.llHitboxOn .flowerHtmlHit.hsCore {
   border-width:2px;
   border-color: rgba(255,0,0,0.95);
-  background: rgba(255,0,0,0.12);
+  background: rgba(255,0,0,0.20);
 }
 .flowerHtmlHit.hsCore.llHotSelected {
   box-shadow: 0 0 0 2px rgba(255,255,255,0.98), 0 0 8px rgba(255,255,255,0.75);
@@ -2454,7 +2457,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.1.19_HTMLHitTargets.html • v100.1.19_HTMLHitTargets • Built: 2026-04-05T00:35:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.1.20_VisibleHTMLHitTargets_WarmCache.html • v100.1.20_VisibleHTMLHitTargets_WarmCache • Built: 2026-04-05T00:35:00Z UTC</div>
 
 
 <script>
@@ -2468,8 +2471,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v100.1.19_HTMLHitTargets.html</span><br>
-Version: <span id="__bannerVersion">v100.1.19_HTMLHitTargets</span><br>
+File: <span id="__bannerFileName">garden_v100.1.20_VisibleHTMLHitTargets_WarmCache.html</span><br>
+Version: <span id="__bannerVersion">v100.1.20_VisibleHTMLHitTargets_WarmCache</span><br>
 Created: 2026-04-05 12:35 AM PT</span></div>
 <script>
 (function(){
@@ -2485,7 +2488,7 @@ Created: 2026-04-05 12:35 AM PT</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v100.1.19_HTMLHitTargets loaded", new Date().toISOString());
+  console.log("[VERSION] v100.1.20_VisibleHTMLHitTargets_WarmCache loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -3091,7 +3094,7 @@ window.__LL_hillTopAtX_fill = function(x, yTopGuess, yBottom){
 <!-- Debug Panel -->
 <div aria-hidden="false" id="dbgPanel">
   <div class="hdr">
-    <div class="t">LifeLog DEBUG v100.1.19_HTMLHitTargets (press D)</div>
+    <div class="t">LifeLog DEBUG v100.1.20_VisibleHTMLHitTargets_WarmCache (press D)</div>
     <div class="btns">
       <button id="dbgCopy" type="button">Copy</button>
       <button id="dbgClear" type="button">Clear</button>
@@ -3459,7 +3462,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   </div>
 
   <div class="util hidden" id="util">
-    <div class="utilTitle">LifeLog Garden Walk v100.1.19_HTMLHitTargets</div>
+    <div class="utilTitle">LifeLog Garden Walk v100.1.20_VisibleHTMLHitTargets_WarmCache</div>
     <div class="utilSub">Scroll to walk through weeks. Press H to hide/show this panel.</div>
 	    <div class="row">
 	      <label>Wireframe</label>
@@ -3689,7 +3692,7 @@ function wrapLLDBGStep_(){
     }
   }catch(e){}
 }
-dbg_('v100.1.19_HTMLHitTargets.0: Main script starting');
+dbg_('v100.1.20_VisibleHTMLHitTargets_WarmCache.0: Main script starting');
 
 // ============================================
 // Constants
@@ -5319,6 +5322,33 @@ function extractDriveFileIdFromUrl_(url){
   return '';
 }
 
+window.__llFlowerWarmCache = window.__llFlowerWarmCache || new Map();
+function warmFlowerAsset_(url){
+  try {
+    url = String(url || '').trim();
+    if (!url) return null;
+    var cache = window.__llFlowerWarmCache;
+    var hit = cache.get(url);
+    if (hit) { hit.t = Date.now(); return hit.promise || null; }
+    var img = new Image();
+    img.decoding = 'async';
+    img.loading = 'eager';
+    img.crossOrigin = 'anonymous';
+    var promise = new Promise(function(resolve){
+      img.onload = function(){ resolve(img); };
+      img.onerror = function(){ resolve(null); };
+    });
+    cache.set(url, { img: img, promise: promise, t: Date.now() });
+    img.src = url;
+    if (cache.size > 220) {
+      var entries = Array.from(cache.entries()).sort(function(a,b){ return (a[1].t||0) - (b[1].t||0); });
+      var trim = Math.max(0, cache.size - 180);
+      for (var i=0; i<trim; i++) cache.delete(entries[i][0]);
+    }
+    return promise;
+  } catch(_e) { return null; }
+}
+
 function flowerAssetRenderUrl_(day){
   if (!day) return '';
   var relayBase = getFlowerAssetRelayBase_();
@@ -5400,6 +5430,7 @@ function computePngAssetMetrics_(day){
 function buildFlowerMarkupForDay_(day){
   var pngUrl = flowerAssetRenderUrl_(day);
   if (pngUrl) {
+    try { warmFlowerAsset_(pngUrl); } catch(_e) {}
     var hs = (function(dd){
       var hx = Number(dd && (dd.flowerAssetHotspotCx || dd.HotspotCx));
       var hy = Number(dd && (dd.flowerAssetHotspotCy || dd.HotspotCy));
@@ -5428,7 +5459,7 @@ function buildFlowerMarkupForDay_(day){
     var hsR = Number(hs.r) * Math.max(m.scaleX, m.scaleY);
     return `
       <div class="flowerAssetPngWrap" style="--assetDisplayW:${displayW.toFixed(2)}px;--assetDisplayH:${displayH.toFixed(2)}px;">
-        <img class="flowerPngAsset" src="${pngUrl}" alt="" crossorigin="anonymous" loading="eager" decoding="async"/>
+        <img class="flowerPngAsset" src="${pngUrl}" alt="" crossorigin="anonymous" loading="eager" decoding="async" fetchpriority="high"/>
         <div class="flowerHtmlHit hsCore" data-role="hotspot" data-datekey="${dateKey}" style="left:${hsCx.toFixed(2)}px;top:${hsCy.toFixed(2)}px;width:${(hsR*2).toFixed(2)}px;height:${(hsR*2).toFixed(2)}px;"></div>
       </div>`;
   }
@@ -5684,7 +5715,7 @@ function refreshFrontGrass(){
 // ============================================
 
 // ============================================
-// v100.1.19_HTMLHitTargets: keep back-row flowers horizontally de-clumped
+// v100.1.20_VisibleHTMLHitTargets_WarmCache: keep back-row flowers horizontally de-clumped
 // ============================================
 const __LL_BACK_SPREAD_MAX_BEHIND = 5;    // reach near-full spread quickly (about 4-6 rows back)
 const __LL_BACK_SPREAD_EDGE_PAD   = 0.006; // keep a tiny inset so nothing clips at extreme edges
@@ -5709,7 +5740,7 @@ const __LL_EVEN_NEARFRONT_BLEND_BEHIND = 1.35; // rows: 0..~1.35 blends from day
 
 
 // ============================================
-// v100.1.19_HTMLHitTargets: offline back-hill port constants
+// v100.1.20_VisibleHTMLHitTargets_WarmCache: offline back-hill port constants
 // ============================================
 const FRONT_VISIBLE_WEEKS = 10;
 const CREST_BUFFER_WEEKS = 1;
@@ -10794,7 +10825,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.__LL_LAST_PTR_Y__ = window.innerHeight/2;
   window.addEventListener('pointermove', (ev)=>{ window.__LL_LAST_PTR_X__ = ev.clientX; window.__LL_LAST_PTR_Y__ = ev.clientY; }, {passive:true});
 
-  dbg_('v100.1.19_HTMLHitTargets.0: DOMContentLoaded');
+  dbg_('v100.1.20_VisibleHTMLHitTargets_WarmCache.0: DOMContentLoaded');
 
   cacheDomRefs();
   try{ wrapLLDBGStep_(); }catch(e){}
@@ -10940,7 +10971,7 @@ window.__LL_BACKROWS_ANCHOR_MATCHED = true; // prevent later global overrides
   }catch(e){}
 
 
-  dbg_('v100.1.19_HTMLHitTargets.0: Initialization complete');
+  dbg_('v100.1.20_VisibleHTMLHitTargets_WarmCache.0: Initialization complete');
 });
 })();
 
@@ -11318,7 +11349,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 
 
 <script>
-// v100.1.19_HTMLHitTargets lifecycle manager
+// v100.1.20_VisibleHTMLHitTargets_WarmCache lifecycle manager
 (function(){
   if (window.__LL_SYS__) return;
   const SYS = { timeouts:new Set(), intervals:new Set(), observers:new Set(), listeners:[] };
@@ -11334,14 +11365,14 @@ window.applySelectedAdornments = applySelectedAdornments;
 </script>
 
 <script>
-// v100.1.19_HTMLHitTargets: unified BRX/back-row hard-disable controller.
+// v100.1.20_VisibleHTMLHitTargets_WarmCache: unified BRX/back-row hard-disable controller.
 (function(){
   try{
     window.__PHASEA_DISABLE_BRX__ = true;
     window.__LL_DISABLE_BACKHILL__ = true;
     window.BRX_DISABLE_LEGACY_BACKROWS = true;
 
-    const VERSION = 'v100.1.19_HTMLHitTargets';
+    const VERSION = 'v100.1.20_VisibleHTMLHitTargets_WarmCache';
     const hideLegacyGroups = () => {
       ['backRowsG','gridWeeksG','hillGuidesG','gridOverlayG','gridWeeksOverlay','brxHillPngG','brxHillDbgG']
         .forEach(id => {
