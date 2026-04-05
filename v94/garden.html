@@ -135,7 +135,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.24_PerformanceHUD_AllWarm_NoDespawn';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.25_DiscreteHorizontal_NoRubberBand';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -263,7 +263,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 function renderBackRows(){ /* disabled */ }
 
 (function(){
-  const VERSION = 'v100.1.24_PerformanceHUD_AllWarm_NoDespawn';
+  const VERSION = 'v100.1.25_DiscreteHorizontal_NoRubberBand';
 
   // ---- Canonical version globals ----
   window.APP_VERSION = VERSION;
@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.1.24_PerformanceHUD_AllWarm_NoDespawn.html</title>
+<title>garden_v100.1.25_DiscreteHorizontal_NoRubberBand.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -2429,7 +2429,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.1.24_PerformanceHUD_AllWarm_NoDespawn.html • v100.1.24_PerformanceHUD_AllWarm_NoDespawn • Built: 2026-04-05T00:35:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.1.25_DiscreteHorizontal_NoRubberBand.html • v100.1.25_DiscreteHorizontal_NoRubberBand • Built: 2026-04-05T00:35:00Z UTC</div>
 
 
 <script>
@@ -2443,8 +2443,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v100.1.24_PerformanceHUD_AllWarm_NoDespawn.html</span><br>
-Version: <span id="__bannerVersion">v100.1.24_PerformanceHUD_AllWarm_NoDespawn</span><br>
+File: <span id="__bannerFileName">garden_v100.1.25_DiscreteHorizontal_NoRubberBand.html</span><br>
+Version: <span id="__bannerVersion">v100.1.25_DiscreteHorizontal_NoRubberBand</span><br>
 Created: 2026-04-05 12:35 AM PT</span></div>
 <script>
 (function(){
@@ -2460,7 +2460,7 @@ Created: 2026-04-05 12:35 AM PT</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v100.1.24_PerformanceHUD_AllWarm_NoDespawn loaded", new Date().toISOString());
+  console.log("[VERSION] v100.1.25_DiscreteHorizontal_NoRubberBand loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -3066,7 +3066,7 @@ window.__LL_hillTopAtX_fill = function(x, yTopGuess, yBottom){
 <!-- Debug Panel -->
 <div aria-hidden="false" id="dbgPanel">
   <div class="hdr">
-    <div class="t">LifeLog DEBUG v100.1.24_PerformanceHUD_AllWarm_NoDespawn (press D)</div>
+    <div class="t">LifeLog DEBUG v100.1.25_DiscreteHorizontal_NoRubberBand (press D)</div>
     <div class="btns">
       <button id="dbgCopy" type="button">Copy</button>
       <button id="dbgClear" type="button">Clear</button>
@@ -3434,7 +3434,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   </div>
 
   <div class="util hidden" id="util">
-    <div class="utilTitle">LifeLog Garden Walk v100.1.24_PerformanceHUD_AllWarm_NoDespawn</div>
+    <div class="utilTitle">LifeLog Garden Walk v100.1.25_DiscreteHorizontal_NoRubberBand</div>
     <div class="utilSub">Scroll to walk through weeks. Press H to hide/show this panel.</div>
 	    <div class="row">
 	      <label>Wireframe</label>
@@ -3664,7 +3664,7 @@ function wrapLLDBGStep_(){
     }
   }catch(e){}
 }
-dbg_('v100.1.24_PerformanceHUD_AllWarm_NoDespawn.0: Main script starting');
+dbg_('v100.1.25_DiscreteHorizontal_NoRubberBand.0: Main script starting');
 
 // ============================================
 // Constants
@@ -5697,7 +5697,7 @@ function refreshFrontGrass(){
 // ============================================
 
 // ============================================
-// v100.1.24_PerformanceHUD_AllWarm_NoDespawn: keep back-row flowers horizontally de-clumped
+// v100.1.25_DiscreteHorizontal_NoRubberBand: keep back-row flowers horizontally de-clumped
 // ============================================
 const __LL_BACK_SPREAD_MAX_BEHIND = 5;    // reach near-full spread quickly (about 4-6 rows back)
 const __LL_BACK_SPREAD_EDGE_PAD   = 0.006; // keep a tiny inset so nothing clips at extreme edges
@@ -5722,7 +5722,7 @@ const __LL_EVEN_NEARFRONT_BLEND_BEHIND = 1.35; // rows: 0..~1.35 blends from day
 
 
 // ============================================
-// v100.1.24_PerformanceHUD_AllWarm_NoDespawn: offline back-hill port constants
+// v100.1.25_DiscreteHorizontal_NoRubberBand: offline back-hill port constants
 // ============================================
 const FRONT_VISIBLE_WEEKS = 10;
 const CREST_BUFFER_WEEKS = 1;
@@ -5805,75 +5805,54 @@ function updateBandSlotSpread_(band, behind, s){
     ? Math.max(2, Math.min(__LL_EVEN_MAX_WEEKS, window.__llEvenSlotsWCurrent|0))
     : __LL_EVEN_MAX_WEEKS;
 
-  // Cache so we do not rewrite styles every frame if nothing meaningfully changed
-  const key = "evenA|monoBias|w"+W+"|b"+(Math.round((behind||0)*1000)/1000)+"|s"+(Math.round((s||1)*1000)/1000);
-  if (band.__llSpreadKey === key) return;
-  band.__llSpreadKey = key;
-
-  // Near-front blend: avoid "pop" when a week transitions from front row into the even-slot grid.
-  // b=0 -> exact day centers; b>=BLEND -> fully even-slot behavior.
-  const __b0 = Math.max(0, behind || 0);
-  const __tBlend = __llClamp01_(__b0 / __LL_EVEN_NEARFRONT_BLEND_BEHIND);
-
   const N = 7 * W;
   const centerR = Math.floor(W / 2);
-
-  // Stable per-week side bias so rows do not "ping-pong" left/right while scrolling.
-  // Roughly half the weeks drift left and half drift right (deterministic).
   const weekIso = (band._weekData && band._weekData.iso) ? String(band._weekData.iso)
               : (band.dataset.weekId || band.dataset.weekKey || band.dataset.weekIndex || "wk");
   const sideRng = mulberry32(hash32FromString("evenSlotA_side_" + weekIso));
   const sideSign = (sideRng() < 0.5) ? -1 : +1;
 
-  // Smooth motion during scroll using fractional behind interpolation
-  const b = Math.max(0, behind || 0);
+  const wi = parseInt((band.dataset && band.dataset.weekIndex) ? band.dataset.weekIndex : '0', 10);
+  const stableFront = (typeof window.__llStableFrontIndex === 'number' && isFinite(window.__llStableFrontIndex))
+    ? (window.__llStableFrontIndex|0)
+    : null;
 
-// Use unbounded ranks so deep rows do not "pop" when crossing the W cap.
-// Motion saturates naturally via m0/m1 clamping below.
-const r0 = Math.max(0, Math.floor(b));
-const r1 = r0 + 1;
-const a  = b - r0;
+  // Freeze horizontal role to the last settled front index so rows do not rubber-band left/right
+  // while currentOffset is still easing. Depth/scale remain continuous elsewhere.
+  let bDisc = 0;
+  if (stableFront != null && isFinite(wi)) {
+    bDisc = Math.max(0, stableFront - wi);
+  } else {
+    bDisc = Math.max(0, Math.round(behind || 0));
+  }
 
-  // Monotonic outward offsets: 0, 1, 2, 3... (clamped), applied with a fixed sideSign.
-  const m0 = Math.min(centerR, r0);
-  const m1 = Math.min(centerR, r1);
-
-  // Saturated ranks for jitter seeding so very deep rows remain stable (no shimmer).
-  const satR0 = Math.min(centerR, r0);
-  const satR1 = Math.min(centerR, r1);
-
-  // Deterministic tiny jitter (keeps from looking too "grid"), stable per week/day/rank.
+  // Front row stays on exact weekday centers. Rows behind use discrete even-slot ranks.
+  const useEven = bDisc >= 1;
+  const m = Math.min(centerR, Math.max(0, bDisc));
   const step = 1 / Math.max(1, N);
-  const maxJit = step * 0.06; // subtle, avoid edge clipping
+  const maxJit = step * 0.06;
+  const edgePad = 0.006;
 
-  // Edges: keep everything on-screen.
-  const edgePad = 0.006; // inset (tighter edges)
+  const key = "evenA|discrete|w"+W+"|bd"+bDisc+"|even"+(useEven?1:0)+"|s"+(Math.round((s||1)*1000)/1000);
+  if (band.__llSpreadKey === key) return;
+  band.__llSpreadKey = key;
 
   for (let d=0; d<7 && d<slots.length; d++){
-    const k0 = (W * d) + (centerR + sideSign * m0);
-    const k1 = (W * d) + (centerR + sideSign * m1);
-
-    let desired0 = (k0 + 0.5) / N;
-    let desired1 = (k1 + 0.5) / N;
-
-    // jitter per rank/day, then interpolate to keep motion smooth
-    const rr0 = mulberry32(hash32FromString("evenSlotA_jit_" + weekIso + "_" + satR0 + "_" + d));
-    const rr1 = mulberry32(hash32FromString("evenSlotA_jit_" + weekIso + "_" + satR1 + "_" + d));
-    desired0 += (rr0()*2 - 1) * maxJit;
-    desired1 += (rr1()*2 - 1) * maxJit;
-
-    const desiredEven = __llLerp_(desired0, desired1, a);
-
-    // Blend from strict day-centers (front-like) into even-slot layout to prevent popping when scrolling backward.
-    const desiredDay = (d + 0.5) / 7;
-    let desired = __llLerp_(desiredDay, desiredEven, __tBlend);
+    let desired;
+    if (!useEven){
+      desired = (d + 0.5) / 7;
+    } else {
+      const k = (W * d) + (centerR + sideSign * m);
+      desired = (k + 0.5) / N;
+      const rr = mulberry32(hash32FromString("evenSlotA_jit_" + weekIso + "_" + Math.min(centerR, m) + "_" + d));
+      desired += (rr()*2 - 1) * maxJit;
+    }
 
     desired = Math.max(edgePad, Math.min(1 - edgePad, desired));
 
-    // Compensate for the band’s scale() around center:
+    // Keep world-space horizontal placement visually stable while the band scale eases.
     const invS = 1 / Math.max(0.001, s || 1);
     let pre  = 0.5 + (desired - 0.5) * invS;
-
     pre = Math.max(edgePad, Math.min(1 - edgePad, pre));
 
     slots[d].style.left = (pre * 100).toFixed(3) + "%";
@@ -5999,6 +5978,12 @@ function applyTransforms(tNow){
   const frontIndexVisual = Math.round(frontF);
   const __llSettleEps = 0.10;
   const __llIsSettled = Math.abs(__rt.nav.currentOffset - __rt.nav.targetIndex) <= __llSettleEps;
+  if (typeof window.__llStableFrontIndex !== 'number' || !isFinite(window.__llStableFrontIndex)) {
+    window.__llStableFrontIndex = frontIndexVisual;
+  }
+  if (__llIsSettled) {
+    window.__llStableFrontIndex = frontIndexVisual;
+  }
 
   if (__llIsSettled && frontIndexVisual !== __rt.nav.lastFrontIndex){
     const prevFront = __rt.nav.lastFrontIndex;
@@ -10807,7 +10792,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.__LL_LAST_PTR_Y__ = window.innerHeight/2;
   window.addEventListener('pointermove', (ev)=>{ window.__LL_LAST_PTR_X__ = ev.clientX; window.__LL_LAST_PTR_Y__ = ev.clientY; }, {passive:true});
 
-  dbg_('v100.1.24_PerformanceHUD_AllWarm_NoDespawn.0: DOMContentLoaded');
+  dbg_('v100.1.25_DiscreteHorizontal_NoRubberBand.0: DOMContentLoaded');
 
   cacheDomRefs();
   try{ wrapLLDBGStep_(); }catch(e){}
@@ -10953,7 +10938,7 @@ window.__LL_BACKROWS_ANCHOR_MATCHED = true; // prevent later global overrides
   }catch(e){}
 
 
-  dbg_('v100.1.24_PerformanceHUD_AllWarm_NoDespawn.0: Initialization complete');
+  dbg_('v100.1.25_DiscreteHorizontal_NoRubberBand.0: Initialization complete');
 });
 })();
 
@@ -11331,7 +11316,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 
 
 <script>
-// v100.1.24_PerformanceHUD_AllWarm_NoDespawn lifecycle manager
+// v100.1.25_DiscreteHorizontal_NoRubberBand lifecycle manager
 (function(){
   if (window.__LL_SYS__) return;
   const SYS = { timeouts:new Set(), intervals:new Set(), observers:new Set(), listeners:[] };
@@ -11347,14 +11332,14 @@ window.applySelectedAdornments = applySelectedAdornments;
 </script>
 
 <script>
-// v100.1.24_PerformanceHUD_AllWarm_NoDespawn: unified BRX/back-row hard-disable controller.
+// v100.1.25_DiscreteHorizontal_NoRubberBand: unified BRX/back-row hard-disable controller.
 (function(){
   try{
     window.__PHASEA_DISABLE_BRX__ = true;
     window.__LL_DISABLE_BACKHILL__ = true;
     window.BRX_DISABLE_LEGACY_BACKROWS = true;
 
-    const VERSION = 'v100.1.24_PerformanceHUD_AllWarm_NoDespawn';
+    const VERSION = 'v100.1.25_DiscreteHorizontal_NoRubberBand';
     const hideLegacyGroups = () => {
       ['backRowsG','gridWeeksG','hillGuidesG','gridOverlayG','gridWeeksOverlay','brxHillPngG','brxHillDbgG']
         .forEach(id => {
