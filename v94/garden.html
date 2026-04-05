@@ -135,7 +135,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.23_HTMLHitTargetsWrapperRect';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.24_PerformanceHUD_AllWarm_NoDespawn';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -263,7 +263,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 function renderBackRows(){ /* disabled */ }
 
 (function(){
-  const VERSION = 'v100.1.23_HTMLHitTargetsWrapperRect';
+  const VERSION = 'v100.1.24_PerformanceHUD_AllWarm_NoDespawn';
 
   // ---- Canonical version globals ----
   window.APP_VERSION = VERSION;
@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.1.23_HTMLHitTargetsWrapperRect.html</title>
+<title>garden_v100.1.24_PerformanceHUD_AllWarm_NoDespawn.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -887,7 +887,6 @@ body.llScreenSaverLowPower .flowerWind{
 
 .flowerAssetPngWrap {
   position: relative;
-  z-index: 1;
   width: calc(var(--assetDisplayW, 450px) * var(--flowerScale, 1));
   height: calc(var(--assetDisplayH, 540px) * var(--flowerScale, 1));
   display: block;
@@ -915,44 +914,6 @@ body.llScreenSaverLowPower .flowerWind{
   height: 100%;
   overflow: visible;
   display: block;
-}
-.flowerHtmlHitLayer {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  transform: none;
-  overflow: visible;
-  display: block;
-  z-index: 80;
-  pointer-events: none;
-}
-.flowerHtmlHit {
-  position:absolute;
-  pointer-events:auto;
-  z-index:50;
-  border-radius:999px;
-  left:0; top:0;
-  transform:translate(-50%,-50%);
-  background: rgba(255,0,0,0.18);
-  border: 2px solid rgba(255,0,0,0.92);
-  box-sizing: border-box;
-}
-.flowerHtmlHit.hsCore {
-  cursor: pointer;
-  pointer-events: all;
-}
-body:not(.llHitboxOn) .flowerHtmlHit.hsCore {
-  background: rgba(255,0,0,0.18);
-  border-color: rgba(255,0,0,0.92);
-}
-body.llHitboxOn .flowerHtmlHit.hsCore {
-  border-width:2px;
-  border-color: rgba(255,0,0,0.95);
-  background: rgba(255,0,0,0.20);
-}
-.flowerHtmlHit.hsCore.llHotSelected {
-  box-shadow: 0 0 0 2px rgba(255,255,255,0.98), 0 0 8px rgba(255,255,255,0.75);
 }
 .flowerHitSvg .hsCore {
   fill: transparent !important;
@@ -2468,7 +2429,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.1.23_HTMLHitTargetsWrapperRect.html • v100.1.23_HTMLHitTargetsWrapperRect • Built: 2026-04-05T01:45:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.1.24_PerformanceHUD_AllWarm_NoDespawn.html • v100.1.24_PerformanceHUD_AllWarm_NoDespawn • Built: 2026-04-05T00:35:00Z UTC</div>
 
 
 <script>
@@ -2482,8 +2443,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v100.1.23_HTMLHitTargetsWrapperRect.html</span><br>
-Version: <span id="__bannerVersion">v100.1.23_HTMLHitTargetsWrapperRect</span><br>
+File: <span id="__bannerFileName">garden_v100.1.24_PerformanceHUD_AllWarm_NoDespawn.html</span><br>
+Version: <span id="__bannerVersion">v100.1.24_PerformanceHUD_AllWarm_NoDespawn</span><br>
 Created: 2026-04-05 12:35 AM PT</span></div>
 <script>
 (function(){
@@ -2499,7 +2460,7 @@ Created: 2026-04-05 12:35 AM PT</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v100.1.23_HTMLHitTargetsWrapperRect loaded", new Date().toISOString());
+  console.log("[VERSION] v100.1.24_PerformanceHUD_AllWarm_NoDespawn loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -3105,7 +3066,7 @@ window.__LL_hillTopAtX_fill = function(x, yTopGuess, yBottom){
 <!-- Debug Panel -->
 <div aria-hidden="false" id="dbgPanel">
   <div class="hdr">
-    <div class="t">LifeLog DEBUG v100.1.23_HTMLHitTargetsWrapperRect (press D)</div>
+    <div class="t">LifeLog DEBUG v100.1.24_PerformanceHUD_AllWarm_NoDespawn (press D)</div>
     <div class="btns">
       <button id="dbgCopy" type="button">Copy</button>
       <button id="dbgClear" type="button">Clear</button>
@@ -3473,7 +3434,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   </div>
 
   <div class="util hidden" id="util">
-    <div class="utilTitle">LifeLog Garden Walk v100.1.23_HTMLHitTargetsWrapperRect</div>
+    <div class="utilTitle">LifeLog Garden Walk v100.1.24_PerformanceHUD_AllWarm_NoDespawn</div>
     <div class="utilSub">Scroll to walk through weeks. Press H to hide/show this panel.</div>
 	    <div class="row">
 	      <label>Wireframe</label>
@@ -3703,7 +3664,7 @@ function wrapLLDBGStep_(){
     }
   }catch(e){}
 }
-dbg_('v100.1.23_HTMLHitTargetsWrapperRect.0: Main script starting');
+dbg_('v100.1.24_PerformanceHUD_AllWarm_NoDespawn.0: Main script starting');
 
 // ============================================
 // Constants
@@ -4454,8 +4415,11 @@ const monthC = (MONTH_COLORS[month] || "#C7D4E2");
   }
 
   function mainBloom(levelNum){
-    var spec = flowerHeadSpecForLevel_(levelNum);
-    return head(spec.scale, spec.diskR, spec.yHead, spec.outerN, spec.innerN);
+    if (levelNum===1) return head(1.06 * 1.5, 20, -34, 16, 10);
+    if (levelNum===2) return head(1.06 * 1.5, 28, -62, 18, 12);
+    if (levelNum===3) return head(1.18, 40, -72, 22, 14);
+    if (levelNum===4) return head(1.32, 48, -78, 24, 16);
+    return head(1.46, 56, -82, 26, 18);
   }
 
   function leafPath(side, x0, y0, w, h, curl){
@@ -5264,10 +5228,12 @@ if(window.__llForceTodayAfterExport_ && fullRebuild){
     ensureWeekNodes_(wi);
   }
 
-  // Dispose out-of-range weeks
-  for (const wi of Array.from(__llRenderedWeeks.keys())){
-    if (wi < minIdx || wi > maxIdx){
-      disposeWeekNodes_(wi);
+  // Keep rendered weeks warm once created; do not despawn out-of-range weeks.
+  if (!window.__LL_KEEP_RENDERED_WEEKS__){
+    for (const wi of Array.from(__llRenderedWeeks.keys())){
+      if (wi < minIdx || wi > maxIdx){
+        disposeWeekNodes_(wi);
+      }
     }
   }
 
@@ -5330,28 +5296,6 @@ function extractDriveFileIdFromUrl_(url){
   return '';
 }
 
-window.__llFlowerWarmCache = window.__llFlowerWarmCache || new Map();
-function warmFlowerAsset_(url){
-  try {
-    url = String(url || '').trim();
-    if (!url) return null;
-    var cache = window.__llFlowerWarmCache;
-    var hit = cache.get(url);
-    if (hit) { hit.t = Date.now(); return hit.promise || null; }
-    var img = new Image();
-    img.decoding = 'async';
-    img.loading = 'eager';
-    img.crossOrigin = 'anonymous';
-    var promise = new Promise(function(resolve){
-      img.onload = function(){ resolve(img); };
-      img.onerror = function(){ resolve(null); };
-    });
-    cache.set(url, { img: img, promise: promise, t: Date.now() });
-    img.src = url;
-    return promise;
-  } catch(_e) { return null; }
-}
-
 function flowerAssetRenderUrl_(day){
   if (!day) return '';
   var relayBase = getFlowerAssetRelayBase_();
@@ -5368,6 +5312,41 @@ window.__LL_ASSET_BOOT__ = window.__LL_ASSET_BOOT__ || {
   offlineFallbackArmed: false,
   offlineFallbackMs: 1500
 };
+
+window.__LL_KEEP_RENDERED_WEEKS__ = true;
+window.__LL_FLOWER_IMG_CACHE__ = window.__LL_FLOWER_IMG_CACHE__ || new Map();
+
+function warmFlowerAssetUrl_(url){
+  try {
+    var u = String(url || '').trim();
+    if (!u) return null;
+    var cache = window.__LL_FLOWER_IMG_CACHE__ || (window.__LL_FLOWER_IMG_CACHE__ = new Map());
+    var rec = cache.get(u);
+    if (rec && rec.img) return rec.img;
+    var img = new Image();
+    img.decoding = 'async';
+    img.loading = 'eager';
+    try { img.crossOrigin = 'anonymous'; } catch(_e) {}
+    rec = { img: img, src: u, loaded: false, error: false, touchedAt: Date.now() };
+    img.addEventListener('load', function(){ rec.loaded = true; rec.error = false; rec.touchedAt = Date.now(); try { requestFlowerAssetCountRefresh_(); } catch(_e) {} });
+    img.addEventListener('error', function(){ rec.error = true; rec.touchedAt = Date.now(); });
+    img.src = u;
+    cache.set(u, rec);
+    return img;
+  } catch(_e) {}
+  return null;
+}
+
+function warmAllFlowerAssetsFromExport_(){
+  try {
+    var rows = Array.isArray(window.__LL_GARDEN_EXPORT_ROWS__) ? window.__LL_GARDEN_EXPORT_ROWS__ : [];
+    for (var i = 0; i < rows.length; i++) {
+      var row = rows[i] || {};
+      var url = flowerAssetRenderUrl_(row);
+      if (url) warmFlowerAssetUrl_(url);
+    }
+  } catch(_e) {}
+}
 
 function armOfflineSvgFallback_(){
   try {
@@ -5430,64 +5409,40 @@ function computePngAssetMetrics_(day){
   return { imgW:imgW, imgH:imgH, stemX:stemX, stemY:stemY, displayW:displayW, displayH:displayH, scaleX:scaleX, scaleY:scaleY, anchorShift:anchorShift };
 }
 
-function computeSvgHtmlHitMetrics_(day, dims){
-  var hs = (typeof flowerHitGeometryForDay_ === 'function') ? flowerHitGeometryForDay_(day) : { cx:200, cy:300, r:90 };
-  var boxW = Math.max(1, Number(dims && dims.displayW) || 265 * PNG_GLOBAL_SCALE_);
-  var boxH = Math.max(1, Number(dims && dims.displayH) || 540 * PNG_GLOBAL_SCALE_);
-  var vbW = 400, vbH = 940;
-  var s = Math.min(boxW / vbW, boxH / vbH);
-  var drawW = vbW * s;
-  var drawH = vbH * s;
-  var offX = (boxW - drawW) * 0.5;
-  var offY = boxH - drawH;
-  var cx = offX + (Number(hs.cx) * s);
-  var cy = offY + (Number(hs.cy) * s);
-  var rr = Number(hs.r) * s;
-  return {
-    boxW: boxW,
-    boxH: boxH,
-    cx: cx,
-    cy: cy,
-    r: rr,
-    left: cx,
-    top: cy
-  };
-}
-
-function syncHtmlHitTargetForWrap_(wrapEl, day){
-  try {
-    if (!wrapEl || !day) return;
-    var assetWrap = wrapEl.querySelector('.flowerAssetPngWrap');
-    var hit = wrapEl.querySelector('.flowerHtmlHit.hsCore');
-    if (!assetWrap || !hit) return;
-    var rect = assetWrap.getBoundingClientRect();
-    var dims = { displayW: rect.width, displayH: rect.height };
-    var hm = computeSvgHtmlHitMetrics_(day, dims);
-    hit.style.left = hm.left.toFixed(2) + 'px';
-    hit.style.top = hm.top.toFixed(2) + 'px';
-    hit.style.width = (hm.r * 2).toFixed(2) + 'px';
-    hit.style.height = (hm.r * 2).toFixed(2) + 'px';
-  } catch(_e) {}
-}
-
 function buildFlowerMarkupForDay_(day){
   var pngUrl = flowerAssetRenderUrl_(day);
   if (pngUrl) {
-    try { warmFlowerAsset_(pngUrl); } catch(_e) {}
-    var hm = computeSvgHtmlHitMetrics_(day, m);
+    warmFlowerAssetUrl_(pngUrl);
+    var hs = (function(dd){
+      var hx = Number(dd && (dd.flowerAssetHotspotCx || dd.HotspotCx));
+      var hy = Number(dd && (dd.flowerAssetHotspotCy || dd.HotspotCy));
+      var hr = Number(dd && (dd.flowerAssetHotspotR  || dd.HotspotR));
+      if (isFinite(hx) && isFinite(hy) && isFinite(hr) && hr > 0) {
+        return { cx:hx, cy:hy, r:hr };
+      }
+      if (typeof hotspotGeomForDay_ === 'function') return hotspotGeomForDay_(dd);
+      var lvl = Number(dd && dd.level) || 1;
+      var topY = ({1:500,2:420,3:300,4:200,5:100})[lvl] || 500;
+      var bloom = {
+        1:{s:1.06*1.5,y:-34,r:20},
+        2:{s:1.06*1.5,y:-62,r:28},
+        3:{s:1.18,y:-72,r:40},
+        4:{s:1.32,y:-78,r:48},
+        5:{s:1.46,y:-82,r:56}
+      }[lvl] || {s:1.06*1.5,y:-34,r:20};
+      return { cx:200, cy:(topY + bloom.y * bloom.s), r:(bloom.r * 2.25 * bloom.s) };
+    })(day);
     var dateKey = String(day.dateKey || '');
     var m = computePngAssetMetrics_(day);
     var displayH = m.displayH;
     var displayW = m.displayW;
-    var hsLeft = hm.left;
-    var hsTop = hm.top;
-    var hsR = hm.r;
+    var hsCx = ((Number(hs.cx) - m.stemX) * m.scaleX) + (displayW * 0.5);
+    var hsCy = ((Number(hs.cy) - m.stemY) * m.scaleY) + displayH;
+    var hsR = Number(hs.r) * Math.max(m.scaleX, m.scaleY);
     return `
       <div class="flowerAssetPngWrap" style="--assetDisplayW:${displayW.toFixed(2)}px;--assetDisplayH:${displayH.toFixed(2)}px;">
-        <img class="flowerPngAsset" src="${pngUrl}" alt="" crossorigin="anonymous" loading="eager" decoding="async" fetchpriority="high"/>
-        <div class="flowerHtmlHitLayer">
-          <div class="flowerHtmlHit hsCore" data-role="hotspot" title="html-hit" data-datekey="${dateKey}" style="left:${hsLeft.toFixed(2)}px;top:${hsTop.toFixed(2)}px;width:${(hsR*2).toFixed(2)}px;height:${(hsR*2).toFixed(2)}px;"></div>
-        </div>
+        <img class="flowerPngAsset" src="${pngUrl}" alt="" crossorigin="anonymous" loading="eager" decoding="async"/>
+        <div class="flowerSvgHitProxy" aria-hidden="true">${flowerSvg(day)}</div>
       </div>`;
   }
   return `<div class="flowerSvgWrap">${flowerSvg(day)}</div>`;
@@ -5641,7 +5596,6 @@ flowerWrapEls.push(wrap);
     wrap.innerHTML = `<div class="flowerWind">${assetUrl ? buildFlowerMarkupForDay_(dayData) : (shouldUsePending ? buildPendingFlowerMarkupForDay_(dayData) : `<div class="flowerSvgWrap">${flowerSvg(dayData)}</div>`)}</div>`;
 
     if (assetUrl) {
-      try { requestAnimationFrame(function(){ syncHtmlHitTargetForWrap_(wrap, dayData); }); } catch(_e) {}
       (function(wrapEl, dayForFallback){
         function swapToSvgFallback_(){
           try {
@@ -5661,10 +5615,7 @@ flowerWrapEls.push(wrap);
           imgEl.addEventListener('load', function(){
             wrapEl.dataset.renderAsset = (imgEl.naturalWidth > 0 && imgEl.naturalHeight > 0) ? "png" : "svg";
             if (wrapEl.dataset.renderAsset !== "png") swapToSvgFallback_();
-            else {
-              syncHtmlHitTargetForWrap_(wrapEl, dayForFallback);
-              requestFlowerAssetCountRefresh_();
-            }
+            else requestFlowerAssetCountRefresh_();
           }, { once: true });
           imgEl.addEventListener('error', function(){
             swapToSvgFallback_();
@@ -5673,7 +5624,6 @@ flowerWrapEls.push(wrap);
           if (imgEl.complete) {
             if (imgEl.naturalWidth > 0 && imgEl.naturalHeight > 0) {
               wrapEl.dataset.renderAsset = "png";
-              syncHtmlHitTargetForWrap_(wrapEl, dayForFallback);
               requestFlowerAssetCountRefresh_();
             } else {
               swapToSvgFallback_();
@@ -5747,7 +5697,7 @@ function refreshFrontGrass(){
 // ============================================
 
 // ============================================
-// v100.1.23_HTMLHitTargetsWrapperRect: keep back-row flowers horizontally de-clumped
+// v100.1.24_PerformanceHUD_AllWarm_NoDespawn: keep back-row flowers horizontally de-clumped
 // ============================================
 const __LL_BACK_SPREAD_MAX_BEHIND = 5;    // reach near-full spread quickly (about 4-6 rows back)
 const __LL_BACK_SPREAD_EDGE_PAD   = 0.006; // keep a tiny inset so nothing clips at extreme edges
@@ -5772,7 +5722,7 @@ const __LL_EVEN_NEARFRONT_BLEND_BEHIND = 1.35; // rows: 0..~1.35 blends from day
 
 
 // ============================================
-// v100.1.23_HTMLHitTargetsWrapperRect: offline back-hill port constants
+// v100.1.24_PerformanceHUD_AllWarm_NoDespawn: offline back-hill port constants
 // ============================================
 const FRONT_VISIBLE_WEEKS = 10;
 const CREST_BUFFER_WEEKS = 1;
@@ -10857,7 +10807,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.__LL_LAST_PTR_Y__ = window.innerHeight/2;
   window.addEventListener('pointermove', (ev)=>{ window.__LL_LAST_PTR_X__ = ev.clientX; window.__LL_LAST_PTR_Y__ = ev.clientY; }, {passive:true});
 
-  dbg_('v100.1.23_HTMLHitTargetsWrapperRect.0: DOMContentLoaded');
+  dbg_('v100.1.24_PerformanceHUD_AllWarm_NoDespawn.0: DOMContentLoaded');
 
   cacheDomRefs();
   try{ wrapLLDBGStep_(); }catch(e){}
@@ -11003,7 +10953,7 @@ window.__LL_BACKROWS_ANCHOR_MATCHED = true; // prevent later global overrides
   }catch(e){}
 
 
-  dbg_('v100.1.23_HTMLHitTargetsWrapperRect.0: Initialization complete');
+  dbg_('v100.1.24_PerformanceHUD_AllWarm_NoDespawn.0: Initialization complete');
 });
 })();
 
@@ -11381,7 +11331,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 
 
 <script>
-// v100.1.23_HTMLHitTargetsWrapperRect lifecycle manager
+// v100.1.24_PerformanceHUD_AllWarm_NoDespawn lifecycle manager
 (function(){
   if (window.__LL_SYS__) return;
   const SYS = { timeouts:new Set(), intervals:new Set(), observers:new Set(), listeners:[] };
@@ -11397,14 +11347,14 @@ window.applySelectedAdornments = applySelectedAdornments;
 </script>
 
 <script>
-// v100.1.23_HTMLHitTargetsWrapperRect: unified BRX/back-row hard-disable controller.
+// v100.1.24_PerformanceHUD_AllWarm_NoDespawn: unified BRX/back-row hard-disable controller.
 (function(){
   try{
     window.__PHASEA_DISABLE_BRX__ = true;
     window.__LL_DISABLE_BACKHILL__ = true;
     window.BRX_DISABLE_LEGACY_BACKROWS = true;
 
-    const VERSION = 'v100.1.23_HTMLHitTargetsWrapperRect';
+    const VERSION = 'v100.1.24_PerformanceHUD_AllWarm_NoDespawn';
     const hideLegacyGroups = () => {
       ['backRowsG','gridWeeksG','hillGuidesG','gridOverlayG','gridWeeksOverlay','brxHillPngG','brxHillDbgG']
         .forEach(id => {
@@ -12368,7 +12318,8 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
     log("Offline mode. Provide exec URL to load real GardenExport data.");
     (typeof window.setGardenDataSourceLabel_==="function" ? window.setGardenDataSourceLabel_("Offline (placeholder)") : void 0);
   }
-  try { armOfflineSvgFallback_(); } catch(_e) {}
+  try { armOfflineSvgFallback_();
+try { setTimeout(function(){ try { warmAllFlowerAssetsFromExport_(); } catch(_e) {} }, 50); } catch(_e) {} } catch(_e) {}
 }
 
   if(document.readyState === "loading"){
@@ -12489,40 +12440,17 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
   function flatFlowerRasterSize_(){
     return { w: FIXED_FLOWER_EXPORT_.width, h: FIXED_FLOWER_EXPORT_.height };
   }
-  function flowerHeadSpecForLevel_(levelNum){
-    var lvl = Math.max(1, Math.min(5, Number(levelNum) || 1));
-    var TOP_Y = { 1:500, 2:420, 3:300, 4:200, 5:100 };
-    var BLOOM = {
-      1:{ scale:(1.06 * 1.5), yHead:-34, diskR:20, outerN:16, innerN:10 },
-      2:{ scale:(1.06 * 1.5), yHead:-62, diskR:28, outerN:18, innerN:12 },
-      3:{ scale:1.18,          yHead:-72, diskR:40, outerN:22, innerN:14 },
-      4:{ scale:1.32,          yHead:-78, diskR:48, outerN:24, innerN:16 },
-      5:{ scale:1.46,          yHead:-82, diskR:56, outerN:26, innerN:18 }
-    };
-    var bloom = BLOOM[lvl];
-    return {
-      level: lvl,
-      stemX: 200,
-      topY: TOP_Y[lvl],
-      scale: bloom.scale,
-      yHead: bloom.yHead,
-      diskR: bloom.diskR,
-      outerN: bloom.outerN,
-      innerN: bloom.innerN
-    };
-  }
-
-  function flowerHitGeometryForDay_(day){
-    var spec = flowerHeadSpecForLevel_(day && day.level);
-    var cx = spec.stemX;
-    var cy = spec.topY + (spec.yHead * spec.scale);
-    var r = spec.diskR * 2.25 * spec.scale;
-    return { cx: cx, cy: cy, r: r, spec: spec };
-  }
-
   function hotspotGeomForDay_(day){
-    var g = flowerHitGeometryForDay_(day);
-    return { cx:g.cx, cy:g.cy, r:g.r };
+    var lvl = Number(day.level) || 1;
+    var topY = ({1:500,2:420,3:300,4:200,5:100})[lvl] || 500;
+    var bloom = {
+      1:{s:1.06*1.5,y:-34,r:20},
+      2:{s:1.06*1.5,y:-62,r:28},
+      3:{s:1.18,y:-72,r:40},
+      4:{s:1.32,y:-78,r:48},
+      5:{s:1.46,y:-82,r:56}
+    }[lvl];
+    return { cx:200, cy:(topY + bloom.y * bloom.s), r:(bloom.r * 2.25 * bloom.s) };
   }
   function flowerKeyForDay_(day){
     return [day.level, day.primary, day.secondary, day.month, day.uid].join('|');
