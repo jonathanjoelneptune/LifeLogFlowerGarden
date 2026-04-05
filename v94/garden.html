@@ -135,7 +135,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.27.1_IncrementalSync_SimpleFrontGrass_ErrorFix';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.27.2_AsyncPrewarm_CSSFrontGrass';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -263,7 +263,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 function renderBackRows(){ /* disabled */ }
 
 (function(){
-  const VERSION = 'v100.1.27.1_IncrementalSync_SimpleFrontGrass_ErrorFix';
+  const VERSION = 'v100.1.27.2_AsyncPrewarm_CSSFrontGrass';
 
   // ---- Canonical version globals ----
   window.APP_VERSION = VERSION;
@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.1.27.1_IncrementalSync_SimpleFrontGrass_ErrorFix.html</title>
+<title>garden_v100.1.27.2_AsyncPrewarm_CSSFrontGrass.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -1092,8 +1092,9 @@ body.llHitboxOn .flowerSvgHitProxy .flowerSvg .hsCore {
   left: 0;
   right: 0;
   margin: 0 92px;
-  bottom: 8px;
-  height: 95px;
+  bottom: 10px;
+  height: 132px;
+  overflow: hidden;
   pointer-events: none;
   z-index: 6;
   opacity: 0.98;
@@ -1103,15 +1104,31 @@ body.llHitboxOn .flowerSvgHitProxy .flowerSvg .hsCore {
   content: "";
   position: absolute;
   left: 0; right: 0; bottom: 0;
-  height: 52px;
-  background: linear-gradient(180deg, rgba(14,90,42,0.00) 0%, rgba(14,90,42,0.65) 40%, rgba(14,90,42,0.98) 100%);
+  height: 74px;
+  background: linear-gradient(180deg, rgba(14,90,42,0.00) 0%, rgba(14,90,42,0.46) 36%, rgba(14,90,42,0.90) 100%);
   pointer-events: none;
 }
-.frontGrass .tuft {
+.frontGrass::after {
+  content: "";
   position: absolute;
-  transform: translateX(-50%);
+  left: -2%;
+  right: -2%;
+  bottom: 0;
+  height: 100%;
+  background-image: var(--grassImg), var(--grassImg);
+  background-repeat: repeat-x, repeat-x;
+  background-size: 560px 100%, 560px 100%;
+  background-position: 0 100%, 280px 100%;
+  opacity: 0.90;
+  pointer-events: none;
+  filter:
+    saturate(1.03)
+    contrast(1.06)
+    drop-shadow(0 -1px 0 rgba(0,0,0,0.42))
+    drop-shadow(0 1px 0 rgba(0,0,0,0.16));
+  -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 58%, rgba(0,0,0,0.72) 82%, rgba(0,0,0,0) 100%);
+  mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 58%, rgba(0,0,0,0.72) 82%, rgba(0,0,0,0) 100%);
 }
-.frontGrass svg { width: 100%; height: 100%; display: block; }
 
 /* ---------- DOW Strip ---------- */
 .dowGrass {
@@ -2430,7 +2447,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.1.27.1_IncrementalSync_SimpleFrontGrass_ErrorFix.html • v100.1.24_PerformanceHUD_AllWarm_NoDespawn • Built: 2026-04-05T00:35:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.1.27.2_AsyncPrewarm_CSSFrontGrass.html • v100.1.24_PerformanceHUD_AllWarm_NoDespawn • Built: 2026-04-05T00:35:00Z UTC</div>
 
 
 <script>
@@ -2444,7 +2461,7 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v100.1.27.1_IncrementalSync_SimpleFrontGrass_ErrorFix.html</span><br>
+File: <span id="__bannerFileName">garden_v100.1.27.2_AsyncPrewarm_CSSFrontGrass.html</span><br>
 Version: <span id="__bannerVersion">v100.1.24_PerformanceHUD_AllWarm_NoDespawn</span><br>
 Created: 2026-04-05 12:35 AM PT</span></div>
 <script>
@@ -5026,14 +5043,14 @@ function requestBandVisualRefresh_(opts){
 }
 function refreshRenderedBandVisuals_(){
   try{
-    for (const rec of __llRenderedWeeks.values()){
+    const focusWeekIndex = Math.max(0, Math.round(__rt.nav.currentOffset));
+    for (const [wi, rec] of __llRenderedWeeks.entries()){
       const band = rec && rec.band;
       if (!band) continue;
       band.textContent = '';
       band.dataset.rendered = '';
-      renderBandFlowers(band);
+      enqueueBandRender_(band, Math.abs((wi|0) - (focusWeekIndex|0)) <= 1);
     }
-    const focusWeekIndex = Math.max(0, Math.round(__rt.nav.currentOffset));
     try{ updateFrontText(focusWeekIndex|0); }catch(e){}
     try{ updateRowInteractivity_(focusWeekIndex|0); }catch(e){}
     try{ rebindSelectionToVisibleWrap_('visual refresh'); }catch(e){}
@@ -5096,6 +5113,40 @@ function buildBands(){
 // v99.3.28_TodayPoll_ApplyUpdateAndDebug: Render manager
 const __llRenderedWeeks = new Map();      // weekIndex -> { band, gband }
 const __llBandMetaByWeekIndex = new Map(); // weekIndex -> { weekMon, iso, weekLevel, weekIndex }
+const __llBandRenderQueue = [];
+const __llBandRenderQueued = new Set();
+let __llBandRenderRAF = 0;
+
+function enqueueBandRender_(band, priority=false){
+  if (!band || band.dataset.rendered === "true") return;
+  const weekIdx = Number.isFinite(Number(band.dataset && band.dataset.weekIndex)) ? Number(band.dataset.weekIndex) : (Number.isFinite(Number(band._weekIdx)) ? Number(band._weekIdx) : -1);
+  const key = String(weekIdx);
+  if (__llBandRenderQueued.has(key)) return;
+  __llBandRenderQueued.add(key);
+  if (priority) __llBandRenderQueue.unshift(band);
+  else __llBandRenderQueue.push(band);
+  scheduleBandRenderQueue_();
+}
+
+function scheduleBandRenderQueue_(){
+  if (__llBandRenderRAF) return;
+  __llBandRenderRAF = requestAnimationFrame(processBandRenderQueue_);
+}
+
+function processBandRenderQueue_(){
+  __llBandRenderRAF = 0;
+  const start = performance.now();
+  const budgetMs = 7.5;
+  while (__llBandRenderQueue.length){
+    const band = __llBandRenderQueue.shift();
+    const weekIdx = Number.isFinite(Number(band && band.dataset && band.dataset.weekIndex)) ? Number(band.dataset.weekIndex) : (Number.isFinite(Number(band && band._weekIdx)) ? Number(band._weekIdx) : -1);
+    __llBandRenderQueued.delete(String(weekIdx));
+    if (!band || !band.isConnected || band.dataset.rendered === "true") continue;
+    renderBandFlowers(band);
+    if ((performance.now() - start) >= budgetMs) break;
+  }
+  if (__llBandRenderQueue.length) scheduleBandRenderQueue_();
+}
 
 function ensureWeekNodes_(weekIdx){
   if (__llRenderedWeeks.has(weekIdx)) return;
@@ -5236,9 +5287,20 @@ if(window.__llForceTodayAfterExport_ && fullRebuild){
 
   reflowBandArrays_();
 
-  // Incremental render only: newly created / invalidated bands render here.
-  for (const rec of __llRenderedWeeks.values()){
-    if (rec && rec.band && rec.band.dataset.rendered !== "true") renderBandFlowers(rec.band);
+  // Incremental render only: queue newly created / invalidated bands and let them
+  // render across frames so row settles do not freeze the main thread.
+  for (const [wi, rec] of __llRenderedWeeks.entries()){
+    if (!rec || !rec.band || rec.band.dataset.rendered === "true") continue;
+    const priority = Math.abs((wi|0) - (focusWeekIndex|0)) <= 1;
+    enqueueBandRender_(rec.band, priority);
+  }
+
+  // Quietly prewarm a little farther ahead so the next row is usually ready before it is needed.
+  const prewarmMax = (focusWeekIndex|0) + FUTURE_WEEKS_RENDERED + 2;
+  for (let wi = maxIdx + 1; wi <= prewarmMax; wi++){
+    ensureWeekNodes_(wi);
+    const rec = __llRenderedWeeks.get(wi);
+    if (rec && rec.band && rec.band.dataset.rendered !== "true") enqueueBandRender_(rec.band, false);
   }
 
   // Update week header and row interactivity immediately
@@ -5644,31 +5706,13 @@ function initStableWind(uid){
 // Front Grass
 // ============================================
 function buildFrontGrassTufts(seedKey){
-  const r = mulberry32(hash32FromString("frontGrass_" + seedKey));
-  let out = "";
-  const rows = [
-    { n: 300, yMin: 0, yMax: 14, sMin: 1.05, sMax: 1.60, oMin: 0.92, oMax: 1.00 },
-    { n: 250, yMin: 8, yMax: 28, sMin: 0.70, sMax: 1.15, oMin: 0.70, oMax: 0.94 },
-    { n: 200, yMin: 20, yMax: 46, sMin: 0.42, sMax: 0.85, oMin: 0.35, oMax: 0.78 }
-  ];
-
-  for (const row of rows){
-    for (let i=0;i<row.n;i++){
-      const x = r()*100, y = row.yMin + r()*(row.yMax-row.yMin);
-      const s = row.sMin + r()*(row.sMax-row.sMin);
-      const o = row.oMin + r()*(row.oMax-row.oMin);
-      const w = (52*s), h = (34*s);
-      const sway = (r()*10 - 5);
-      out += `<div class="tuft" style="left:${x.toFixed(2)}%;bottom:${y.toFixed(1)}px;width:${w.toFixed(1)}px;height:${h.toFixed(1)}px;opacity:${o.toFixed(2)};transform:translateX(-50%) rotate(${sway.toFixed(1)}deg);">${tuftSvg("fg_"+seedKey+"_"+i, 5, 1.0)}</div>`;
-    }
-  }
-  return out;
+  // Front grass is now CSS-driven for lower CPU cost.
+  return "";
 }
 
 function refreshFrontGrass(){
-  const now = new Date();
-  const seedKey = `${now.getFullYear()}-${pad2(now.getMonth()+1)}-${pad2(now.getDate())}`;
-  if (DOM.frontGrassEl) DOM.frontGrassEl.innerHTML = buildFrontGrassTufts(seedKey);
+  if (!DOM.frontGrassEl) return;
+  DOM.frontGrassEl.innerHTML = "";
 }
 
 // ============================================
@@ -11324,7 +11368,7 @@ window.applySelectedAdornments = applySelectedAdornments;
     window.__LL_DISABLE_BACKHILL__ = true;
     window.BRX_DISABLE_LEGACY_BACKROWS = true;
 
-    const VERSION = 'v100.1.27.1_IncrementalSync_SimpleFrontGrass_ErrorFix';
+    const VERSION = 'v100.1.27.2_AsyncPrewarm_CSSFrontGrass';
     const hideLegacyGroups = () => {
       ['backRowsG','gridWeeksG','hillGuidesG','gridOverlayG','gridWeeksOverlay','brxHillPngG','brxHillDbgG']
         .forEach(id => {
