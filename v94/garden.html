@@ -135,7 +135,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.16_PNGScale160_HitboxesHidden';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.17_PNGPendingStartup';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -263,7 +263,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 function renderBackRows(){ /* disabled */ }
 
 (function(){
-  const VERSION = 'v100.1.16_PNGScale160_HitboxesHidden';
+  const VERSION = 'v100.1.17_PNGPendingStartup';
 
   // ---- Canonical version globals ----
   window.APP_VERSION = VERSION;
@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.1.16_PNGScale160_HitboxesHidden.html</title>
+<title>garden_v100.1.17_PNGPendingStartup.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -2408,7 +2408,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.1.16_PNGScale160_HitboxesHidden.html • v100.1.16_PNGScale160_HitboxesHidden • Built: 2026-04-04T23:59:30Z UTC</div>
+  <div id="llPinkBanner">garden_v100.1.17_PNGPendingStartup.html • v100.1.17_PNGPendingStartup • Built: 2026-04-04T23:59:30Z UTC</div>
 
 
 <script>
@@ -2422,8 +2422,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v100.1.16_PNGScale160_HitboxesHidden.html</span><br>
-Version: <span id="__bannerVersion">v100.1.16_PNGScale160_HitboxesHidden</span><br>
+File: <span id="__bannerFileName">garden_v100.1.17_PNGPendingStartup.html</span><br>
+Version: <span id="__bannerVersion">v100.1.17_PNGPendingStartup</span><br>
 Created: 2026-04-03 1:58 PM PT</span></div>
 <script>
 (function(){
@@ -2439,7 +2439,7 @@ Created: 2026-04-03 1:58 PM PT</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v100.1.16_PNGScale160_HitboxesHidden loaded", new Date().toISOString());
+  console.log("[VERSION] v100.1.17_PNGPendingStartup loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -3045,7 +3045,7 @@ window.__LL_hillTopAtX_fill = function(x, yTopGuess, yBottom){
 <!-- Debug Panel -->
 <div aria-hidden="false" id="dbgPanel">
   <div class="hdr">
-    <div class="t">LifeLog DEBUG v100.1.16_PNGScale160_HitboxesHidden (press D)</div>
+    <div class="t">LifeLog DEBUG v100.1.17_PNGPendingStartup (press D)</div>
     <div class="btns">
       <button id="dbgCopy" type="button">Copy</button>
       <button id="dbgClear" type="button">Clear</button>
@@ -3413,7 +3413,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   </div>
 
   <div class="util hidden" id="util">
-    <div class="utilTitle">LifeLog Garden Walk v100.1.16_PNGScale160_HitboxesHidden</div>
+    <div class="utilTitle">LifeLog Garden Walk v100.1.17_PNGPendingStartup</div>
     <div class="utilSub">Scroll to walk through weeks. Press H to hide/show this panel.</div>
 	    <div class="row">
 	      <label>Wireframe</label>
@@ -3630,7 +3630,7 @@ function wrapLLDBGStep_(){
     }
   }catch(e){}
 }
-dbg_('v100.1.16_PNGScale160_HitboxesHidden.0: Main script starting');
+dbg_('v100.1.17_PNGPendingStartup.0: Main script starting');
 
 // ============================================
 // Constants
@@ -4820,6 +4820,7 @@ const stemColors = stemColorsForMonthIndex_(monthIndex);
       flowerAssetImageUrl,
       flowerAssetStemBaseX,
       flowerAssetStemBaseY,
+      __hasConfirmedNoPng: !!exportRow && !String(flowerAssetDriveFileId || flowerAssetImageUrl || '').trim(),
       stemCore: stemColors.stem,
       stemDark: stemColors.stemDark,
       // Compatibility with flowerSvg() renderer which expects `stemHi`.
@@ -5269,6 +5270,57 @@ function flowerAssetRenderUrl_(day){
   return imageUrl;
 }
 
+window.__LL_ASSET_BOOT__ = window.__LL_ASSET_BOOT__ || {
+  exportResolved: false,
+  exportLoaded: false,
+  offlineFallbackArmed: false,
+  offlineFallbackMs: 1500
+};
+
+function armOfflineSvgFallback_(){
+  try {
+    var st = window.__LL_ASSET_BOOT__ || (window.__LL_ASSET_BOOT__ = {});
+    if (st.offlineFallbackArmed) return;
+    st.offlineFallbackArmed = true;
+    setTimeout(function(){
+      try {
+        var s = window.__LL_ASSET_BOOT__ || {};
+        if (s.exportLoaded) return;
+        s.exportResolved = true;
+        s.offlineFallbackArmed = true;
+        if (typeof window.setGardenDataSourceLabel_ === 'function' && !s.exportLoaded) {
+          window.setGardenDataSourceLabel_('Offline (SVG fallback)');
+        }
+        if (typeof syncRenderedWeeks_ === 'function') syncRenderedWeeks_(frontIndex, true);
+      } catch(_e) {}
+    }, Number(st.offlineFallbackMs || 1500));
+  } catch(_e) {}
+}
+
+function canConfirmNoPngYet_(day){
+  try {
+    var st = window.__LL_ASSET_BOOT__ || {};
+    if (day && day.__hasConfirmedNoPng) return true;
+    if (st.exportLoaded) return true;
+    if (st.exportResolved && st.offlineFallbackArmed) return true;
+  } catch(_e) {}
+  return false;
+}
+
+function buildPendingFlowerMarkupForDay_(day){
+  var primary = String(day && day.primary || '#d8ecff');
+  var secondary = String(day && day.secondary || '#f6c6ff');
+  return `
+    <div class="flowerPendingWrap" aria-hidden="true">
+      <div class="flowerPendingStem"></div>
+      <svg class="flowerPendingSquiggle" viewBox="0 0 120 180" xmlns="http://www.w3.org/2000/svg">
+        <path d="M56 170 C56 145, 50 132, 60 112 C68 96, 77 84, 73 67 C69 52, 50 46, 43 32" fill="none" stroke="rgba(88,126,88,0.88)" stroke-width="7" stroke-linecap="round"/>
+        <path d="M42 31 C49 21, 64 18, 72 27 C76 33, 77 40, 72 47 C64 56, 48 56, 40 47 C35 41, 36 34, 42 31Z" fill="${primary}" opacity="0.22"/>
+        <path d="M40 47 C53 37, 62 39, 72 27" fill="none" stroke="${secondary}" stroke-width="4" stroke-linecap="round" opacity="0.42"/>
+      </svg>
+    </div>`;
+}
+
 const PNG_GLOBAL_SCALE_ = 1.6;
 
 function computePngAssetMetrics_(day){
@@ -5460,14 +5512,15 @@ flowerWrapEls.push(wrap);
     wrap.style.setProperty("--tdel", (w.del + twr()*1.2).toFixed(2) + "s");
 
     var assetUrl = flowerAssetRenderUrl_(dayData);
+    var shouldUsePending = !assetUrl && !canConfirmNoPngYet_(dayData);
     if (assetUrl) {
       var __m = computePngAssetMetrics_(dayData);
       wrap.style.setProperty('--anchorShift', __m.anchorShift.toFixed(2) + 'px');
     } else {
       wrap.style.setProperty('--anchorShift', '0px');
     }
-    wrap.dataset.renderAsset = assetUrl ? "pending" : "svg";
-    wrap.innerHTML = `<div class="flowerWind">${buildFlowerMarkupForDay_(dayData)}</div>`;
+    wrap.dataset.renderAsset = assetUrl ? "pending" : (shouldUsePending ? "pending" : "svg");
+    wrap.innerHTML = `<div class="flowerWind">${assetUrl ? buildFlowerMarkupForDay_(dayData) : (shouldUsePending ? buildPendingFlowerMarkupForDay_(dayData) : `<div class="flowerSvgWrap">${flowerSvg(dayData)}</div>`)}</div>`;
 
     if (assetUrl) {
       (function(wrapEl, dayForFallback){
@@ -5571,7 +5624,7 @@ function refreshFrontGrass(){
 // ============================================
 
 // ============================================
-// v100.1.16_PNGScale160_HitboxesHidden: keep back-row flowers horizontally de-clumped
+// v100.1.17_PNGPendingStartup: keep back-row flowers horizontally de-clumped
 // ============================================
 const __LL_BACK_SPREAD_MAX_BEHIND = 5;    // reach near-full spread quickly (about 4-6 rows back)
 const __LL_BACK_SPREAD_EDGE_PAD   = 0.006; // keep a tiny inset so nothing clips at extreme edges
@@ -5596,7 +5649,7 @@ const __LL_EVEN_NEARFRONT_BLEND_BEHIND = 1.35; // rows: 0..~1.35 blends from day
 
 
 // ============================================
-// v100.1.16_PNGScale160_HitboxesHidden: offline back-hill port constants
+// v100.1.17_PNGPendingStartup: offline back-hill port constants
 // ============================================
 const FRONT_VISIBLE_WEEKS = 10;
 const CREST_BUFFER_WEEKS = 1;
@@ -10681,7 +10734,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.__LL_LAST_PTR_Y__ = window.innerHeight/2;
   window.addEventListener('pointermove', (ev)=>{ window.__LL_LAST_PTR_X__ = ev.clientX; window.__LL_LAST_PTR_Y__ = ev.clientY; }, {passive:true});
 
-  dbg_('v100.1.16_PNGScale160_HitboxesHidden.0: DOMContentLoaded');
+  dbg_('v100.1.17_PNGPendingStartup.0: DOMContentLoaded');
 
   cacheDomRefs();
   try{ wrapLLDBGStep_(); }catch(e){}
@@ -10827,7 +10880,7 @@ window.__LL_BACKROWS_ANCHOR_MATCHED = true; // prevent later global overrides
   }catch(e){}
 
 
-  dbg_('v100.1.16_PNGScale160_HitboxesHidden.0: Initialization complete');
+  dbg_('v100.1.17_PNGPendingStartup.0: Initialization complete');
 });
 })();
 
@@ -11205,7 +11258,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 
 
 <script>
-// v100.1.16_PNGScale160_HitboxesHidden lifecycle manager
+// v100.1.17_PNGPendingStartup lifecycle manager
 (function(){
   if (window.__LL_SYS__) return;
   const SYS = { timeouts:new Set(), intervals:new Set(), observers:new Set(), listeners:[] };
@@ -11221,14 +11274,14 @@ window.applySelectedAdornments = applySelectedAdornments;
 </script>
 
 <script>
-// v100.1.16_PNGScale160_HitboxesHidden: unified BRX/back-row hard-disable controller.
+// v100.1.17_PNGPendingStartup: unified BRX/back-row hard-disable controller.
 (function(){
   try{
     window.__PHASEA_DISABLE_BRX__ = true;
     window.__LL_DISABLE_BACKHILL__ = true;
     window.BRX_DISABLE_LEGACY_BACKROWS = true;
 
-    const VERSION = 'v100.1.16_PNGScale160_HitboxesHidden';
+    const VERSION = 'v100.1.17_PNGPendingStartup';
     const hideLegacyGroups = () => {
       ['backRowsG','gridWeeksG','hillGuidesG','gridOverlayG','gridWeeksOverlay','brxHillPngG','brxHillDbgG']
         .forEach(id => {
@@ -12156,22 +12209,43 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
 
             })
             .catch((e)=>{
+              try {
+                window.__LL_ASSET_BOOT__ = window.__LL_ASSET_BOOT__ || {};
+                window.__LL_ASSET_BOOT__.exportResolved = true;
+                window.__LL_ASSET_BOOT__.exportLoaded = false;
+              } catch(_e) {}
               log("[export] load failed: " + (e && e.message ? e.message : String(e)));
               (typeof window.setGardenDataSourceLabel_==="function" ? window.setGardenDataSourceLabel_("Offline (export error)") : void 0);
             });
         }catch(e){
+          try {
+            window.__LL_ASSET_BOOT__ = window.__LL_ASSET_BOOT__ || {};
+            window.__LL_ASSET_BOOT__.exportResolved = true;
+            window.__LL_ASSET_BOOT__.exportLoaded = false;
+          } catch(_e) {}
           log("[export] load failed: " + (e && e.message ? e.message : String(e)));
           (typeof window.setGardenDataSourceLabel_==="function" ? window.setGardenDataSourceLabel_("Offline (export error)") : void 0);
         }
       })();
     } else {
+      try {
+        window.__LL_ASSET_BOOT__ = window.__LL_ASSET_BOOT__ || {};
+        window.__LL_ASSET_BOOT__.exportResolved = true;
+        window.__LL_ASSET_BOOT__.exportLoaded = false;
+      } catch(_e) {}
       log("Exec URL present but export loader is not available; falling back to Offline.");
       (typeof window.setGardenDataSourceLabel_==="function" ? window.setGardenDataSourceLabel_("Offline (placeholder)") : void 0);
     }
   } else {
+    try {
+      window.__LL_ASSET_BOOT__ = window.__LL_ASSET_BOOT__ || {};
+      window.__LL_ASSET_BOOT__.exportResolved = true;
+      window.__LL_ASSET_BOOT__.exportLoaded = false;
+    } catch(_e) {}
     log("Offline mode. Provide exec URL to load real GardenExport data.");
     (typeof window.setGardenDataSourceLabel_==="function" ? window.setGardenDataSourceLabel_("Offline (placeholder)") : void 0);
   }
+  try { armOfflineSvgFallback_(); } catch(_e) {}
 }
 
   if(document.readyState === "loading"){
