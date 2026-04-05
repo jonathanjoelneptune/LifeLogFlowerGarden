@@ -135,7 +135,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.27.2_AsyncPrewarm_CSSFrontGrass';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.27.3_TallEdgeGrass_WindowedAsync';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -263,7 +263,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 function renderBackRows(){ /* disabled */ }
 
 (function(){
-  const VERSION = 'v100.1.27.2_AsyncPrewarm_CSSFrontGrass';
+  const VERSION = 'v100.1.27.3_TallEdgeGrass_WindowedAsync';
 
   // ---- Canonical version globals ----
   window.APP_VERSION = VERSION;
@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.1.27.2_AsyncPrewarm_CSSFrontGrass.html</title>
+<title>garden_v100.1.27.3_TallEdgeGrass_WindowedAsync.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -2447,7 +2447,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.1.27.2_AsyncPrewarm_CSSFrontGrass.html • v100.1.24_PerformanceHUD_AllWarm_NoDespawn • Built: 2026-04-05T00:35:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.1.27.3_TallEdgeGrass_WindowedAsync.html • v100.1.24_PerformanceHUD_AllWarm_NoDespawn • Built: 2026-04-05T00:35:00Z UTC</div>
 
 
 <script>
@@ -2461,7 +2461,7 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v100.1.27.2_AsyncPrewarm_CSSFrontGrass.html</span><br>
+File: <span id="__bannerFileName">garden_v100.1.27.3_TallEdgeGrass_WindowedAsync.html</span><br>
 Version: <span id="__bannerVersion">v100.1.24_PerformanceHUD_AllWarm_NoDespawn</span><br>
 Created: 2026-04-05 12:35 AM PT</span></div>
 <script>
@@ -3729,8 +3729,8 @@ function __llComputeFocusWeekIndexForToday_(){
 }
 
 // Monday
-const PAST_WEEKS_RENDERED = 60;
-const FUTURE_WEEKS_RENDERED = 5;
+const PAST_WEEKS_RENDERED = 18;
+const FUTURE_WEEKS_RENDERED = 3;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const WEEK_MS = 7 * DAY_MS;
 
@@ -5295,13 +5295,7 @@ if(window.__llForceTodayAfterExport_ && fullRebuild){
     enqueueBandRender_(rec.band, priority);
   }
 
-  // Quietly prewarm a little farther ahead so the next row is usually ready before it is needed.
-  const prewarmMax = (focusWeekIndex|0) + FUTURE_WEEKS_RENDERED + 2;
-  for (let wi = maxIdx + 1; wi <= prewarmMax; wi++){
-    ensureWeekNodes_(wi);
-    const rec = __llRenderedWeeks.get(wi);
-    if (rec && rec.band && rec.band.dataset.rendered !== "true") enqueueBandRender_(rec.band, false);
-  }
+  // Keep sync window tight to avoid stale off-range flowers hanging around.
 
   // Update week header and row interactivity immediately
   updateFrontText(focusWeekIndex|0);
@@ -5354,7 +5348,7 @@ window.__LL_ASSET_BOOT__ = window.__LL_ASSET_BOOT__ || {
   offlineFallbackMs: 1500
 };
 
-window.__LL_KEEP_RENDERED_WEEKS__ = true;
+window.__LL_KEEP_RENDERED_WEEKS__ = false;
 window.__LL_FLOWER_IMG_CACHE__ = window.__LL_FLOWER_IMG_CACHE__ || new Map();
 
 function warmFlowerAssetUrl_(url){
@@ -11368,7 +11362,7 @@ window.applySelectedAdornments = applySelectedAdornments;
     window.__LL_DISABLE_BACKHILL__ = true;
     window.BRX_DISABLE_LEGACY_BACKROWS = true;
 
-    const VERSION = 'v100.1.27.2_AsyncPrewarm_CSSFrontGrass';
+    const VERSION = 'v100.1.27.3_TallEdgeGrass_WindowedAsync';
     const hideLegacyGroups = () => {
       ['backRowsG','gridWeeksG','hillGuidesG','gridOverlayG','gridWeeksOverlay','brxHillPngG','brxHillDbgG']
         .forEach(id => {
