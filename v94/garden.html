@@ -135,7 +135,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.14_VisibleTopHitboxes';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.15_SvgProxyHitboxesOnTop';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -263,7 +263,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 function renderBackRows(){ /* disabled */ }
 
 (function(){
-  const VERSION = 'v100.1.14_VisibleTopHitboxes';
+  const VERSION = 'v100.1.15_SvgProxyHitboxesOnTop';
 
   // ---- Canonical version globals ----
   window.APP_VERSION = VERSION;
@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.1.12_PNGScale160_HotspotAnchorFix.html</title>
+<title>garden_v100.1.15_SvgProxyHitboxesOnTop.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -929,13 +929,13 @@ body.llHitboxOn .flowerHitSvg .hsCore {
   position: absolute;
   left: 50%;
   bottom: 0;
-  width: calc(265px * 1.6 * var(--flowerScale, 1));
-  height: calc(540px * 1.6 * var(--flowerScale, 1));
+  width: calc(265px * var(--flowerScale, 1));
+  height: calc(540px * var(--flowerScale, 1));
   transform: translateX(-50%);
   overflow: visible;
   display: block;
-  z-index: 60;
-  pointer-events: none;
+  z-index: 120;
+  pointer-events: auto;
 }
 .flowerSvgHitProxy .flowerSvg {
   width: 100%;
@@ -957,8 +957,8 @@ body.llHitboxOn .flowerHitSvg .hsCore {
 }
 body.llHitboxOn .flowerSvgHitProxy .flowerSvg .hsCore {
   opacity: 1 !important;
-  fill: rgba(70,70,70,0.28) !important;
-  stroke: rgba(70,70,70,0.92) !important;
+  fill: rgba(255,0,0,0.12) !important;
+  stroke: rgba(255,0,0,0.95) !important;
 }
 
 .flowerHitSvg { z-index: 5; pointer-events: none; }
@@ -2408,7 +2408,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.1.12_PNGScale160_HotspotAnchorFix.html • v100.1.12_PNGScale160_HotspotAnchorFix • Built: 2026-04-04T23:55:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.1.15_SvgProxyHitboxesOnTop.html • v100.1.12_PNGScale160_HotspotAnchorFix • Built: 2026-04-04T23:55:00Z UTC</div>
 
 
 <script>
@@ -2422,7 +2422,7 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v100.1.12_PNGScale160_HotspotAnchorFix.html</span><br>
+File: <span id="__bannerFileName">garden_v100.1.15_SvgProxyHitboxesOnTop.html</span><br>
 Version: <span id="__bannerVersion">v100.1.12_PNGScale160_HotspotAnchorFix</span><br>
 Created: 2026-04-03 1:58 PM PT</span></div>
 <script>
@@ -5324,25 +5324,7 @@ function buildFlowerMarkupForDay_(day){
   return `<div class="flowerSvgWrap">${flowerSvg(day)}</div>`;
 }
 
-function syncPngHotspotForWrap_(wrapEl, dayForAsset){
-  try {
-    if (!wrapEl || !dayForAsset) return;
-    var circle = wrapEl.querySelector('.flowerSvgHitProxy .hsCore') || wrapEl.querySelector('.flowerHitSvg .hsCore');
-    if (!circle) return;
-    var hsx = Number(dayForAsset && (dayForAsset.flowerAssetHotspotCx || dayForAsset.HotspotCx));
-    var hsy = Number(dayForAsset && (dayForAsset.flowerAssetHotspotCy || dayForAsset.HotspotCy));
-    var hsr = Number(dayForAsset && (dayForAsset.flowerAssetHotspotR || dayForAsset.HotspotR));
-    if (!(isFinite(hsx) && isFinite(hsy) && isFinite(hsr) && hsr > 0)) return;
-    var m = computePngAssetMetrics_(dayForAsset);
-    var cx = ((hsx - m.stemX) * m.scaleX) + (m.displayW * 0.5);
-    var cy = ((hsy - m.stemY) * m.scaleY) + m.displayH;
-    var r = hsr * Math.max(m.scaleX, m.scaleY);
-    circle.setAttribute('cx', cx.toFixed(2));
-    circle.setAttribute('cy', cy.toFixed(2));
-    circle.setAttribute('r', r.toFixed(2));
-    circle.dataset.baseR = String(r);
-  } catch(_e) {}
-}
+function syncPngHotspotForWrap_(wrapEl, dayForAsset){ return; }
 
 let __llAssetCountPending = 0;
 function requestFlowerAssetCountRefresh_(){
@@ -10699,7 +10681,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.__LL_LAST_PTR_Y__ = window.innerHeight/2;
   window.addEventListener('pointermove', (ev)=>{ window.__LL_LAST_PTR_X__ = ev.clientX; window.__LL_LAST_PTR_Y__ = ev.clientY; }, {passive:true});
 document.body.classList.add('llHitboxOn');
-  dbg_('v100.1.14_VisibleTopHitboxes.0: DOMContentLoaded');
+  dbg_('v100.1.15_SvgProxyHitboxesOnTop.0: DOMContentLoaded');
 
   cacheDomRefs();
   try{ wrapLLDBGStep_(); }catch(e){}
@@ -10845,7 +10827,7 @@ window.__LL_BACKROWS_ANCHOR_MATCHED = true; // prevent later global overrides
   }catch(e){}
 
 
-  dbg_('v100.1.14_VisibleTopHitboxes.0: Initialization complete');
+  dbg_('v100.1.15_SvgProxyHitboxesOnTop.0: Initialization complete');
 });
 })();
 
@@ -11223,7 +11205,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 
 
 <script>
-// v100.1.14_VisibleTopHitboxes lifecycle manager
+// v100.1.15_SvgProxyHitboxesOnTop lifecycle manager
 (function(){
   if (window.__LL_SYS__) return;
   const SYS = { timeouts:new Set(), intervals:new Set(), observers:new Set(), listeners:[] };
@@ -11239,14 +11221,14 @@ window.applySelectedAdornments = applySelectedAdornments;
 </script>
 
 <script>
-// v100.1.14_VisibleTopHitboxes: unified BRX/back-row hard-disable controller.
+// v100.1.15_SvgProxyHitboxesOnTop: unified BRX/back-row hard-disable controller.
 (function(){
   try{
     window.__PHASEA_DISABLE_BRX__ = true;
     window.__LL_DISABLE_BACKHILL__ = true;
     window.BRX_DISABLE_LEGACY_BACKROWS = true;
 
-    const VERSION = 'v100.1.14_VisibleTopHitboxes';
+    const VERSION = 'v100.1.15_SvgProxyHitboxesOnTop';
     const hideLegacyGroups = () => {
       ['backRowsG','gridWeeksG','hillGuidesG','gridOverlayG','gridWeeksOverlay','brxHillPngG','brxHillDbgG']
         .forEach(id => {
