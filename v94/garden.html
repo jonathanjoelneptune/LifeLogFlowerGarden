@@ -135,7 +135,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.11_PNGScale160_Shadow_HotspotFix';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.12_PNGScale160_HotspotAnchorFix';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -263,7 +263,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 function renderBackRows(){ /* disabled */ }
 
 (function(){
-  const VERSION = 'v100.1.11_PNGScale160_Shadow_HotspotFix';
+  const VERSION = 'v100.1.12_PNGScale160_HotspotAnchorFix';
 
   // ---- Canonical version globals ----
   window.APP_VERSION = VERSION;
@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.1.11_PNGScale160_Shadow_HotspotFix.html</title>
+<title>garden_v100.1.12_PNGScale160_HotspotAnchorFix.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -914,6 +914,16 @@ body.llScreenSaverLowPower .flowerWind{
   height: 100%;
   overflow: visible;
   display: block;
+}
+.flowerHitSvg .hsCore {
+  fill: transparent !important;
+  stroke: transparent !important;
+  opacity: 0 !important;
+}
+body.llHitboxOn .flowerHitSvg .hsCore {
+  fill: rgba(255,0,0,0.12) !important;
+  stroke: rgba(255,0,0,0.95) !important;
+  opacity: 1 !important;
 }
 .flowerWrap.llSilSelected .flowerPngAsset {
   filter:
@@ -2360,7 +2370,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.1.11_PNGScale160_Shadow_HotspotFix.html • v100.1.11_PNGScale160_Shadow_HotspotFix • Built: 2026-04-04T23:20:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.1.12_PNGScale160_HotspotAnchorFix.html • v100.1.12_PNGScale160_HotspotAnchorFix • Built: 2026-04-04T23:55:00Z UTC</div>
 
 
 <script>
@@ -2374,8 +2384,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v100.1.11_PNGScale160_Shadow_HotspotFix.html</span><br>
-Version: <span id="__bannerVersion">v100.1.11_PNGScale160_Shadow_HotspotFix</span><br>
+File: <span id="__bannerFileName">garden_v100.1.12_PNGScale160_HotspotAnchorFix.html</span><br>
+Version: <span id="__bannerVersion">v100.1.12_PNGScale160_HotspotAnchorFix</span><br>
 Created: 2026-04-03 1:58 PM PT</span></div>
 <script>
 (function(){
@@ -2391,7 +2401,7 @@ Created: 2026-04-03 1:58 PM PT</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v100.1.11_PNGScale160_Shadow_HotspotFix loaded", new Date().toISOString());
+  console.log("[VERSION] v100.1.12_PNGScale160_HotspotAnchorFix loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -2997,7 +3007,7 @@ window.__LL_hillTopAtX_fill = function(x, yTopGuess, yBottom){
 <!-- Debug Panel -->
 <div aria-hidden="false" id="dbgPanel">
   <div class="hdr">
-    <div class="t">LifeLog DEBUG v100.1.11_PNGScale160_Shadow_HotspotFix (press D)</div>
+    <div class="t">LifeLog DEBUG v100.1.12_PNGScale160_HotspotAnchorFix (press D)</div>
     <div class="btns">
       <button id="dbgCopy" type="button">Copy</button>
       <button id="dbgClear" type="button">Clear</button>
@@ -3365,7 +3375,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   </div>
 
   <div class="util hidden" id="util">
-    <div class="utilTitle">LifeLog Garden Walk v100.1.11_PNGScale160_Shadow_HotspotFix</div>
+    <div class="utilTitle">LifeLog Garden Walk v100.1.12_PNGScale160_HotspotAnchorFix</div>
     <div class="utilSub">Scroll to walk through weeks. Press H to hide/show this panel.</div>
 	    <div class="row">
 	      <label>Wireframe</label>
@@ -3582,7 +3592,7 @@ function wrapLLDBGStep_(){
     }
   }catch(e){}
 }
-dbg_('v100.1.11_PNGScale160_Shadow_HotspotFix.0: Main script starting');
+dbg_('v100.1.12_PNGScale160_HotspotAnchorFix.0: Main script starting');
 
 // ============================================
 // Constants
@@ -5221,6 +5231,23 @@ function flowerAssetRenderUrl_(day){
   return imageUrl;
 }
 
+const PNG_GLOBAL_SCALE_ = 1.6;
+
+function computePngAssetMetrics_(day){
+  var imgW = Math.max(1, Number(day && (day.imageWidth || day.ImageWidth || 2500)) || 2500);
+  var imgH = Math.max(1, Number(day && (day.imageHeight || day.ImageHeight || 3000)) || 3000);
+  var stemX = Number(day && (day.flowerAssetStemBaseX || day.StemBaseX || (imgW / 2)));
+  var stemY = Number(day && (day.flowerAssetStemBaseY || day.StemBaseY || imgH));
+  if (!isFinite(stemX)) stemX = imgW / 2;
+  if (!isFinite(stemY)) stemY = imgH;
+  var displayH = 540 * PNG_GLOBAL_SCALE_;
+  var displayW = displayH * (imgW / imgH);
+  var scaleX = displayW / imgW;
+  var scaleY = displayH / imgH;
+  var anchorShift = (displayW * 0.5) - (stemX * scaleX);
+  return { imgW:imgW, imgH:imgH, stemX:stemX, stemY:stemY, displayW:displayW, displayH:displayH, scaleX:scaleX, scaleY:scaleY, anchorShift:anchorShift };
+}
+
 function buildFlowerMarkupForDay_(day){
   var pngUrl = flowerAssetRenderUrl_(day);
   if (pngUrl) {
@@ -5244,22 +5271,12 @@ function buildFlowerMarkupForDay_(day){
       return { cx:200, cy:(topY + bloom.y * bloom.s), r:(bloom.r * 2.25 * bloom.s) };
     })(day);
     var dateKey = String(day.dateKey || '');
-    var imgW = Math.max(1, Number(day.imageWidth || day.ImageWidth || 2500) || 2500);
-    var imgH = Math.max(1, Number(day.imageHeight || day.ImageHeight || 3000) || 3000);
-    var stemX = Number(day.flowerAssetStemBaseX || day.StemBaseX || (imgW / 2));
-    var stemY = Number(day.flowerAssetStemBaseY || day.StemBaseY || imgH);
-    if (!isFinite(stemX)) stemX = imgW / 2;
-    if (!isFinite(stemY)) stemY = imgH;
-    var pngGlobalScale = 1.6;
-    var displayH = 540 * pngGlobalScale;
-    var displayW = displayH * (imgW / imgH);
-    var anchorRatioX = stemX / imgW;
-    var anchorShift = (0.5 - anchorRatioX) * displayW;
-    var hsScaleX = displayW / imgW;
-    var hsScaleY = displayH / imgH;
-    var hsCx = hs.cx * hsScaleX;
-    var hsCy = hs.cy * hsScaleY;
-    var hsR = hs.r * Math.max(hsScaleX, hsScaleY);
+    var m = computePngAssetMetrics_(day);
+    var displayH = m.displayH;
+    var displayW = m.displayW;
+    var hsCx = ((Number(hs.cx) - m.stemX) * m.scaleX) + (displayW * 0.5);
+    var hsCy = ((Number(hs.cy) - m.stemY) * m.scaleY) + displayH;
+    var hsR = Number(hs.r) * Math.max(m.scaleX, m.scaleY);
     return `
       <div class="flowerAssetPngWrap" style="--assetDisplayW:${displayW.toFixed(2)}px;--assetDisplayH:${displayH.toFixed(2)}px;">
         <img class="flowerPngAsset" src="${pngUrl}" alt="" crossorigin="anonymous" loading="eager" decoding="async"/>
@@ -5269,6 +5286,26 @@ function buildFlowerMarkupForDay_(day){
       </div>`;
   }
   return `<div class="flowerSvgWrap">${flowerSvg(day)}</div>`;
+}
+
+function syncPngHotspotForWrap_(wrapEl, dayForAsset){
+  try {
+    if (!wrapEl || !dayForAsset) return;
+    var circle = wrapEl.querySelector('.flowerHitSvg .hsCore');
+    if (!circle) return;
+    var hsx = Number(dayForAsset && (dayForAsset.flowerAssetHotspotCx || dayForAsset.HotspotCx));
+    var hsy = Number(dayForAsset && (dayForAsset.flowerAssetHotspotCy || dayForAsset.HotspotCy));
+    var hsr = Number(dayForAsset && (dayForAsset.flowerAssetHotspotR || dayForAsset.HotspotR));
+    if (!(isFinite(hsx) && isFinite(hsy) && isFinite(hsr) && hsr > 0)) return;
+    var m = computePngAssetMetrics_(dayForAsset);
+    var cx = ((hsx - m.stemX) * m.scaleX) + (m.displayW * 0.5);
+    var cy = ((hsy - m.stemY) * m.scaleY) + m.displayH;
+    var r = hsr * Math.max(m.scaleX, m.scaleY);
+    circle.setAttribute('cx', cx.toFixed(2));
+    circle.setAttribute('cy', cy.toFixed(2));
+    circle.setAttribute('r', r.toFixed(2));
+    circle.dataset.baseR = String(r);
+  } catch(_e) {}
 }
 
 let __llAssetCountPending = 0;
@@ -5406,14 +5443,8 @@ flowerWrapEls.push(wrap);
 
     var assetUrl = flowerAssetRenderUrl_(dayData);
     if (assetUrl) {
-      var __imgW = Math.max(1, Number(dayData.imageWidth || dayData.ImageWidth || 2500) || 2500);
-      var __imgH = Math.max(1, Number(dayData.imageHeight || dayData.ImageHeight || 3000) || 3000);
-      var __stemX = Number(dayData.flowerAssetStemBaseX || dayData.StemBaseX || (__imgW / 2));
-      if (!isFinite(__stemX)) __stemX = __imgW / 2;
-      var __displayH = 540;
-      var __displayW = __displayH * (__imgW / __imgH);
-      var __anchorShift = (0.5 - (__stemX / __imgW)) * __displayW;
-      wrap.style.setProperty('--anchorShift', __anchorShift.toFixed(2) + 'px');
+      var __m = computePngAssetMetrics_(dayData);
+      wrap.style.setProperty('--anchorShift', __m.anchorShift.toFixed(2) + 'px');
     } else {
       wrap.style.setProperty('--anchorShift', '0px');
     }
@@ -5522,7 +5553,7 @@ function refreshFrontGrass(){
 // ============================================
 
 // ============================================
-// v100.1.11_PNGScale160_Shadow_HotspotFix: keep back-row flowers horizontally de-clumped
+// v100.1.12_PNGScale160_HotspotAnchorFix: keep back-row flowers horizontally de-clumped
 // ============================================
 const __LL_BACK_SPREAD_MAX_BEHIND = 5;    // reach near-full spread quickly (about 4-6 rows back)
 const __LL_BACK_SPREAD_EDGE_PAD   = 0.006; // keep a tiny inset so nothing clips at extreme edges
@@ -5547,7 +5578,7 @@ const __LL_EVEN_NEARFRONT_BLEND_BEHIND = 1.35; // rows: 0..~1.35 blends from day
 
 
 // ============================================
-// v100.1.11_PNGScale160_Shadow_HotspotFix: offline back-hill port constants
+// v100.1.12_PNGScale160_HotspotAnchorFix: offline back-hill port constants
 // ============================================
 const FRONT_VISIBLE_WEEKS = 10;
 const CREST_BUFFER_WEEKS = 1;
@@ -10631,7 +10662,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.__LL_LAST_PTR_X__ = window.innerWidth/2;
   window.__LL_LAST_PTR_Y__ = window.innerHeight/2;
   window.addEventListener('pointermove', (ev)=>{ window.__LL_LAST_PTR_X__ = ev.clientX; window.__LL_LAST_PTR_Y__ = ev.clientY; }, {passive:true});
-dbg_('v100.1.11_PNGScale160_Shadow_HotspotFix.0: DOMContentLoaded');
+dbg_('v100.1.12_PNGScale160_HotspotAnchorFix.0: DOMContentLoaded');
 
   cacheDomRefs();
   try{ wrapLLDBGStep_(); }catch(e){}
@@ -10777,7 +10808,7 @@ window.__LL_BACKROWS_ANCHOR_MATCHED = true; // prevent later global overrides
   }catch(e){}
 
 
-  dbg_('v100.1.11_PNGScale160_Shadow_HotspotFix.0: Initialization complete');
+  dbg_('v100.1.12_PNGScale160_HotspotAnchorFix.0: Initialization complete');
 });
 })();
 
@@ -11155,7 +11186,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 
 
 <script>
-// v100.1.11_PNGScale160_Shadow_HotspotFix lifecycle manager
+// v100.1.12_PNGScale160_HotspotAnchorFix lifecycle manager
 (function(){
   if (window.__LL_SYS__) return;
   const SYS = { timeouts:new Set(), intervals:new Set(), observers:new Set(), listeners:[] };
@@ -11171,14 +11202,14 @@ window.applySelectedAdornments = applySelectedAdornments;
 </script>
 
 <script>
-// v100.1.11_PNGScale160_Shadow_HotspotFix: unified BRX/back-row hard-disable controller.
+// v100.1.12_PNGScale160_HotspotAnchorFix: unified BRX/back-row hard-disable controller.
 (function(){
   try{
     window.__PHASEA_DISABLE_BRX__ = true;
     window.__LL_DISABLE_BACKHILL__ = true;
     window.BRX_DISABLE_LEGACY_BACKROWS = true;
 
-    const VERSION = 'v100.1.11_PNGScale160_Shadow_HotspotFix';
+    const VERSION = 'v100.1.12_PNGScale160_HotspotAnchorFix';
     const hideLegacyGroups = () => {
       ['backRowsG','gridWeeksG','hillGuidesG','gridOverlayG','gridWeeksOverlay','brxHillPngG','brxHillDbgG']
         .forEach(id => {
