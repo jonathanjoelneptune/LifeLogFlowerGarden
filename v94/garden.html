@@ -135,7 +135,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.17_PNGPendingStartup';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.18_PerformanceHUD';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -263,7 +263,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 function renderBackRows(){ /* disabled */ }
 
 (function(){
-  const VERSION = 'v100.1.17_PNGPendingStartup';
+  const VERSION = 'v100.1.18_PerformanceHUD';
 
   // ---- Canonical version globals ----
   window.APP_VERSION = VERSION;
@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.1.17_PNGPendingStartup.html</title>
+<title>garden_v100.1.18_PerformanceHUD.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -1425,6 +1425,27 @@ input[type="range"] { width: 100%; }
 #picturesUtil .line { display:flex; justify-content:space-between; gap:12px; margin:4px 0; }
 #picturesUtil .lab { opacity:0.82; }
 
+#perfHud {
+  position: fixed;
+  right: 14px;
+  bottom: 14px;
+  z-index: 99999;
+  min-width: 220px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(8,10,18,0.86);
+  border: 1px solid rgba(255,255,255,0.14);
+  color: rgba(255,255,255,0.92);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.35);
+  backdrop-filter: blur(8px);
+  display: none;
+}
+#perfHud.open { display:block; }
+#perfHud .tit { font-weight:700; margin-bottom:6px; }
+#perfHud .sub { opacity:0.78; margin-bottom:8px; }
+#perfHud .line { display:flex; justify-content:space-between; gap:12px; margin:4px 0; }
+#perfHud .lab { opacity:0.82; }
+
 /* ---------- Hotspot Selection ---------- */
 .hsCore { fill: transparent; stroke: transparent; stroke-width: 1; cursor: pointer; pointer-events: all; }
 body.llHitboxOn .weekBand.isFront .hsCore { stroke: rgba(255,0,0,0.95); stroke-width: 2; fill: rgba(255,0,0,0.12); }
@@ -2408,7 +2429,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.1.17_PNGPendingStartup.html • v100.1.17_PNGPendingStartup • Built: 2026-04-04T23:59:30Z UTC</div>
+  <div id="llPinkBanner">garden_v100.1.18_PerformanceHUD.html • v100.1.18_PerformanceHUD • Built: 2026-04-05T00:35:00Z UTC</div>
 
 
 <script>
@@ -2422,9 +2443,9 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v100.1.17_PNGPendingStartup.html</span><br>
-Version: <span id="__bannerVersion">v100.1.17_PNGPendingStartup</span><br>
-Created: 2026-04-03 1:58 PM PT</span></div>
+File: <span id="__bannerFileName">garden_v100.1.18_PerformanceHUD.html</span><br>
+Version: <span id="__bannerVersion">v100.1.18_PerformanceHUD</span><br>
+Created: 2026-04-05 12:35 AM PT</span></div>
 <script>
 (function(){
   try{
@@ -2439,7 +2460,7 @@ Created: 2026-04-03 1:58 PM PT</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v100.1.17_PNGPendingStartup loaded", new Date().toISOString());
+  console.log("[VERSION] v100.1.18_PerformanceHUD loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -3045,7 +3066,7 @@ window.__LL_hillTopAtX_fill = function(x, yTopGuess, yBottom){
 <!-- Debug Panel -->
 <div aria-hidden="false" id="dbgPanel">
   <div class="hdr">
-    <div class="t">LifeLog DEBUG v100.1.17_PNGPendingStartup (press D)</div>
+    <div class="t">LifeLog DEBUG v100.1.18_PerformanceHUD (press D)</div>
     <div class="btns">
       <button id="dbgCopy" type="button">Copy</button>
       <button id="dbgClear" type="button">Clear</button>
@@ -3413,7 +3434,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   </div>
 
   <div class="util hidden" id="util">
-    <div class="utilTitle">LifeLog Garden Walk v100.1.17_PNGPendingStartup</div>
+    <div class="utilTitle">LifeLog Garden Walk v100.1.18_PerformanceHUD</div>
     <div class="utilSub">Scroll to walk through weeks. Press H to hide/show this panel.</div>
 	    <div class="row">
 	      <label>Wireframe</label>
@@ -3561,6 +3582,19 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
     <div class="line"><span class="lab">PNGs</span><span id="pPngCount">0</span></div>
   </div>
 
+  <div id="perfHud" aria-hidden="true">
+    <div class="tit">Performance HUD</div>
+    <div class="sub">Press M to hide/show</div>
+    <div class="line"><span class="lab">Status</span><span id="perfStatus">Idle</span></div>
+    <div class="line"><span class="lab">FPS</span><span id="perfFps">0</span></div>
+    <div class="line"><span class="lab">Avg frame</span><span id="perfAvgMs">0 ms</span></div>
+    <div class="line"><span class="lab">Worst frame</span><span id="perfWorstMs">0 ms</span></div>
+    <div class="line"><span class="lab">Long tasks</span><span id="perfLongTasks">0</span></div>
+    <div class="line"><span class="lab">PNGs</span><span id="perfPngCount">0</span></div>
+    <div class="line"><span class="lab">SVGs</span><span id="perfSvgCount">0</span></div>
+    <div class="line"><span class="lab">Pending</span><span id="perfPendingCount">0</span></div>
+  </div>
+
   <div id="gardenBand">
     <div class="grassStack" id="grassStack">
       <div class="grassHaze" id="grassHaze"></div>
@@ -3630,7 +3664,7 @@ function wrapLLDBGStep_(){
     }
   }catch(e){}
 }
-dbg_('v100.1.17_PNGPendingStartup.0: Main script starting');
+dbg_('v100.1.18_PerformanceHUD.0: Main script starting');
 
 // ============================================
 // Constants
@@ -5414,6 +5448,7 @@ function requestFlowerAssetCountRefresh_(){
       if (pngDbgEl) pngDbgEl.textContent = String(pngCount);
       if (svgPicEl) svgPicEl.textContent = String(svgCount);
       if (pngPicEl) pngPicEl.textContent = String(pngCount);
+      try { if (typeof window.__llPerfHudUpdate === 'function') window.__llPerfHudUpdate(); } catch(_e) {}
     } catch(_e) {}
   });
 }
@@ -5624,7 +5659,7 @@ function refreshFrontGrass(){
 // ============================================
 
 // ============================================
-// v100.1.17_PNGPendingStartup: keep back-row flowers horizontally de-clumped
+// v100.1.18_PerformanceHUD: keep back-row flowers horizontally de-clumped
 // ============================================
 const __LL_BACK_SPREAD_MAX_BEHIND = 5;    // reach near-full spread quickly (about 4-6 rows back)
 const __LL_BACK_SPREAD_EDGE_PAD   = 0.006; // keep a tiny inset so nothing clips at extreme edges
@@ -5649,7 +5684,7 @@ const __LL_EVEN_NEARFRONT_BLEND_BEHIND = 1.35; // rows: 0..~1.35 blends from day
 
 
 // ============================================
-// v100.1.17_PNGPendingStartup: offline back-hill port constants
+// v100.1.18_PerformanceHUD: offline back-hill port constants
 // ============================================
 const FRONT_VISIBLE_WEEKS = 10;
 const CREST_BUFFER_WEEKS = 1;
@@ -10734,7 +10769,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.__LL_LAST_PTR_Y__ = window.innerHeight/2;
   window.addEventListener('pointermove', (ev)=>{ window.__LL_LAST_PTR_X__ = ev.clientX; window.__LL_LAST_PTR_Y__ = ev.clientY; }, {passive:true});
 
-  dbg_('v100.1.17_PNGPendingStartup.0: DOMContentLoaded');
+  dbg_('v100.1.18_PerformanceHUD.0: DOMContentLoaded');
 
   cacheDomRefs();
   try{ wrapLLDBGStep_(); }catch(e){}
@@ -10880,7 +10915,7 @@ window.__LL_BACKROWS_ANCHOR_MATCHED = true; // prevent later global overrides
   }catch(e){}
 
 
-  dbg_('v100.1.17_PNGPendingStartup.0: Initialization complete');
+  dbg_('v100.1.18_PerformanceHUD.0: Initialization complete');
 });
 })();
 
@@ -11258,7 +11293,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 
 
 <script>
-// v100.1.17_PNGPendingStartup lifecycle manager
+// v100.1.18_PerformanceHUD lifecycle manager
 (function(){
   if (window.__LL_SYS__) return;
   const SYS = { timeouts:new Set(), intervals:new Set(), observers:new Set(), listeners:[] };
@@ -11274,14 +11309,14 @@ window.applySelectedAdornments = applySelectedAdornments;
 </script>
 
 <script>
-// v100.1.17_PNGPendingStartup: unified BRX/back-row hard-disable controller.
+// v100.1.18_PerformanceHUD: unified BRX/back-row hard-disable controller.
 (function(){
   try{
     window.__PHASEA_DISABLE_BRX__ = true;
     window.__LL_DISABLE_BACKHILL__ = true;
     window.BRX_DISABLE_LEGACY_BACKROWS = true;
 
-    const VERSION = 'v100.1.17_PNGPendingStartup';
+    const VERSION = 'v100.1.18_PerformanceHUD';
     const hideLegacyGroups = () => {
       ['backRowsG','gridWeeksG','hillGuidesG','gridOverlayG','gridWeeksOverlay','brxHillPngG','brxHillDbgG']
         .forEach(id => {
@@ -12663,6 +12698,117 @@ const autoGithubExec = ((location && location.hostname && location.hostname.incl
   document.getElementById('fagRun').addEventListener('click', function(){ runGenerator_().catch(function(err){ log('ERROR ' + err.message); setStatus('Failed.'); }); });
   document.getElementById('fagReset').addEventListener('click', function(){ resetGeneratorAssets_().catch(function(err){ log('ERROR ' + err.message); setStatus('Reset failed.'); }); });
   document.getElementById('fagStop').addEventListener('click', function(){ stopRequested = true; });
+})();
+</script>
+
+
+<script>
+(function(){
+  var perf = {
+    open: false,
+    lastTs: 0,
+    frameCount: 0,
+    frameSum: 0,
+    worstMs: 0,
+    fps: 0,
+    avgMs: 0,
+    longTasks: 0,
+    longTaskTotal: 0,
+    lastSampleTs: 0
+  };
+
+  function updatePerfCounts(){
+    try{
+      var wraps = document.querySelectorAll('.flowerWrap');
+      var pngCount = 0, svgCount = 0, pendingCount = 0;
+      for (var i = 0; i < wraps.length; i++) {
+        var wrap = wraps[i];
+        var kind = String((wrap.dataset && wrap.dataset.renderAsset) || '').toLowerCase();
+        if (kind === 'png' || wrap.querySelector('.flowerPngAsset')) { pngCount++; continue; }
+        if (kind === 'svg' || wrap.querySelector('.flowerSvgWrap, .flowerSvg')) { svgCount++; continue; }
+        if (kind === 'pending' || wrap.querySelector('.flowerPendingAsset, .flowerPendingWrap, .pendingFlowerSquiggle')) { pendingCount++; continue; }
+      }
+      var el;
+      el = document.getElementById('perfPngCount'); if (el) el.textContent = String(pngCount);
+      el = document.getElementById('perfSvgCount'); if (el) el.textContent = String(svgCount);
+      el = document.getElementById('perfPendingCount'); if (el) el.textContent = String(pendingCount);
+    }catch(_e){}
+  }
+
+  function updatePerfHud(){
+    try{
+      var status = 'Smooth';
+      if (perf.worstMs > 50 || perf.longTasks > 0 || perf.fps < 28) status = 'Stuttering';
+      else if (perf.worstMs > 24 || perf.fps < 50) status = 'Busy';
+      var el;
+      el = document.getElementById('perfStatus'); if (el) el.textContent = status;
+      el = document.getElementById('perfFps'); if (el) el.textContent = String(Math.round(perf.fps));
+      el = document.getElementById('perfAvgMs'); if (el) el.textContent = perf.avgMs.toFixed(1) + ' ms';
+      el = document.getElementById('perfWorstMs'); if (el) el.textContent = perf.worstMs.toFixed(1) + ' ms';
+      el = document.getElementById('perfLongTasks'); if (el) el.textContent = String(perf.longTasks);
+      updatePerfCounts();
+    }catch(_e){}
+  }
+
+  function perfFrame(ts){
+    try{
+      if (!perf.lastTs) {
+        perf.lastTs = ts;
+        perf.lastSampleTs = ts;
+        requestAnimationFrame(perfFrame);
+        return;
+      }
+      var dt = ts - perf.lastTs;
+      perf.lastTs = ts;
+      perf.frameCount++;
+      perf.frameSum += dt;
+      if (dt > perf.worstMs) perf.worstMs = dt;
+      if ((ts - perf.lastSampleTs) >= 1000) {
+        perf.fps = perf.frameCount * 1000 / (ts - perf.lastSampleTs);
+        perf.avgMs = perf.frameCount ? (perf.frameSum / perf.frameCount) : 0;
+        perf.longTasks = perf.longTaskTotal;
+        perf.longTaskTotal = 0;
+        perf.frameCount = 0;
+        perf.frameSum = 0;
+        updatePerfHud();
+        perf.worstMs = 0;
+        perf.lastSampleTs = ts;
+      }
+    }catch(_e){}
+    requestAnimationFrame(perfFrame);
+  }
+
+  try{
+    if ('PerformanceObserver' in window) {
+      var obs = new PerformanceObserver(function(list){
+        try{
+          var entries = list.getEntries();
+          for (var i = 0; i < entries.length; i++) {
+            if (entries[i] && entries[i].duration >= 50) perf.longTaskTotal++;
+          }
+        }catch(_e){}
+      });
+      obs.observe({ entryTypes: ['longtask'] });
+    }
+  }catch(_e){}
+
+  document.addEventListener('keydown', function(ev){
+    try{
+      var t = ev && ev.target;
+      var tag = t && t.tagName ? String(t.tagName).toLowerCase() : '';
+      if (tag === 'input' || tag === 'textarea' || tag === 'select' || (t && t.isContentEditable)) return;
+      if (String(ev.key || '').toLowerCase() !== 'm') return;
+      var hud = document.getElementById('perfHud');
+      if (!hud) return;
+      perf.open = !hud.classList.contains('open');
+      hud.classList.toggle('open', perf.open);
+      hud.setAttribute('aria-hidden', perf.open ? 'false' : 'true');
+      updatePerfHud();
+    }catch(_e){}
+  });
+
+  window.__llPerfHudUpdate = updatePerfHud;
+  requestAnimationFrame(perfFrame);
 })();
 </script>
 
