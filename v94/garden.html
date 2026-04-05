@@ -22,7 +22,7 @@
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v100.1.27_IncrementalSync_SimpleFrontGrass
+  v100.1.28_CleanupSingleSystem_AsyncNewWeeks_TallClipartGrass
     + Consolidate duplicate Photo Reel skybox CSS into one block
     + Merge duplicate selection-ring state rules
     + Remove redundant early wireframe CSS copy
@@ -135,7 +135,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.27.3_TallEdgeGrass_WindowedAsync';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.28_CleanupSingleSystem_AsyncNewWeeks_TallClipartGrass';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -263,7 +263,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 function renderBackRows(){ /* disabled */ }
 
 (function(){
-  const VERSION = 'v100.1.27.3_TallEdgeGrass_WindowedAsync';
+  const VERSION = 'v100.1.28_CleanupSingleSystem_AsyncNewWeeks_TallClipartGrass';
 
   // ---- Canonical version globals ----
   window.APP_VERSION = VERSION;
@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.1.27.3_TallEdgeGrass_WindowedAsync.html</title>
+<title>garden_v100.1.28_CleanupSingleSystem_AsyncNewWeeks_TallClipartGrass.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -379,11 +379,11 @@ function renderBackRows(){ /* disabled */ }
   --frontGrassH: 220px;
   --baseTuftH: 64px;
   --tuftYManual: 0px;
-  --grassOverhang: 10vw;
+  --grassOverhang: 22vw;
   --grassFadeHold: 62%;
   --grassFadeMid: 82%;
   --grassOpacity: 0.76;
-  --grassBandH: 480px;
+  --grassBandH: 820px;
   --grassW: 50%;
   --grassH: 140%;
   --grassBgSize: var(--grassW) var(--grassH);
@@ -992,7 +992,6 @@ body.llHitboxOn .flowerSvgHitProxy .flowerSvg .hsCore {
   z-index: 9;
   pointer-events: none;
   overflow: visible;
-  display: none;
 }
 
 .grassBand {
@@ -1092,9 +1091,8 @@ body.llHitboxOn .flowerSvgHitProxy .flowerSvg .hsCore {
   left: 0;
   right: 0;
   margin: 0 92px;
-  bottom: 10px;
-  height: 132px;
-  overflow: hidden;
+  bottom: 8px;
+  height: 95px;
   pointer-events: none;
   z-index: 6;
   opacity: 0.98;
@@ -1104,31 +1102,15 @@ body.llHitboxOn .flowerSvgHitProxy .flowerSvg .hsCore {
   content: "";
   position: absolute;
   left: 0; right: 0; bottom: 0;
-  height: 74px;
-  background: linear-gradient(180deg, rgba(14,90,42,0.00) 0%, rgba(14,90,42,0.46) 36%, rgba(14,90,42,0.90) 100%);
+  height: 52px;
+  background: linear-gradient(180deg, rgba(14,90,42,0.00) 0%, rgba(14,90,42,0.65) 40%, rgba(14,90,42,0.98) 100%);
   pointer-events: none;
 }
-.frontGrass::after {
-  content: "";
+.frontGrass .tuft {
   position: absolute;
-  left: -2%;
-  right: -2%;
-  bottom: 0;
-  height: 100%;
-  background-image: var(--grassImg), var(--grassImg);
-  background-repeat: repeat-x, repeat-x;
-  background-size: 560px 100%, 560px 100%;
-  background-position: 0 100%, 280px 100%;
-  opacity: 0.90;
-  pointer-events: none;
-  filter:
-    saturate(1.03)
-    contrast(1.06)
-    drop-shadow(0 -1px 0 rgba(0,0,0,0.42))
-    drop-shadow(0 1px 0 rgba(0,0,0,0.16));
-  -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 58%, rgba(0,0,0,0.72) 82%, rgba(0,0,0,0) 100%);
-  mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 58%, rgba(0,0,0,0.72) 82%, rgba(0,0,0,0) 100%);
+  transform: translateX(-50%);
 }
+.frontGrass svg { width: 100%; height: 100%; display: block; }
 
 /* ---------- DOW Strip ---------- */
 .dowGrass {
@@ -2447,7 +2429,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.1.27.3_TallEdgeGrass_WindowedAsync.html • v100.1.24_PerformanceHUD_AllWarm_NoDespawn • Built: 2026-04-05T00:35:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.1.28_CleanupSingleSystem_AsyncNewWeeks_TallClipartGrass.html • v100.1.24_PerformanceHUD_AllWarm_NoDespawn • Built: 2026-04-05T00:35:00Z UTC</div>
 
 
 <script>
@@ -2461,7 +2443,7 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v100.1.27.3_TallEdgeGrass_WindowedAsync.html</span><br>
+File: <span id="__bannerFileName">garden_v100.1.28_CleanupSingleSystem_AsyncNewWeeks_TallClipartGrass.html</span><br>
 Version: <span id="__bannerVersion">v100.1.24_PerformanceHUD_AllWarm_NoDespawn</span><br>
 Created: 2026-04-05 12:35 AM PT</span></div>
 <script>
@@ -3729,8 +3711,8 @@ function __llComputeFocusWeekIndexForToday_(){
 }
 
 // Monday
-const PAST_WEEKS_RENDERED = 18;
-const FUTURE_WEEKS_RENDERED = 3;
+const PAST_WEEKS_RENDERED = 60;
+const FUTURE_WEEKS_RENDERED = 5;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const WEEK_MS = 7 * DAY_MS;
 
@@ -5043,14 +5025,14 @@ function requestBandVisualRefresh_(opts){
 }
 function refreshRenderedBandVisuals_(){
   try{
-    const focusWeekIndex = Math.max(0, Math.round(__rt.nav.currentOffset));
-    for (const [wi, rec] of __llRenderedWeeks.entries()){
+    for (const rec of __llRenderedWeeks.values()){
       const band = rec && rec.band;
       if (!band) continue;
       band.textContent = '';
       band.dataset.rendered = '';
-      enqueueBandRender_(band, Math.abs((wi|0) - (focusWeekIndex|0)) <= 1);
+      renderBandFlowers(band);
     }
+    const focusWeekIndex = Math.max(0, Math.round(__rt.nav.currentOffset));
     try{ updateFrontText(focusWeekIndex|0); }catch(e){}
     try{ updateRowInteractivity_(focusWeekIndex|0); }catch(e){}
     try{ rebindSelectionToVisibleWrap_('visual refresh'); }catch(e){}
@@ -5087,10 +5069,10 @@ function flushRenderQueue_(tNow){
 function buildBands(){
   const weeksStack = DOM.weeksStack;
   const grassStack = DOM.grassStack;
-  if (!weeksStack) return;
+  if (!weeksStack || !grassStack) return;
 
   weeksStack.innerHTML = "";
-  if (grassStack) grassStack.innerHTML = '';
+  grassStack.innerHTML = '<div class="grassHaze" id="grassHaze"></div>';
 
   bands.length = 0;
   grassBands.length = 0;
@@ -5136,7 +5118,7 @@ function scheduleBandRenderQueue_(){
 function processBandRenderQueue_(){
   __llBandRenderRAF = 0;
   const start = performance.now();
-  const budgetMs = 7.5;
+  const budgetMs = 7.0;
   while (__llBandRenderQueue.length){
     const band = __llBandRenderQueue.shift();
     const weekIdx = Number.isFinite(Number(band && band.dataset && band.dataset.weekIndex)) ? Number(band.dataset.weekIndex) : (Number.isFinite(Number(band && band._weekIdx)) ? Number(band._weekIdx) : -1);
@@ -5152,7 +5134,8 @@ function ensureWeekNodes_(weekIdx){
   if (__llRenderedWeeks.has(weekIdx)) return;
 
   const weeksStack = DOM.weeksStack;
-  if (!weeksStack) return;
+  const grassStack = DOM.grassStack;
+  if (!weeksStack || !grassStack) return;
 
   const week = weekModelForIndex_(weekIdx);
 
@@ -5163,13 +5146,23 @@ function ensureWeekNodes_(weekIdx){
   band._weekData = week;
   band._weekIdx = weekIdx;
 
-  __llRenderedWeeks.set(weekIdx, { band, gband: null });
+  const gband = document.createElement("div");
+  gband.className = "grassBand";
+  const rgd = mulberry32(hash32FromString("grassDeform_" + week.iso));
+  gband.style.setProperty("--gx", (6 + rgd()*10).toFixed(2) + "px");
+  gband.style.setProperty("--gsk", (0.8 + rgd()*2.2).toFixed(2) + "deg");
+  gband.style.setProperty("--gsy", (0.015 + rgd()*0.025).toFixed(4));
+  gband.style.setProperty("--gdur", (8 + rgd()*10).toFixed(2) + "s");
+  gband.style.setProperty("--gdel", (-rgd()*12).toFixed(2) + "s");
+
+  __llRenderedWeeks.set(weekIdx, { band, gband });
   __llBandMetaByWeekIndex.set(weekIdx, Object.assign({ weekIndex: weekIdx }, week));
 
   weeksStack.appendChild(band);
+  grassStack.appendChild(gband);
 
   bands.push(band);
-  grassBands.push(null);
+  grassBands.push(gband);
   bandMeta.push(Object.assign({ weekIndex: weekIdx }, week));
 }
 
@@ -5215,9 +5208,9 @@ function reflowBandArrays_(){
   bandMeta.length = 0;
 
   for (const [wi, rec] of entries){
-    if (rec && rec.band){
+    if (rec && rec.band && rec.gband){
       bands.push(rec.band);
-      grassBands.push(rec.gband || null);
+      grassBands.push(rec.gband);
     }
     const meta = __llBandMetaByWeekIndex.get(wi);
     if (meta) bandMeta.push(meta);
@@ -5287,15 +5280,12 @@ if(window.__llForceTodayAfterExport_ && fullRebuild){
 
   reflowBandArrays_();
 
-  // Incremental render only: queue newly created / invalidated bands and let them
-  // render across frames so row settles do not freeze the main thread.
+  // Incremental render only: newly created / invalidated bands render across frames.
   for (const [wi, rec] of __llRenderedWeeks.entries()){
     if (!rec || !rec.band || rec.band.dataset.rendered === "true") continue;
     const priority = Math.abs((wi|0) - (focusWeekIndex|0)) <= 1;
     enqueueBandRender_(rec.band, priority);
   }
-
-  // Keep sync window tight to avoid stale off-range flowers hanging around.
 
   // Update week header and row interactivity immediately
   updateFrontText(focusWeekIndex|0);
@@ -5700,13 +5690,31 @@ function initStableWind(uid){
 // Front Grass
 // ============================================
 function buildFrontGrassTufts(seedKey){
-  // Front grass is now CSS-driven for lower CPU cost.
-  return "";
+  const r = mulberry32(hash32FromString("frontGrass_" + seedKey));
+  let out = "";
+  const rows = [
+    { n: 300, yMin: 0, yMax: 14, sMin: 1.05, sMax: 1.60, oMin: 0.92, oMax: 1.00 },
+    { n: 250, yMin: 8, yMax: 28, sMin: 0.70, sMax: 1.15, oMin: 0.70, oMax: 0.94 },
+    { n: 200, yMin: 20, yMax: 46, sMin: 0.42, sMax: 0.85, oMin: 0.35, oMax: 0.78 }
+  ];
+
+  for (const row of rows){
+    for (let i=0;i<row.n;i++){
+      const x = r()*100, y = row.yMin + r()*(row.yMax-row.yMin);
+      const s = row.sMin + r()*(row.sMax-row.sMin);
+      const o = row.oMin + r()*(row.oMax-row.oMin);
+      const w = (52*s), h = (34*s);
+      const sway = (r()*10 - 5);
+      out += `<div class="tuft" style="left:${x.toFixed(2)}%;bottom:${y.toFixed(1)}px;width:${w.toFixed(1)}px;height:${h.toFixed(1)}px;opacity:${o.toFixed(2)};transform:translateX(-50%) rotate(${sway.toFixed(1)}deg);">${tuftSvg("fg_"+seedKey+"_"+i, 5, 1.0)}</div>`;
+    }
+  }
+  return out;
 }
 
 function refreshFrontGrass(){
-  if (!DOM.frontGrassEl) return;
-  DOM.frontGrassEl.innerHTML = "";
+  const now = new Date();
+  const seedKey = `${now.getFullYear()}-${pad2(now.getMonth()+1)}-${pad2(now.getDate())}`;
+  if (DOM.frontGrassEl) DOM.frontGrassEl.innerHTML = buildFrontGrassTufts(seedKey);
 }
 
 // ============================================
@@ -7246,25 +7254,11 @@ function tick(tNow){
 
 
 // v99.3.28_TodayPoll_ApplyUpdateAndDebug: Only the current active row is interactive/selectable.
-let __llLastInteractiveWeekIndex = null;
-function __setWeekRowInteractive_(weekIndex, on){
-  try{
-    const band = __llRenderedWeeks.get(weekIndex|0)?.band;
-    if (!band) return;
-    const wraps = band.querySelectorAll('.flowerWrap');
-    wraps.forEach(w => {
-      w.style.pointerEvents = on ? 'auto' : 'none';
-      if (on) w.classList.add('llActiveRow'); else w.classList.remove('llActiveRow');
-    });
-    const hs = band.querySelectorAll('.hsCore,[data-role="hotspot"]');
-    hs.forEach(h => { h.style.pointerEvents = on ? 'auto' : 'none'; });
-  }catch(e){}
-}
 function updateRowInteractivity_(activeWeekIndex){
   try{
     const aw = (activeWeekIndex|0);
 
-    // Prune disconnected wraps occasionally
+    // Prune disconnected wraps (prevents unbounded growth)
     try{
       for (let i=(flowerWrapEls||[]).length-1; i>=0; i--){
         const w0 = flowerWrapEls[i];
@@ -7272,11 +7266,23 @@ function updateRowInteractivity_(activeWeekIndex){
       }
     }catch(e){}
 
-    if (__llLastInteractiveWeekIndex !== null && (__llLastInteractiveWeekIndex|0) !== aw){
-      __setWeekRowInteractive_(__llLastInteractiveWeekIndex|0, false);
+    // Wraps
+    for (const w of (flowerWrapEls || [])){
+      if (!w || !w.isConnected) continue;
+      const wi = parseInt(w.dataset.weekIndex || '-1', 10);
+      const on = (isFinite(wi) && wi === aw);
+      w.style.pointerEvents = on ? 'auto' : 'none';
+      if (on) w.classList.add('llActiveRow'); else w.classList.remove('llActiveRow');
     }
-    __setWeekRowInteractive_(aw, true);
-    __llLastInteractiveWeekIndex = aw;
+
+    // Hotspots (defensive)
+    const allHs = document.querySelectorAll('.hsCore,[data-role="hotspot"]');
+    allHs.forEach(h=>{
+      const wrap = h.closest('.flowerWrap');
+      if (!wrap) return;
+      const wi = parseInt(wrap.dataset.weekIndex || '-1', 10);
+      h.style.pointerEvents = (wi === aw) ? 'auto' : 'none';
+    });
   }catch(e){}
 }
 
@@ -11362,7 +11368,7 @@ window.applySelectedAdornments = applySelectedAdornments;
     window.__LL_DISABLE_BACKHILL__ = true;
     window.BRX_DISABLE_LEGACY_BACKROWS = true;
 
-    const VERSION = 'v100.1.27.3_TallEdgeGrass_WindowedAsync';
+    const VERSION = 'v100.1.28_CleanupSingleSystem_AsyncNewWeeks_TallClipartGrass';
     const hideLegacyGroups = () => {
       ['backRowsG','gridWeeksG','hillGuidesG','gridOverlayG','gridWeeksOverlay','brxHillPngG','brxHillDbgG']
         .forEach(id => {
