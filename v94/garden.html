@@ -22,7 +22,7 @@
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v100.1.26_RowSettleCleanup_SingleXOwner
+  v100.1.27_IncrementalSync_SimpleFrontGrass
     + Consolidate duplicate Photo Reel skybox CSS into one block
     + Merge duplicate selection-ring state rules
     + Remove redundant early wireframe CSS copy
@@ -135,7 +135,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.26_RowSettleCleanup_SingleXOwner';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.27.1_IncrementalSync_SimpleFrontGrass_ErrorFix';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -263,7 +263,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 function renderBackRows(){ /* disabled */ }
 
 (function(){
-  const VERSION = 'v100.1.26_RowSettleCleanup_SingleXOwner';
+  const VERSION = 'v100.1.27.1_IncrementalSync_SimpleFrontGrass_ErrorFix';
 
   // ---- Canonical version globals ----
   window.APP_VERSION = VERSION;
@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.1.26_RowSettleCleanup_SingleXOwner.html</title>
+<title>garden_v100.1.27.1_IncrementalSync_SimpleFrontGrass_ErrorFix.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -992,6 +992,7 @@ body.llHitboxOn .flowerSvgHitProxy .flowerSvg .hsCore {
   z-index: 9;
   pointer-events: none;
   overflow: visible;
+  display: none;
 }
 
 .grassBand {
@@ -2429,7 +2430,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.1.26_RowSettleCleanup_SingleXOwner.html • v100.1.24_PerformanceHUD_AllWarm_NoDespawn • Built: 2026-04-05T00:35:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.1.27.1_IncrementalSync_SimpleFrontGrass_ErrorFix.html • v100.1.24_PerformanceHUD_AllWarm_NoDespawn • Built: 2026-04-05T00:35:00Z UTC</div>
 
 
 <script>
@@ -2443,7 +2444,7 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v100.1.26_RowSettleCleanup_SingleXOwner.html</span><br>
+File: <span id="__bannerFileName">garden_v100.1.27.1_IncrementalSync_SimpleFrontGrass_ErrorFix.html</span><br>
 Version: <span id="__bannerVersion">v100.1.24_PerformanceHUD_AllWarm_NoDespawn</span><br>
 Created: 2026-04-05 12:35 AM PT</span></div>
 <script>
@@ -5069,10 +5070,10 @@ function flushRenderQueue_(tNow){
 function buildBands(){
   const weeksStack = DOM.weeksStack;
   const grassStack = DOM.grassStack;
-  if (!weeksStack || !grassStack) return;
+  if (!weeksStack) return;
 
   weeksStack.innerHTML = "";
-  grassStack.innerHTML = '<div class="grassHaze" id="grassHaze"></div>';
+  if (grassStack) grassStack.innerHTML = '';
 
   bands.length = 0;
   grassBands.length = 0;
@@ -5100,8 +5101,7 @@ function ensureWeekNodes_(weekIdx){
   if (__llRenderedWeeks.has(weekIdx)) return;
 
   const weeksStack = DOM.weeksStack;
-  const grassStack = DOM.grassStack;
-  if (!weeksStack || !grassStack) return;
+  if (!weeksStack) return;
 
   const week = weekModelForIndex_(weekIdx);
 
@@ -5112,23 +5112,13 @@ function ensureWeekNodes_(weekIdx){
   band._weekData = week;
   band._weekIdx = weekIdx;
 
-  const gband = document.createElement("div");
-  gband.className = "grassBand";
-  const rgd = mulberry32(hash32FromString("grassDeform_" + week.iso));
-  gband.style.setProperty("--gx", (6 + rgd()*10).toFixed(2) + "px");
-  gband.style.setProperty("--gsk", (0.8 + rgd()*2.2).toFixed(2) + "deg");
-  gband.style.setProperty("--gsy", (0.015 + rgd()*0.025).toFixed(4));
-  gband.style.setProperty("--gdur", (8 + rgd()*10).toFixed(2) + "s");
-  gband.style.setProperty("--gdel", (-rgd()*12).toFixed(2) + "s");
-
-  __llRenderedWeeks.set(weekIdx, { band, gband });
+  __llRenderedWeeks.set(weekIdx, { band, gband: null });
   __llBandMetaByWeekIndex.set(weekIdx, Object.assign({ weekIndex: weekIdx }, week));
 
   weeksStack.appendChild(band);
-  grassStack.appendChild(gband);
 
   bands.push(band);
-  grassBands.push(gband);
+  grassBands.push(null);
   bandMeta.push(Object.assign({ weekIndex: weekIdx }, week));
 }
 
@@ -5174,9 +5164,9 @@ function reflowBandArrays_(){
   bandMeta.length = 0;
 
   for (const [wi, rec] of entries){
-    if (rec && rec.band && rec.gband){
+    if (rec && rec.band){
       bands.push(rec.band);
-      grassBands.push(rec.gband);
+      grassBands.push(rec.gband || null);
     }
     const meta = __llBandMetaByWeekIndex.get(wi);
     if (meta) bandMeta.push(meta);
@@ -5239,27 +5229,16 @@ if(window.__llForceTodayAfterExport_ && fullRebuild){
 
   // Re-order DOM (ascending weekIndex) so transforms are stable
   const weeksStack = DOM.weeksStack;
-  const grassStack = DOM.grassStack;
   if (weeksStack){
     const bandsSorted = Array.from(__llRenderedWeeks.entries()).sort((a,b)=>a[0]-b[0]).map(e=>e[1].band);
     for (const b of bandsSorted) weeksStack.appendChild(b);
   }
-  if (grassStack){
-    // Preserve the haze element as the first child
-    const haze = grassStack.querySelector('#grassHaze');
-    const gSorted = Array.from(__llRenderedWeeks.entries()).sort((a,b)=>a[0]-b[0]).map(e=>e[1].gband);
-    grassStack.innerHTML = '';
-    if (haze) grassStack.appendChild(haze); else {
-      const hz = document.createElement('div'); hz.className='grassHaze'; hz.id='grassHaze'; grassStack.appendChild(hz);
-    }
-    for (const g of gSorted) grassStack.appendChild(g);
-  }
 
   reflowBandArrays_();
 
-  // Render flowers for all bands in range
+  // Incremental render only: newly created / invalidated bands render here.
   for (const rec of __llRenderedWeeks.values()){
-    renderBandFlowers(rec.band);
+    if (rec && rec.band && rec.band.dataset.rendered !== "true") renderBandFlowers(rec.band);
   }
 
   // Update week header and row interactivity immediately
@@ -7229,11 +7208,25 @@ function tick(tNow){
 
 
 // v99.3.28_TodayPoll_ApplyUpdateAndDebug: Only the current active row is interactive/selectable.
+let __llLastInteractiveWeekIndex = null;
+function __setWeekRowInteractive_(weekIndex, on){
+  try{
+    const band = __llRenderedWeeks.get(weekIndex|0)?.band;
+    if (!band) return;
+    const wraps = band.querySelectorAll('.flowerWrap');
+    wraps.forEach(w => {
+      w.style.pointerEvents = on ? 'auto' : 'none';
+      if (on) w.classList.add('llActiveRow'); else w.classList.remove('llActiveRow');
+    });
+    const hs = band.querySelectorAll('.hsCore,[data-role="hotspot"]');
+    hs.forEach(h => { h.style.pointerEvents = on ? 'auto' : 'none'; });
+  }catch(e){}
+}
 function updateRowInteractivity_(activeWeekIndex){
   try{
     const aw = (activeWeekIndex|0);
 
-    // Prune disconnected wraps (prevents unbounded growth)
+    // Prune disconnected wraps occasionally
     try{
       for (let i=(flowerWrapEls||[]).length-1; i>=0; i--){
         const w0 = flowerWrapEls[i];
@@ -7241,23 +7234,11 @@ function updateRowInteractivity_(activeWeekIndex){
       }
     }catch(e){}
 
-    // Wraps
-    for (const w of (flowerWrapEls || [])){
-      if (!w || !w.isConnected) continue;
-      const wi = parseInt(w.dataset.weekIndex || '-1', 10);
-      const on = (isFinite(wi) && wi === aw);
-      w.style.pointerEvents = on ? 'auto' : 'none';
-      if (on) w.classList.add('llActiveRow'); else w.classList.remove('llActiveRow');
+    if (__llLastInteractiveWeekIndex !== null && (__llLastInteractiveWeekIndex|0) !== aw){
+      __setWeekRowInteractive_(__llLastInteractiveWeekIndex|0, false);
     }
-
-    // Hotspots (defensive)
-    const allHs = document.querySelectorAll('.hsCore,[data-role="hotspot"]');
-    allHs.forEach(h=>{
-      const wrap = h.closest('.flowerWrap');
-      if (!wrap) return;
-      const wi = parseInt(wrap.dataset.weekIndex || '-1', 10);
-      h.style.pointerEvents = (wi === aw) ? 'auto' : 'none';
-    });
+    __setWeekRowInteractive_(aw, true);
+    __llLastInteractiveWeekIndex = aw;
   }catch(e){}
 }
 
@@ -11343,7 +11324,7 @@ window.applySelectedAdornments = applySelectedAdornments;
     window.__LL_DISABLE_BACKHILL__ = true;
     window.BRX_DISABLE_LEGACY_BACKROWS = true;
 
-    const VERSION = 'v100.1.26_RowSettleCleanup_SingleXOwner';
+    const VERSION = 'v100.1.27.1_IncrementalSync_SimpleFrontGrass_ErrorFix';
     const hideLegacyGroups = () => {
       ['backRowsG','gridWeeksG','hillGuidesG','gridOverlayG','gridWeeksOverlay','brxHillPngG','brxHillDbgG']
         .forEach(id => {
