@@ -135,7 +135,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.22_HTMLHitTargetsSharedGeometry';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.23_HTMLHitTargetsWrapperRect';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -263,7 +263,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 function renderBackRows(){ /* disabled */ }
 
 (function(){
-  const VERSION = 'v100.1.22_HTMLHitTargetsSharedGeometry';
+  const VERSION = 'v100.1.23_HTMLHitTargetsWrapperRect';
 
   // ---- Canonical version globals ----
   window.APP_VERSION = VERSION;
@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.1.22_HTMLHitTargetsSharedGeometry.html</title>
+<title>garden_v100.1.23_HTMLHitTargetsWrapperRect.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -918,11 +918,10 @@ body.llScreenSaverLowPower .flowerWind{
 }
 .flowerHtmlHitLayer {
   position: absolute;
-  left: 50%;
-  bottom: 0;
-  width: calc(265px * var(--flowerScale, 1));
-  height: calc(540px * var(--flowerScale, 1));
-  transform: translateX(-50%);
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: none;
   overflow: visible;
   display: block;
   z-index: 80;
@@ -2469,7 +2468,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.1.22_HTMLHitTargetsSharedGeometry.html • v100.1.22_HTMLHitTargetsSharedGeometry • Built: 2026-04-05T01:10:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.1.23_HTMLHitTargetsWrapperRect.html • v100.1.23_HTMLHitTargetsWrapperRect • Built: 2026-04-05T01:45:00Z UTC</div>
 
 
 <script>
@@ -2483,8 +2482,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v100.1.22_HTMLHitTargetsSharedGeometry.html</span><br>
-Version: <span id="__bannerVersion">v100.1.22_HTMLHitTargetsSharedGeometry</span><br>
+File: <span id="__bannerFileName">garden_v100.1.23_HTMLHitTargetsWrapperRect.html</span><br>
+Version: <span id="__bannerVersion">v100.1.23_HTMLHitTargetsWrapperRect</span><br>
 Created: 2026-04-05 12:35 AM PT</span></div>
 <script>
 (function(){
@@ -2500,7 +2499,7 @@ Created: 2026-04-05 12:35 AM PT</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v100.1.22_HTMLHitTargetsSharedGeometry loaded", new Date().toISOString());
+  console.log("[VERSION] v100.1.23_HTMLHitTargetsWrapperRect loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -3106,7 +3105,7 @@ window.__LL_hillTopAtX_fill = function(x, yTopGuess, yBottom){
 <!-- Debug Panel -->
 <div aria-hidden="false" id="dbgPanel">
   <div class="hdr">
-    <div class="t">LifeLog DEBUG v100.1.22_HTMLHitTargetsSharedGeometry (press D)</div>
+    <div class="t">LifeLog DEBUG v100.1.23_HTMLHitTargetsWrapperRect (press D)</div>
     <div class="btns">
       <button id="dbgCopy" type="button">Copy</button>
       <button id="dbgClear" type="button">Clear</button>
@@ -3474,7 +3473,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   </div>
 
   <div class="util hidden" id="util">
-    <div class="utilTitle">LifeLog Garden Walk v100.1.22_HTMLHitTargetsSharedGeometry</div>
+    <div class="utilTitle">LifeLog Garden Walk v100.1.23_HTMLHitTargetsWrapperRect</div>
     <div class="utilSub">Scroll to walk through weeks. Press H to hide/show this panel.</div>
 	    <div class="row">
 	      <label>Wireframe</label>
@@ -3704,7 +3703,7 @@ function wrapLLDBGStep_(){
     }
   }catch(e){}
 }
-dbg_('v100.1.22_HTMLHitTargetsSharedGeometry.0: Main script starting');
+dbg_('v100.1.23_HTMLHitTargetsWrapperRect.0: Main script starting');
 
 // ============================================
 // Constants
@@ -5431,10 +5430,10 @@ function computePngAssetMetrics_(day){
   return { imgW:imgW, imgH:imgH, stemX:stemX, stemY:stemY, displayW:displayW, displayH:displayH, scaleX:scaleX, scaleY:scaleY, anchorShift:anchorShift };
 }
 
-function computeSvgHtmlHitMetrics_(day){
+function computeSvgHtmlHitMetrics_(day, dims){
   var hs = (typeof flowerHitGeometryForDay_ === 'function') ? flowerHitGeometryForDay_(day) : { cx:200, cy:300, r:90 };
-  var boxW = 265 * PNG_GLOBAL_SCALE_;
-  var boxH = 540 * PNG_GLOBAL_SCALE_;
+  var boxW = Math.max(1, Number(dims && dims.displayW) || 265 * PNG_GLOBAL_SCALE_);
+  var boxH = Math.max(1, Number(dims && dims.displayH) || 540 * PNG_GLOBAL_SCALE_);
   var vbW = 400, vbH = 940;
   var s = Math.min(boxW / vbW, boxH / vbH);
   var drawW = vbW * s;
@@ -5455,11 +5454,27 @@ function computeSvgHtmlHitMetrics_(day){
   };
 }
 
+function syncHtmlHitTargetForWrap_(wrapEl, day){
+  try {
+    if (!wrapEl || !day) return;
+    var assetWrap = wrapEl.querySelector('.flowerAssetPngWrap');
+    var hit = wrapEl.querySelector('.flowerHtmlHit.hsCore');
+    if (!assetWrap || !hit) return;
+    var rect = assetWrap.getBoundingClientRect();
+    var dims = { displayW: rect.width, displayH: rect.height };
+    var hm = computeSvgHtmlHitMetrics_(day, dims);
+    hit.style.left = hm.left.toFixed(2) + 'px';
+    hit.style.top = hm.top.toFixed(2) + 'px';
+    hit.style.width = (hm.r * 2).toFixed(2) + 'px';
+    hit.style.height = (hm.r * 2).toFixed(2) + 'px';
+  } catch(_e) {}
+}
+
 function buildFlowerMarkupForDay_(day){
   var pngUrl = flowerAssetRenderUrl_(day);
   if (pngUrl) {
     try { warmFlowerAsset_(pngUrl); } catch(_e) {}
-    var hm = computeSvgHtmlHitMetrics_(day);
+    var hm = computeSvgHtmlHitMetrics_(day, m);
     var dateKey = String(day.dateKey || '');
     var m = computePngAssetMetrics_(day);
     var displayH = m.displayH;
@@ -5626,6 +5641,7 @@ flowerWrapEls.push(wrap);
     wrap.innerHTML = `<div class="flowerWind">${assetUrl ? buildFlowerMarkupForDay_(dayData) : (shouldUsePending ? buildPendingFlowerMarkupForDay_(dayData) : `<div class="flowerSvgWrap">${flowerSvg(dayData)}</div>`)}</div>`;
 
     if (assetUrl) {
+      try { requestAnimationFrame(function(){ syncHtmlHitTargetForWrap_(wrap, dayData); }); } catch(_e) {}
       (function(wrapEl, dayForFallback){
         function swapToSvgFallback_(){
           try {
@@ -5645,7 +5661,10 @@ flowerWrapEls.push(wrap);
           imgEl.addEventListener('load', function(){
             wrapEl.dataset.renderAsset = (imgEl.naturalWidth > 0 && imgEl.naturalHeight > 0) ? "png" : "svg";
             if (wrapEl.dataset.renderAsset !== "png") swapToSvgFallback_();
-            else requestFlowerAssetCountRefresh_();
+            else {
+              syncHtmlHitTargetForWrap_(wrapEl, dayForFallback);
+              requestFlowerAssetCountRefresh_();
+            }
           }, { once: true });
           imgEl.addEventListener('error', function(){
             swapToSvgFallback_();
@@ -5654,6 +5673,7 @@ flowerWrapEls.push(wrap);
           if (imgEl.complete) {
             if (imgEl.naturalWidth > 0 && imgEl.naturalHeight > 0) {
               wrapEl.dataset.renderAsset = "png";
+              syncHtmlHitTargetForWrap_(wrapEl, dayForFallback);
               requestFlowerAssetCountRefresh_();
             } else {
               swapToSvgFallback_();
@@ -5727,7 +5747,7 @@ function refreshFrontGrass(){
 // ============================================
 
 // ============================================
-// v100.1.22_HTMLHitTargetsSharedGeometry: keep back-row flowers horizontally de-clumped
+// v100.1.23_HTMLHitTargetsWrapperRect: keep back-row flowers horizontally de-clumped
 // ============================================
 const __LL_BACK_SPREAD_MAX_BEHIND = 5;    // reach near-full spread quickly (about 4-6 rows back)
 const __LL_BACK_SPREAD_EDGE_PAD   = 0.006; // keep a tiny inset so nothing clips at extreme edges
@@ -5752,7 +5772,7 @@ const __LL_EVEN_NEARFRONT_BLEND_BEHIND = 1.35; // rows: 0..~1.35 blends from day
 
 
 // ============================================
-// v100.1.22_HTMLHitTargetsSharedGeometry: offline back-hill port constants
+// v100.1.23_HTMLHitTargetsWrapperRect: offline back-hill port constants
 // ============================================
 const FRONT_VISIBLE_WEEKS = 10;
 const CREST_BUFFER_WEEKS = 1;
@@ -10837,7 +10857,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.__LL_LAST_PTR_Y__ = window.innerHeight/2;
   window.addEventListener('pointermove', (ev)=>{ window.__LL_LAST_PTR_X__ = ev.clientX; window.__LL_LAST_PTR_Y__ = ev.clientY; }, {passive:true});
 
-  dbg_('v100.1.22_HTMLHitTargetsSharedGeometry.0: DOMContentLoaded');
+  dbg_('v100.1.23_HTMLHitTargetsWrapperRect.0: DOMContentLoaded');
 
   cacheDomRefs();
   try{ wrapLLDBGStep_(); }catch(e){}
@@ -10983,7 +11003,7 @@ window.__LL_BACKROWS_ANCHOR_MATCHED = true; // prevent later global overrides
   }catch(e){}
 
 
-  dbg_('v100.1.22_HTMLHitTargetsSharedGeometry.0: Initialization complete');
+  dbg_('v100.1.23_HTMLHitTargetsWrapperRect.0: Initialization complete');
 });
 })();
 
@@ -11361,7 +11381,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 
 
 <script>
-// v100.1.22_HTMLHitTargetsSharedGeometry lifecycle manager
+// v100.1.23_HTMLHitTargetsWrapperRect lifecycle manager
 (function(){
   if (window.__LL_SYS__) return;
   const SYS = { timeouts:new Set(), intervals:new Set(), observers:new Set(), listeners:[] };
@@ -11377,14 +11397,14 @@ window.applySelectedAdornments = applySelectedAdornments;
 </script>
 
 <script>
-// v100.1.22_HTMLHitTargetsSharedGeometry: unified BRX/back-row hard-disable controller.
+// v100.1.23_HTMLHitTargetsWrapperRect: unified BRX/back-row hard-disable controller.
 (function(){
   try{
     window.__PHASEA_DISABLE_BRX__ = true;
     window.__LL_DISABLE_BACKHILL__ = true;
     window.BRX_DISABLE_LEGACY_BACKROWS = true;
 
-    const VERSION = 'v100.1.22_HTMLHitTargetsSharedGeometry';
+    const VERSION = 'v100.1.23_HTMLHitTargetsWrapperRect';
     const hideLegacyGroups = () => {
       ['backRowsG','gridWeeksG','hillGuidesG','gridOverlayG','gridWeeksOverlay','brxHillPngG','brxHillDbgG']
         .forEach(id => {
