@@ -135,7 +135,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.10_PNGGlobalScaleTune';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.11_PNGScale160_Shadow_HotspotFix';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -263,7 +263,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 function renderBackRows(){ /* disabled */ }
 
 (function(){
-  const VERSION = 'v100.1.10_PNGGlobalScaleTune';
+  const VERSION = 'v100.1.11_PNGScale160_Shadow_HotspotFix';
 
   // ---- Canonical version globals ----
   window.APP_VERSION = VERSION;
@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.1.10_PNGGlobalScaleTune.html</title>
+<title>garden_v100.1.11_PNGScale160_Shadow_HotspotFix.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -899,6 +899,13 @@ body.llScreenSaverLowPower .flowerWind{
   pointer-events: none;
   user-select: none;
   -webkit-user-drag: none;
+  filter:
+    brightness(1.013)
+    saturate(1.008)
+    drop-shadow(0 0 0.8px rgba(34,40,50,0.94))
+    drop-shadow(0 0 1.6px rgba(28,34,44,0.84))
+    drop-shadow(0 2px 3px rgba(16,20,28,0.30))
+    drop-shadow(0 4px 7px rgba(8,11,18,0.20));
 }
 .flowerHitSvg {
   position: absolute;
@@ -2353,7 +2360,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.1.10_PNGGlobalScaleTune.html • v100.1.10_PNGGlobalScaleTune • Built: 2026-04-04T23:20:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.1.11_PNGScale160_Shadow_HotspotFix.html • v100.1.11_PNGScale160_Shadow_HotspotFix • Built: 2026-04-04T23:20:00Z UTC</div>
 
 
 <script>
@@ -2367,8 +2374,8 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v100.1.10_PNGGlobalScaleTune.html</span><br>
-Version: <span id="__bannerVersion">v100.1.10_PNGGlobalScaleTune</span><br>
+File: <span id="__bannerFileName">garden_v100.1.11_PNGScale160_Shadow_HotspotFix.html</span><br>
+Version: <span id="__bannerVersion">v100.1.11_PNGScale160_Shadow_HotspotFix</span><br>
 Created: 2026-04-03 1:58 PM PT</span></div>
 <script>
 (function(){
@@ -2384,7 +2391,7 @@ Created: 2026-04-03 1:58 PM PT</span></div>
 </script>
 <script>
   // Debug stamp: proves you opened the correct file
-  console.log("[VERSION] v100.1.10_PNGGlobalScaleTune loaded", new Date().toISOString());
+  console.log("[VERSION] v100.1.11_PNGScale160_Shadow_HotspotFix loaded", new Date().toISOString());
   // Hard shim: some older branches call log()/DBG(); keep them from crashing
   window.log = window.log || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
   window.DBG = window.DBG || function(){ try{ console.log.apply(console, arguments);}catch(e){} };
@@ -2990,7 +2997,7 @@ window.__LL_hillTopAtX_fill = function(x, yTopGuess, yBottom){
 <!-- Debug Panel -->
 <div aria-hidden="false" id="dbgPanel">
   <div class="hdr">
-    <div class="t">LifeLog DEBUG v100.1.10_PNGGlobalScaleTune (press D)</div>
+    <div class="t">LifeLog DEBUG v100.1.11_PNGScale160_Shadow_HotspotFix (press D)</div>
     <div class="btns">
       <button id="dbgCopy" type="button">Copy</button>
       <button id="dbgClear" type="button">Clear</button>
@@ -3358,7 +3365,7 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   </div>
 
   <div class="util hidden" id="util">
-    <div class="utilTitle">LifeLog Garden Walk v100.1.10_PNGGlobalScaleTune</div>
+    <div class="utilTitle">LifeLog Garden Walk v100.1.11_PNGScale160_Shadow_HotspotFix</div>
     <div class="utilSub">Scroll to walk through weeks. Press H to hide/show this panel.</div>
 	    <div class="row">
 	      <label>Wireframe</label>
@@ -3575,7 +3582,7 @@ function wrapLLDBGStep_(){
     }
   }catch(e){}
 }
-dbg_('v100.1.10_PNGGlobalScaleTune.0: Main script starting');
+dbg_('v100.1.11_PNGScale160_Shadow_HotspotFix.0: Main script starting');
 
 // ============================================
 // Constants
@@ -5217,20 +5224,25 @@ function flowerAssetRenderUrl_(day){
 function buildFlowerMarkupForDay_(day){
   var pngUrl = flowerAssetRenderUrl_(day);
   if (pngUrl) {
-    var hs = (typeof hotspotGeomForDay_ === 'function')
-      ? hotspotGeomForDay_(day)
-      : (function(dd){
-          var lvl = Number(dd && dd.level) || 1;
-          var topY = ({1:500,2:420,3:300,4:200,5:100})[lvl] || 500;
-          var bloom = {
-            1:{s:1.06*1.5,y:-34,r:20},
-            2:{s:1.06*1.5,y:-62,r:28},
-            3:{s:1.18,y:-72,r:40},
-            4:{s:1.32,y:-78,r:48},
-            5:{s:1.46,y:-82,r:56}
-          }[lvl] || {s:1.06*1.5,y:-34,r:20};
-          return { cx:200, cy:(topY + bloom.y * bloom.s), r:(bloom.r * 2.25 * bloom.s) };
-        })(day);
+    var hs = (function(dd){
+      var hx = Number(dd && (dd.flowerAssetHotspotCx || dd.HotspotCx));
+      var hy = Number(dd && (dd.flowerAssetHotspotCy || dd.HotspotCy));
+      var hr = Number(dd && (dd.flowerAssetHotspotR  || dd.HotspotR));
+      if (isFinite(hx) && isFinite(hy) && isFinite(hr) && hr > 0) {
+        return { cx:hx, cy:hy, r:hr };
+      }
+      if (typeof hotspotGeomForDay_ === 'function') return hotspotGeomForDay_(dd);
+      var lvl = Number(dd && dd.level) || 1;
+      var topY = ({1:500,2:420,3:300,4:200,5:100})[lvl] || 500;
+      var bloom = {
+        1:{s:1.06*1.5,y:-34,r:20},
+        2:{s:1.06*1.5,y:-62,r:28},
+        3:{s:1.18,y:-72,r:40},
+        4:{s:1.32,y:-78,r:48},
+        5:{s:1.46,y:-82,r:56}
+      }[lvl] || {s:1.06*1.5,y:-34,r:20};
+      return { cx:200, cy:(topY + bloom.y * bloom.s), r:(bloom.r * 2.25 * bloom.s) };
+    })(day);
     var dateKey = String(day.dateKey || '');
     var imgW = Math.max(1, Number(day.imageWidth || day.ImageWidth || 2500) || 2500);
     var imgH = Math.max(1, Number(day.imageHeight || day.ImageHeight || 3000) || 3000);
@@ -5510,7 +5522,7 @@ function refreshFrontGrass(){
 // ============================================
 
 // ============================================
-// v100.1.10_PNGGlobalScaleTune: keep back-row flowers horizontally de-clumped
+// v100.1.11_PNGScale160_Shadow_HotspotFix: keep back-row flowers horizontally de-clumped
 // ============================================
 const __LL_BACK_SPREAD_MAX_BEHIND = 5;    // reach near-full spread quickly (about 4-6 rows back)
 const __LL_BACK_SPREAD_EDGE_PAD   = 0.006; // keep a tiny inset so nothing clips at extreme edges
@@ -5535,7 +5547,7 @@ const __LL_EVEN_NEARFRONT_BLEND_BEHIND = 1.35; // rows: 0..~1.35 blends from day
 
 
 // ============================================
-// v100.1.10_PNGGlobalScaleTune: offline back-hill port constants
+// v100.1.11_PNGScale160_Shadow_HotspotFix: offline back-hill port constants
 // ============================================
 const FRONT_VISIBLE_WEEKS = 10;
 const CREST_BUFFER_WEEKS = 1;
@@ -10619,7 +10631,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.__LL_LAST_PTR_X__ = window.innerWidth/2;
   window.__LL_LAST_PTR_Y__ = window.innerHeight/2;
   window.addEventListener('pointermove', (ev)=>{ window.__LL_LAST_PTR_X__ = ev.clientX; window.__LL_LAST_PTR_Y__ = ev.clientY; }, {passive:true});
-dbg_('v100.1.10_PNGGlobalScaleTune.0: DOMContentLoaded');
+dbg_('v100.1.11_PNGScale160_Shadow_HotspotFix.0: DOMContentLoaded');
 
   cacheDomRefs();
   try{ wrapLLDBGStep_(); }catch(e){}
@@ -10765,7 +10777,7 @@ window.__LL_BACKROWS_ANCHOR_MATCHED = true; // prevent later global overrides
   }catch(e){}
 
 
-  dbg_('v100.1.10_PNGGlobalScaleTune.0: Initialization complete');
+  dbg_('v100.1.11_PNGScale160_Shadow_HotspotFix.0: Initialization complete');
 });
 })();
 
@@ -11143,7 +11155,7 @@ window.applySelectedAdornments = applySelectedAdornments;
 
 
 <script>
-// v100.1.10_PNGGlobalScaleTune lifecycle manager
+// v100.1.11_PNGScale160_Shadow_HotspotFix lifecycle manager
 (function(){
   if (window.__LL_SYS__) return;
   const SYS = { timeouts:new Set(), intervals:new Set(), observers:new Set(), listeners:[] };
@@ -11159,14 +11171,14 @@ window.applySelectedAdornments = applySelectedAdornments;
 </script>
 
 <script>
-// v100.1.10_PNGGlobalScaleTune: unified BRX/back-row hard-disable controller.
+// v100.1.11_PNGScale160_Shadow_HotspotFix: unified BRX/back-row hard-disable controller.
 (function(){
   try{
     window.__PHASEA_DISABLE_BRX__ = true;
     window.__LL_DISABLE_BACKHILL__ = true;
     window.BRX_DISABLE_LEGACY_BACKROWS = true;
 
-    const VERSION = 'v100.1.10_PNGGlobalScaleTune';
+    const VERSION = 'v100.1.11_PNGScale160_Shadow_HotspotFix';
     const hideLegacyGroups = () => {
       ['backRowsG','gridWeeksG','hillGuidesG','gridOverlayG','gridWeeksOverlay','brxHillPngG','brxHillDbgG']
         .forEach(id => {
