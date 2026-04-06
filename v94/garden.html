@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.1.31.10.9.9_RearGrassLayerMoves_FrontGrassStatic.html</title>
+<title>garden_v100.1.31.10.9.8.1_StemCoverGrassLayerSubtleSway_NoSvgHotspots.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -2507,58 +2507,16 @@ body.llHitboxOn .flowerSvgHitProxy .flowerSvg .hsCore{
 </style>
 
 
-
-
-
-<style id="llRearGrassLayerSway_v1001311099">
-/* Keep the visible stem-cover grass static */
+<style id="llStaticGrassStemCoverSway_v1001311098">
+/* Animate the actual stem-covering static grass band */
 .llStaticGrassBand{
-  position: absolute;
   overflow: visible;
 }
 .llStaticGrassBand::before{
-  animation: none !important;
-  will-change: auto !important;
-  z-index: 1;
-  position: absolute;
-  inset: 0;
-  transform: scaleX(calc(var(--grassFlip) * 1)) !important;
-  background-position: 0% 100%, calc(var(--grassTileW, 720px) * 0.5) 100% !important;
+  animation: llStemCoverGrassSway 9.6s ease-in-out infinite !important;
+  will-change: transform, background-position;
 }
-
-/* Add a second rear copy that does the subtle sway */
-.llStaticGrassBand::after{
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background-image: var(--grassImg), var(--grassImg);
-  background-repeat: repeat-x, repeat-x;
-  background-size: var(--grassTileW, 720px) 100%, var(--grassTileW, 720px) 100%;
-  background-position: 0% 100%, calc(var(--grassTileW, 720px) * 0.5 - 10px) 100%;
-  opacity: 0.52;
-  filter: contrast(1.02) saturate(0.92) brightness(0.86) blur(0.55px)
-    drop-shadow(0 -1px 0 rgba(0,0,0,0.26))
-    drop-shadow(0 4px 8px rgba(0,0,0,0.10));
-  transform-origin: 50% 100%;
-  animation: llRearStemGrassSway 9.6s ease-in-out infinite;
-  -webkit-mask-image: linear-gradient(to top,
-    rgba(0,0,0,0) 0%,
-    rgba(0,0,0,0.65) 2.5%,
-    rgba(0,0,0,1) 6%,
-    rgba(0,0,0,1) var(--grassFadeHold, 60%),
-    rgba(0,0,0,0.65) var(--grassFadeMid, 78%),
-    rgba(0,0,0,0) 100%);
-  mask-image: linear-gradient(to top,
-    rgba(0,0,0,0) 0%,
-    rgba(0,0,0,0.65) 2.5%,
-    rgba(0,0,0,1) 6%,
-    rgba(0,0,0,1) var(--grassFadeHold, 60%),
-    rgba(0,0,0,0.65) var(--grassFadeMid, 78%),
-    rgba(0,0,0,0) 100%);
-}
-@keyframes llRearStemGrassSway{
+@keyframes llStemCoverGrassSway{
   0%{
     transform: scaleX(calc(var(--grassFlip) * 1)) translateX(-7px) skewX(-0.9deg) scaleY(0.992);
     background-position: 0% 100%, calc(var(--grassTileW, 720px) * 0.5 - 10px) 100%;
@@ -2574,9 +2532,34 @@ body.llHitboxOn .flowerSvgHitProxy .flowerSvg .hsCore{
 }
 </style>
 
+
+<style id="llHideSvgHotspotsLate_v10013110981">
+/* Keep hotspot logic alive, but remove all visible SVG hotspot styling */
+.hsCore,
+.hsCore.llHotSelected,
+.flowerSvgHitProxy .flowerSvg .hsCore,
+.flowerHitSvg .hsCore,
+body.llHitboxOn .hsCore,
+body.llHitboxOn .hsCore.llHotSelected,
+body.llHitboxOn .flowerSvgHitProxy .flowerSvg .hsCore,
+body.llHitboxOn .flowerHitSvg .hsCore,
+body:not(.llHitboxOn) [data-date-key].isSelected .hsCore,
+body:not(.llHitboxOn) [data-datekey].isSelected .hsCore,
+body:not(.llHitboxOn) .hsCore.llHotSelected{
+  fill: transparent !important;
+  stroke: transparent !important;
+  opacity: 0 !important;
+  filter: none !important;
+}
+.hsCore,
+.flowerSvgHitProxy .flowerSvg .hsCore{
+  pointer-events: all !important;
+}
+</style>
+
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.1.31.10.9.9_RearGrassLayerMoves_FrontGrassStatic • Built: 2026-04-06T00:00:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.1.31.10.9.8.1_StemCoverGrassLayerSubtleSway_NoSvgHotspots • Built: 2026-04-06T00:00:00Z UTC</div>
 
 
 <script>
@@ -2590,7 +2573,7 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v100.1.31.10.9.9_RearGrassLayerMoves_FrontGrassStatic.html</span><br>
+File: <span id="__bannerFileName">garden_v100.1.31.10.9.8.1_StemCoverGrassLayerSubtleSway_NoSvgHotspots.html</span><br>
 Version: <span id="__bannerVersion">v100.1.24_PerformanceHUD_AllWarm_NoDespawn</span><br>
 Created: 2026-04-05 12:35 AM PT</span></div>
 <script>
