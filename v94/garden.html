@@ -19,7 +19,6 @@
 
 
 
-
 <!DOCTYPE html>
 <!--
   CHANGELOG
@@ -1020,16 +1019,6 @@ body.llHitboxOn .flowerSvgHitProxy .flowerSvg .hsCore {
     rgba(0,0,0,0) 100%);
   filter: contrast(1.06) saturate(1.02) drop-shadow(0 -1px 0 rgba(0,0,0,0.40)) drop-shadow(0 1px 0 rgba(0,0,0,0.16)) drop-shadow(1px 0 0 rgba(0,0,0,0.16)) drop-shadow(-1px 0 0 rgba(0,0,0,0.16));
   }
-
-.llStaticGrassBand{
-  left: calc(-1 * var(--grassOverhang));
-  right: calc(-1 * var(--grassOverhang));
-  bottom: -8px;
-  height: calc(var(--grassBandH) + 18px);
-  opacity: calc(var(--grassOpacity) * 0.96);
-  transform: translate3d(0, 0, 0) !important;
-  z-index: 0;
-}
 
 .grassBand::before {
   content: "";
@@ -2437,6 +2426,23 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 <style>
 /* v99.3.28_TodayPoll_ApplyUpdateAndDebug: header pill uses fixed width set in layout */
 #llSkyHeader{ display:flex; justify-content:center; align-items:center; }
+</style>
+
+<style id="llDebugRedHotspotsAlways">
+/* Debug build: keep hotspots visibly red so interaction geometry is inspectable */
+.weekBand.isFront .hsCore,
+.weekBand.frontOutline .hsCore,
+.flowerSvgHitProxy .flowerSvg .hsCore,
+.flowerHitSvg .hsCore{
+  stroke: rgba(255,0,0,0.95) !important;
+  stroke-width: 2px !important;
+  fill: rgba(255,0,0,0.12) !important;
+  opacity: 1 !important;
+}
+.weekBand:not(.isFront):not(.frontOutline) .hsCore{
+  stroke: rgba(255,0,0,0.40) !important;
+  fill: rgba(255,0,0,0.05) !important;
+}
 </style>
 </head>
 <body class="">
@@ -5082,7 +5088,7 @@ function buildBands(){
   if (!weeksStack || !grassStack) return;
 
   weeksStack.innerHTML = "";
-  const hazeHtml = '<div class="grassHaze" id="grassHaze"></div><div class="grassBand llStaticGrassBand" id="llStaticGrassBand"></div>';
+  const hazeHtml = '<div class="grassHaze" id="grassHaze"></div>';
   grassStack.innerHTML = hazeHtml;
 
   bands.length = 0;
@@ -5149,7 +5155,14 @@ function ensureWeekNodes_(weekIdx){
   band._weekData = week;
   band._weekIdx = weekIdx;
 
-  const gband = null;
+  const gband = document.createElement("div");
+  gband.className = "grassBand";
+  const rgd = mulberry32(hash32FromString("grassDeform_" + week.iso));
+  gband.style.setProperty("--gx", (6 + rgd()*10).toFixed(2) + "px");
+  gband.style.setProperty("--gsk", (0.8 + rgd()*2.2).toFixed(2) + "deg");
+  gband.style.setProperty("--gsy", (0.015 + rgd()*0.025).toFixed(4));
+  gband.style.setProperty("--gdur", (8 + rgd()*10).toFixed(2) + "s");
+  gband.style.setProperty("--gdel", (-rgd()*12).toFixed(2) + "s");
 
   __llRenderedWeeks.set(weekIdx, { band, gband });
   const meta = Object.assign({ weekIndex: weekIdx }, week);
@@ -5163,8 +5176,12 @@ function ensureWeekNodes_(weekIdx){
   if (nextBand) weeksStack.insertBefore(band, nextBand);
   else weeksStack.appendChild(band);
 
+  const nextGrass = grassBands[insertAt] || null;
+  if (nextGrass) grassStack.insertBefore(gband, nextGrass);
+  else grassStack.appendChild(gband);
+
   bands.splice(insertAt, 0, band);
-  grassBands.splice(insertAt, 0, null);
+  grassBands.splice(insertAt, 0, gband);
   bandMeta.splice(insertAt, 0, meta);
 }
 
@@ -7507,6 +7524,7 @@ function tick(tNow){
 function updateRowInteractivity_(activeWeekIndex){
   try{
     const aw = (activeWeekIndex|0);
+    const prev = (typeof __rt?.nav?.lastFrontIndex === 'number') ? (__rt.nav.lastFrontIndex|0) : aw;
 
     try{
       for (let i=(flowerWrapEls||[]).length-1; i>=0; i--){
@@ -7518,7 +7536,9 @@ function updateRowInteractivity_(activeWeekIndex){
     for (const w of (flowerWrapEls || [])){
       if (!w || !w.isConnected) continue;
       const wi = parseInt(w.dataset.weekIndex || '-1', 10);
-      const on = (isFinite(wi) && wi === aw);
+      const band = w.closest('.weekBand');
+      const bandFront = !!(band && (band.classList.contains('isFront') || band.classList.contains('frontOutline')));
+      const on = bandFront || (isFinite(wi) && (wi === aw || wi === prev));
       w.style.pointerEvents = on ? 'auto' : 'none';
       if (on) w.classList.add('llActiveRow'); else w.classList.remove('llActiveRow');
 
@@ -9699,27 +9719,36 @@ function setSelection_(wrap){
 }
 
 
-document.addEventListener('click', (ev) => {
+function __llTryActivateHotspot_(ev){
   const hs = ev.target?.closest?.('.hsCore,[data-role="hotspot"]');
-  if (!hs) return;
+  if (!hs) return false;
   ev.preventDefault();
-	  // IMPORTANT: Use stopImmediatePropagation so our later capture-phase "outside click"
-	  // handler on the same element (document) does not run for the same click.
-	  ev.stopImmediatePropagation();
+  ev.stopImmediatePropagation();
 
   const wrap = hs.closest('.flowerWrap') || hs.closest('[data-date-key],[data-datekey]');
+  if (!wrap) return true;
 
-  // v99.3.28_TodayPoll_ApplyUpdateAndDebug: Only the current active row is selectable.
   try{
-    const wi = wrap ? parseInt(wrap.dataset.weekIndex||'-1',10) : -1;
-    const active = (typeof __rt.nav.lastFrontIndex === 'number') ? (__rt.nav.lastFrontIndex|0) : todayWeekIndex_();
-    if (!wrap || !isFinite(wi) || wi !== active){
-      if (typeof dbg_ === 'function') dbg_(`Selection ignored (inactive row) wi=${wi} active=${active}`);
-      return;
+    const wi = parseInt(wrap.dataset.weekIndex||'-1',10);
+    const active = (typeof __rt?.nav?.lastFrontIndex === 'number') ? (__rt.nav.lastFrontIndex|0) : todayWeekIndex_();
+    const band = wrap.closest('.weekBand');
+    const bandFront = !!(band && (band.classList.contains('isFront') || band.classList.contains('frontOutline')));
+    if (!(bandFront || (isFinite(wi) && wi === active))){
+      if (typeof dbg_ === 'function') dbg_(`Selection ignored (inactive row) wi=${wi} active=${active} bandFront=${bandFront}`);
+      return true;
     }
   }catch(e){}
 
   setSelection_(wrap);
+  return true;
+}
+
+document.addEventListener('pointerdown', (ev) => {
+  __llTryActivateHotspot_(ev);
+}, true);
+
+document.addEventListener('click', (ev) => {
+  __llTryActivateHotspot_(ev);
 }, true);
 
 
@@ -13107,5 +13136,5 @@ try { setTimeout(function(){ try { warmAllFlowerAssetsFromExport_(); } catch(_e)
 })();
 </script>
 
-</body>
+<script>try{document.body.classList.add('llHitboxOn');}catch(e){}</script></body>
 </html>
