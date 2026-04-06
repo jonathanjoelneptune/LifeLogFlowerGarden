@@ -2444,6 +2444,23 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
   fill: rgba(255,0,0,0.05) !important;
 }
 </style>
+
+<style id="llForceTransparentHotspots_v1001311084">
+.hsCore,
+.hsCore.llHotSelected,
+.flowerHitSvg .hsCore,
+.flowerSvgHitProxy .flowerSvg .hsCore,
+body.llHitboxOn .weekBand.isFront .hsCore,
+body.llHitboxOn .weekBand:not(.isFront) .hsCore,
+body.llHitboxOn .flowerHitSvg .hsCore,
+body.llHitboxOn .flowerSvgHitProxy .flowerSvg .hsCore{
+  fill: transparent !important;
+  stroke: transparent !important;
+  opacity: 0 !important;
+  filter: none !important;
+}
+</style>
+
 </head>
 <body class="">
   <div id="llPinkBanner">garden_v100.1.31.10.1_DebugRedHotspots_PngProxyFix • Built: 2026-04-06T00:00:00Z UTC</div>
@@ -13342,5 +13359,3 @@ body.llHitboxOn .weekBand:not(.isFront) .hsCore{
 
 </body>
 </html>
-
-	
