@@ -9894,7 +9894,7 @@ document.addEventListener('pointerdown', (ev) => {
   try{
     const t = ev.target;
     if (!t || typeof t.closest !== 'function') return;
-    if (t.closest('.hsCore, .hsHotspot, [data-hotspot], [data-slot], [data-date-key], [data-datekey], .flowerWrap, .flower-wrapper, .dow.isClickTarget, [data-signpost-select-bound], [data-signpost-select-bound="1"]')){
+    if (t.closest('.hsCore, .hsHotspot, [data-hotspot], [data-slot], [data-date-key], [data-datekey], .flowerWrap, .flower-wrapper')){
       if (typeof __llMarkSuppressDocClear_ === 'function') __llMarkSuppressDocClear_();
     }
   }catch(e){}
@@ -9908,7 +9908,7 @@ document.addEventListener('click', (ev) => {
   // the click target gets detached by a re-render.
   if (__llShouldSuppressDocClear_(ev)) return;
   // If the click was on a hotspot or within a flower wrapper, do nothing.
-  if (ev.target?.closest?.('.hsCore,[data-role="hotspot"],[data-date-key],[data-datekey],.dow.isClickTarget,[data-signpost-select-bound],[data-signpost-select-bound="1"]')) return;
+  if (ev.target?.closest?.('.hsCore,[data-role="hotspot"],[data-date-key],[data-datekey]')) return;
   if (isVerboseSelDbg_() && typeof dbg_ === 'function') dbg_('Blank click -> clear selection');
   clearSelection_('blank click');
 }, true);
@@ -13195,129 +13195,17 @@ try { setTimeout(function(){ try { warmAllFlowerAssetsFromExport_(); } catch(_e)
 </script>
 
 <script>try{document.body.classList.add('llHitboxOn');}catch(e){}</script>
-<style id="llStaticSignpostSelectStyles_v1001311011">
-.dowStrip{ pointer-events:auto !important; }
-.dow{
-  pointer-events:auto !important;
-  cursor:pointer;
+<style id="llSignpostOnlyDeepDiveStyles_v100131107">
+/* Hide red hotspot debug overlays entirely */
+body.llHitboxOn .weekBand.isFront .hsCore,
+body.llHitboxOn .weekBand:not(.isFront) .hsCore,
+body.llHitboxOn .flowerSvgHitProxy .flowerSvg .hsCore,
+body.llHitboxOn .flowerHitSvg .hsCore{
+  stroke: transparent !important;
+  fill: transparent !important;
+  opacity: 0 !important;
 }
-.dow.isClickTarget{
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.52),
-    inset 0 -1px 0 rgba(86,66,38,0.10),
-    0 7px 14px rgba(0,0,0,0.18),
-    0 2px 0 rgba(255,255,255,0.10);
-}
-.dow.isClickTarget:hover{
-  transform: translateY(-1px);
-  filter: brightness(1.02);
-}
-.dow.isClickTarget:active{
-  transform: translateY(0px) scale(0.99);
-}
-</style>
-
-
-<script id="llStaticSignpostSelect_v1001311011">
-(function(){
-  function getFrontWraps_(){
-    try{
-      if (typeof __llGetSelectableFrontRowWraps_ === 'function'){
-        return __llGetSelectableFrontRowWraps_() || [];
-      }
-    }catch(e){}
-    try{
-      const fi = (typeof __rt !== 'undefined' && __rt && __rt.nav && typeof __rt.nav.lastFrontIndex !== 'undefined')
-        ? (__rt.nav.lastFrontIndex|0)
-        : null;
-      const wraps = Array.from(document.querySelectorAll('.flowerWrap[data-day-index],.flowerWrap[data-dayindex]'));
-      return wraps.filter(function(w){
-        if (!w || !w.isConnected || !w.dataset) return false;
-        if (fi === null) return false;
-        return String(w.dataset.weekIndex || '') === String(fi);
-      }).sort(function(a,b){
-        return (parseInt(a.dataset.dayIndex || a.dataset.dayindex || '0', 10) -
-                parseInt(b.dataset.dayIndex || b.dataset.dayindex || '0', 10));
-      });
-    }catch(e){ return []; }
-  }
-
-  function selectFrontDayIndex_(dayIndex, reason){
-    try{
-      const wraps = getFrontWraps_();
-      const wrap = wraps.find(function(w){
-        const di = parseInt(w.dataset.dayIndex || w.dataset.dayindex || '-1', 10);
-        return di === dayIndex;
-      }) || null;
-      if (!wrap) return false;
-      if (typeof __llMarkSuppressDocClear_ === 'function') __llMarkSuppressDocClear_();
-      if (typeof setSelection_ === 'function'){
-        setSelection_(wrap);
-        try{
-          if (typeof __llMarkSuppressDocClear_ === 'function') __llMarkSuppressDocClear_();
-          if (typeof __llBindSelectedWrap_ === 'function') __llBindSelectedWrap_(wrap, 'signpost');
-          if (typeof __llShowSelectionSkyboxes_ === 'function') __llShowSelectionSkyboxes_(wrap, { deferMs: 0 });
-          if (typeof __llScheduleSelectedAdornments_ === 'function') __llScheduleSelectedAdornments_(wrap);
-        }catch(e){}
-        try{
-          if (typeof dbg_ === 'function'){
-            dbg_('Signpost Selected - dayIndex=' + dayIndex + (reason ? ' (' + reason + ')' : ''));
-          }
-        }catch(e){}
-        return true;
-      }
-    }catch(e){}
-    return false;
-  }
-
-  function bindSignpostSelectors_(){
-    const strip = document.getElementById('dowStrip');
-    if (!strip) return;
-    const nodes = Array.from(strip.querySelectorAll('.dow'));
-    nodes.forEach(function(node, idx){
-      if (!node || node.dataset.signpostSelectBound === '1') return;
-      node.dataset.signpostSelectBound = '1';
-      node.dataset.dayIndex = String(idx);
-      node.classList.add('isClickTarget');
-
-      const activate = function(ev){
-        try{
-          if (ev){
-            ev.preventDefault();
-            ev.stopPropagation();
-            if (typeof ev.stopImmediatePropagation === 'function') ev.stopImmediatePropagation();
-          }
-        }catch(e){}
-        selectFrontDayIndex_(idx, 'signpost');
-      };
-
-      node.addEventListener('pointerdown', activate, true);
-      node.addEventListener('click', activate, true);
-      node.addEventListener('touchstart', activate, {capture:true, passive:false});
-      node.setAttribute('title', 'Open ' + (node.querySelector('span') ? node.querySelector('span').textContent.trim() : ('Day ' + (idx+1))));
-    });
-  }
-
-  if (document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', bindSignpostSelectors_);
-  } else {
-    bindSignpostSelectors_();
-  }
-
-  const mo = new MutationObserver(function(){
-    bindSignpostSelectors_();
-  });
-  try{
-    mo.observe(document.documentElement, {subtree:true, childList:true});
-  }catch(e){}
-
-  window.__llSelectFrontDayIndexFromSignpost = selectFrontDayIndex_;
-})();
-</script>
-
-
-<style id="llSignpostOnlySelectionStyles_v1001311062">
-/* Signpost-only selection mode */
+/* Route selection through signposts only */
 .weekBand.isFront .flowerWrap,
 .weekBand.frontOutline .flowerWrap,
 .weekBand.isFront .hsCore,
@@ -13331,11 +13219,34 @@ try { setTimeout(function(){ try { warmAllFlowerAssetsFromExport_(); } catch(_e)
 .dowStrip,
 .dowStrip .dow{
   pointer-events: auto !important;
+  cursor: pointer;
 }
 </style>
-<script id="llSignpostOnlySelection_v1001311062">
+<script id="llSignpostOnlyDeepDiveFix_v100131107">
 (function(){
+  function hideHitboxDebug_(){
+    try{ document.body.classList.remove('llHitboxOn'); }catch(e){}
+  }
+
+  const origShouldSuppress = window.__llShouldSuppressDocClear_;
+  window.__llShouldSuppressDocClear_ = function(ev){
+    try{
+      if (ev && ev.target && typeof ev.target.closest === 'function' && ev.target.closest('.dow[data-signpost-only="1"],.dow.isClickTarget')){
+        return true;
+      }
+    }catch(e){}
+    try{ return origShouldSuppress ? origShouldSuppress(ev) : false; }catch(e){ return false; }
+  };
+
   function getFrontWrapByDayIndex_(dayIndex){
+    try{
+      let wrap = document.querySelector('.weekBand.isFront .flowerWrap[data-day-index="'+dayIndex+'"]') ||
+                 document.querySelector('.weekBand.isFront .flowerWrap[data-dayindex="'+dayIndex+'"]');
+      if (wrap) return wrap;
+      wrap = document.querySelector('.weekBand.frontOutline .flowerWrap[data-day-index="'+dayIndex+'"]') ||
+             document.querySelector('.weekBand.frontOutline .flowerWrap[data-dayindex="'+dayIndex+'"]');
+      if (wrap) return wrap;
+    }catch(e){}
     try{
       if (typeof __llGetSelectableFrontRowWraps_ === 'function'){
         const arr = __llGetSelectableFrontRowWraps_() || [];
@@ -13346,37 +13257,37 @@ try { setTimeout(function(){ try { warmAllFlowerAssetsFromExport_(); } catch(_e)
         if (found) return found;
       }
     }catch(e){}
-    try{
-      const fi = (typeof __rt !== 'undefined' && __rt && __rt.nav && typeof __rt.nav.lastFrontIndex !== 'undefined')
-        ? (__rt.nav.lastFrontIndex|0)
-        : null;
-      const wraps = Array.from(document.querySelectorAll('.flowerWrap[data-day-index],.flowerWrap[data-dayindex]'));
-      return wraps.find(function(w){
-        if (!w || !w.isConnected || !w.dataset) return false;
-        const di = parseInt(w.dataset.dayIndex || w.dataset.dayindex || '-1', 10);
-        if (di !== dayIndex) return false;
-        if (fi === null) return false;
-        return String(w.dataset.weekIndex || '') === String(fi);
-      }) || null;
-    }catch(e){}
     return null;
   }
 
-  function selectViaSignpostOnly_(dayIndex){
+  function openFromSignpost_(dayIndex, reason){
     const wrap = getFrontWrapByDayIndex_(dayIndex);
+    try{ if (typeof dbg_ === 'function') dbg_('Signpost resolve dayIndex=' + dayIndex + ' wrap=' + (!!wrap)); }catch(e){}
     if (!wrap) return false;
     try{ if (typeof __llMarkSuppressDocClear_ === 'function') __llMarkSuppressDocClear_(); }catch(e){}
-    try{ if (typeof clearSelection_ === 'function') clearSelection_('signpost'); }catch(e){}
-    try{ if (typeof __llBindSelectedWrap_ === 'function') __llBindSelectedWrap_(wrap, 'signpost-only'); }catch(e){}
-    try{ if (typeof showSkyBoxesForWrap_ === 'function') showSkyBoxesForWrap_(wrap); }
-    catch(e){
-      try{ if (typeof __llShowSelectionSkyboxes_ === 'function') __llShowSelectionSkyboxes_(wrap, { deferMs: 0 }); }catch(_e){}
+
+    // If the same wrap is already selected, force the skybox open path directly.
+    if (window.__llSelectedWrap && window.__llSelectedWrap === wrap){
+      try{ wrap.classList.add('isSelected'); }catch(e){}
+      try{ if (typeof showSkyBoxesForWrap_ === 'function') showSkyBoxesForWrap_(wrap); }catch(e){
+        try{ if (typeof __llShowSelectionSkyboxes_ === 'function') __llShowSelectionSkyboxes_(wrap, {deferMs:0}); }catch(_e){}
+      }
+      try{ if (typeof __llScheduleSelectedAdornments_ === 'function') __llScheduleSelectedAdornments_(wrap); }catch(e){}
+      return true;
     }
-    try{ if (typeof __llScheduleSelectedAdornments_ === 'function') __llScheduleSelectedAdornments_(wrap); }catch(e){}
+
     try{
-      wrap.classList.add('isSelected');
-      wrap.classList.add('llSilSelected');
-    }catch(e){}
+      if (typeof setSelection_ === 'function'){
+        setSelection_(wrap);
+      } else {
+        if (typeof clearSelection_ === 'function') clearSelection_('signpost-direct');
+        if (typeof __llBindSelectedWrap_ === 'function') __llBindSelectedWrap_(wrap, 'signpost-direct');
+        if (typeof showSkyBoxesForWrap_ === 'function') showSkyBoxesForWrap_(wrap);
+        else if (typeof __llShowSelectionSkyboxes_ === 'function') __llShowSelectionSkyboxes_(wrap, {deferMs:0});
+      }
+    }catch(e){
+      try{ if (typeof dbg_ === 'function') dbg_('Signpost setSelection error: ' + (e && e.message)); }catch(_e){}
+    }
     return true;
   }
 
@@ -13384,8 +13295,9 @@ try { setTimeout(function(){ try { warmAllFlowerAssetsFromExport_(); } catch(_e)
     const strip = document.getElementById('dowStrip');
     if (!strip) return;
     Array.from(strip.querySelectorAll('.dow')).forEach(function(node, idx){
-      if (!node || node.dataset.signpostOnlyBound === '1') return;
-      node.dataset.signpostOnlyBound = '1';
+      if (!node || node.dataset.signpostOnly === '1') return;
+      node.dataset.signpostOnly = '1';
+      node.classList.add('isClickTarget');
       const activate = function(ev){
         try{
           if (ev){
@@ -13394,7 +13306,7 @@ try { setTimeout(function(){ try { warmAllFlowerAssetsFromExport_(); } catch(_e)
             if (typeof ev.stopImmediatePropagation === 'function') ev.stopImmediatePropagation();
           }
         }catch(e){}
-        selectViaSignpostOnly_(idx);
+        openFromSignpost_(idx, 'signpost');
         return false;
       };
       node.addEventListener('pointerdown', activate, true);
@@ -13403,35 +13315,34 @@ try { setTimeout(function(){ try { warmAllFlowerAssetsFromExport_(); } catch(_e)
     });
   }
 
-  // Disable hotspot activation path
-  try{
-    window.__llTryActivateHotspot_ = function(){ return false; };
-  }catch(e){}
-  // Blanket stop click-based flower activation in capture phase
+  // Disable flower-origin selection without disturbing rendering.
   document.addEventListener('click', function(ev){
-    if (ev.target && ev.target.closest && ev.target.closest('.flowerWrap,.hsCore,.flowerSvgHitProxy,.flowerHitSvg,[data-role="hotspot"]')){
-      ev.preventDefault();
-      ev.stopPropagation();
-      if (typeof ev.stopImmediatePropagation === 'function') ev.stopImmediatePropagation();
-    }
+    try{
+      if (ev.target && ev.target.closest && ev.target.closest('.flowerWrap,.hsCore,.flowerSvgHitProxy,.flowerHitSvg,[data-role="hotspot"]')){
+        ev.preventDefault();
+        ev.stopPropagation();
+        if (typeof ev.stopImmediatePropagation === 'function') ev.stopImmediatePropagation();
+      }
+    }catch(e){}
   }, true);
   document.addEventListener('pointerdown', function(ev){
-    if (ev.target && ev.target.closest && ev.target.closest('.flowerWrap,.hsCore,.flowerSvgHitProxy,.flowerHitSvg,[data-role="hotspot"]')){
-      ev.preventDefault();
-      ev.stopPropagation();
-      if (typeof ev.stopImmediatePropagation === 'function') ev.stopImmediatePropagation();
-    }
+    try{
+      if (ev.target && ev.target.closest && ev.target.closest('.flowerWrap,.hsCore,.flowerSvgHitProxy,.flowerHitSvg,[data-role="hotspot"]')){
+        ev.preventDefault();
+        ev.stopPropagation();
+        if (typeof ev.stopImmediatePropagation === 'function') ev.stopImmediatePropagation();
+      }
+    }catch(e){}
   }, true);
 
   if (document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', bindSignposts_);
+    document.addEventListener('DOMContentLoaded', function(){ hideHitboxDebug_(); bindSignposts_(); });
   } else {
+    hideHitboxDebug_();
     bindSignposts_();
   }
-  try{
-    const mo = new MutationObserver(bindSignposts_);
-    mo.observe(document.documentElement, {subtree:true, childList:true});
-  }catch(e){}
+  const mo = new MutationObserver(function(){ bindSignposts_(); });
+  try{ mo.observe(document.documentElement, {subtree:true, childList:true}); }catch(e){}
 })();
 </script>
 
