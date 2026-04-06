@@ -916,14 +916,10 @@ body.llScreenSaverLowPower .flowerWind{
   display: block;
 }
 .flowerHitSvg .hsCore {
-  fill: transparent !important;
-  stroke: transparent !important;
-  opacity: 0 !important;
-}
-body.llHitboxOn .flowerHitSvg .hsCore {
   fill: rgba(255,0,0,0.12) !important;
   stroke: rgba(255,0,0,0.95) !important;
   opacity: 1 !important;
+  pointer-events: all !important;
 }
 .flowerSvgHitProxy {
   position: absolute;
@@ -5485,7 +5481,9 @@ function buildFlowerMarkupForDay_(day){
     return `
       <div class="flowerAssetPngWrap" style="--assetDisplayW:${displayW.toFixed(2)}px;--assetDisplayH:${displayH.toFixed(2)}px;">
         <img class="flowerPngAsset" src="${pngUrl}" alt="" crossorigin="anonymous" loading="eager" decoding="async"/>
-        <div class="flowerSvgHitProxy" aria-hidden="true">${flowerSvg(day)}</div>
+        <svg class="flowerHitSvg pngHitSvg" viewBox="0 0 ${displayW.toFixed(2)} ${displayH.toFixed(2)}" preserveAspectRatio="none" aria-hidden="true">
+          <circle class="hsCore" data-role="hotspot" cx="${hsCx.toFixed(2)}" cy="${hsCy.toFixed(2)}" r="${hsR.toFixed(2)}"></circle>
+        </svg>
       </div>`;
   }
   return `<div class="flowerSvgWrap">${flowerSvg(day)}</div>`;
@@ -5494,15 +5492,9 @@ function buildFlowerMarkupForDay_(day){
 function syncPngHotspotForWrap_(wrapEl, dayForAsset){
   try {
     if (!wrapEl || !dayForAsset) return;
-    var proxy = wrapEl.querySelector('.flowerSvgHitProxy');
+    var hitSvg = wrapEl.querySelector('.flowerHitSvg.pngHitSvg');
     var assetWrap = wrapEl.querySelector('.flowerAssetPngWrap');
-    if (!proxy || !assetWrap) return;
-    proxy.style.inset = '0';
-    proxy.style.width = '100%';
-    proxy.style.height = '100%';
-    proxy.style.left = '0';
-    proxy.style.bottom = '0';
-    proxy.style.transform = 'none';
+    if (!hitSvg || !assetWrap) return;
 
     var hs = (function(dd){
       var hx = Number(dd && (dd.flowerAssetHotspotCx || dd.HotspotCx));
@@ -5522,15 +5514,14 @@ function syncPngHotspotForWrap_(wrapEl, dayForAsset){
     var hsCy = ((Number(hs.cy) - m.stemY) * m.scaleY) + displayH;
     var hsR = Number(hs.r) * Math.max(m.scaleX, m.scaleY);
 
-    var cores = proxy.querySelectorAll('.hsCore,[data-role="hotspot"]');
-    cores.forEach(function(c){
-      try {
-        c.setAttribute('cx', String(hsCx));
-        c.setAttribute('cy', String(hsCy));
-        c.setAttribute('r', String(hsR));
-        c.style.pointerEvents = 'all';
-      } catch(_e){}
-    });
+    hitSvg.setAttribute('viewBox', '0 0 ' + displayW + ' ' + displayH);
+    var core = hitSvg.querySelector('.hsCore,[data-role="hotspot"]');
+    if (core){
+      core.setAttribute('cx', String(hsCx));
+      core.setAttribute('cy', String(hsCy));
+      core.setAttribute('r', String(hsR));
+      core.style.pointerEvents = 'all';
+    }
   } catch(_e){}
 }
 
@@ -13196,3 +13187,5 @@ try { setTimeout(function(){ try { warmAllFlowerAssetsFromExport_(); } catch(_e)
 
 <script>try{document.body.classList.add('llHitboxOn');}catch(e){}</script></body>
 </html>
+
+<!-- debug build: PNG hotspots replaced with asset-sized SVG overlay -->
