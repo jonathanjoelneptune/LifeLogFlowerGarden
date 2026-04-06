@@ -13224,6 +13224,12 @@ body.llHitboxOn .weekBand:not(.isFront) .hsCore{
 <script id="llSignpostPrimarySelection_v1001311080">
 (function(){
   try{ document.body.classList.remove('llHitboxOn'); }catch(e){}
+  try{
+    var s = document.createElement('style');
+    s.id = 'llHideHotspotsSignpost';
+    s.textContent = '.hsCore{stroke:transparent !important; fill:transparent !important; opacity:0 !important;} body.llHitboxOn .hsCore{stroke:transparent !important; fill:transparent !important; opacity:0 !important;}';
+    document.head.appendChild(s);
+  }catch(e){}
 
   function pulseSign_(node){
     try{
@@ -13271,21 +13277,22 @@ body.llHitboxOn .weekBand:not(.isFront) .hsCore{
       try{
         hs = wrap.querySelector('.flowerSvgHitProxy .hsCore, .flowerHitSvg .hsCore, .hsCore, [data-role="hotspot"]');
       }catch(_e){}
-      if (hs && typeof __llTryActivateHotspot_ === 'function'){
-        __llTryActivateHotspot_({
-          target: hs,
-          preventDefault: function(){},
-          stopImmediatePropagation: function(){},
-          stopPropagation: function(){}
-        });
+      if (hs){
+        try{
+          hs.dispatchEvent(new PointerEvent('pointerdown', {bubbles:true, cancelable:true, composed:true, pointerType:'mouse', isPrimary:true, button:0, buttons:1}));
+        }catch(_e){}
+        try{
+          hs.dispatchEvent(new MouseEvent('click', {bubbles:true, cancelable:true, composed:true, button:0}));
+        }catch(_e){}
         return true;
       }
       if (typeof setSelection_ === 'function'){
         setSelection_(wrap);
+        try{ if (typeof __llShowSelectionSkyboxes_ === 'function') __llShowSelectionSkyboxes_(wrap, { deferMs: 0, reason: 'signpost-fallback' }); }catch(_e){}
       } else {
         if (typeof clearSelection_ === 'function') clearSelection_('signpost');
         if (typeof __llBindSelectedWrap_ === 'function') __llBindSelectedWrap_(wrap, 'signpost');
-        if (typeof __llShowSelectionSkyboxes_ === 'function') __llShowSelectionSkyboxes_(wrap, { deferMs: 0 });
+        if (typeof __llShowSelectionSkyboxes_ === 'function') __llShowSelectionSkyboxes_(wrap, { deferMs: 0, reason: 'signpost-fallback' });
         if (typeof __llScheduleSelectedAdornments_ === 'function') __llScheduleSelectedAdornments_(wrap);
       }
     }catch(e){
