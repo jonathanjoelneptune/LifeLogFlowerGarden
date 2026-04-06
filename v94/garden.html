@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.1.31.10.9.5_NewGrassPngEverywhere_GreenSoftened.html</title>
+<title>garden_v100.1.31.10.9.9_RearGrassLayerMoves_FrontGrassStatic.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -383,8 +383,8 @@ function renderBackRows(){ /* disabled */ }
   --grassFadeHold: 62%;
   --grassFadeMid: 82%;
   --grassOpacity: 1.0;
-  --grassBandH: 280px;
-  --grassW: 100%;
+  --grassBandH: 480px;
+  --grassW: 50%;
   --grassH: 140%;
   --grassBgSize: var(--grassW) var(--grassH);
   --grassFilter: blur(0.25px) hue-rotate(-18deg) saturate(1.22) brightness(0.88) contrast(1.08) drop-shadow(0 -1px 0 rgba(0,0,0,0.35)) drop-shadow(0 1px 0 rgba(0,0,0,0.12)) drop-shadow(1px 0 0 rgba(0,0,0,0.12)) drop-shadow(-1px 0 0 rgba(0,0,0,0.12));
@@ -1100,22 +1100,13 @@ body.llHitboxOn .flowerSvgHitProxy .flowerSvg .hsCore {
   position: absolute;
   left: 0;
   right: 0;
-  margin: 0 0;
-  bottom: 6px;
-  height: 132px;
+  margin: 0 92px;
+  bottom: 8px;
+  height: 95px;
   pointer-events: none;
   z-index: 6;
   opacity: 0.98;
-  overflow: visible;
-  background-image: url("https://github.com/jonathanjoelneptune/LifeLogFlowerGarden/blob/main/v94/%E2%80%94Pngtree%E2%80%94green%20grass%20clipart_13155454.png?raw=true");
-  background-repeat: repeat-x;
-  background-position: center bottom;
-  background-size: auto 86%;
-  filter:
-    hue-rotate(var(--fgGrassHue))
-    saturate(var(--fgGrassSat))
-    brightness(var(--fgGrassBright))
-    drop-shadow(0 8px 12px rgba(0,0,0,0.18));
+  filter: hue-rotate(var(--fgGrassHue)) saturate(var(--fgGrassSat)) brightness(var(--fgGrassBright)) drop-shadow(0 10px 14px rgba(0,0,0,0.22));
 }
 .frontGrass::before {
   content: "";
@@ -1126,6 +1117,18 @@ body.llHitboxOn .flowerSvgHitProxy .flowerSvg .hsCore {
 }
 .frontGrass .tuft { display: none !important; }
 .frontGrass svg { display: none !important; }
+
+@keyframes llFrontGrassRearSway {
+  0% {
+    transform: translate3d(-7px, 2px, 0) skewX(-0.9deg) scaleY(0.992);
+  }
+  50% {
+    transform: translate3d(7px, 0px, 0) skewX(0.9deg) scaleY(1.012);
+  }
+  100% {
+    transform: translate3d(-7px, 2px, 0) skewX(-0.9deg) scaleY(0.992);
+  }
+}
 
 /* ---------- DOW Strip ---------- */
 .dowGrass {
@@ -2503,9 +2506,77 @@ body.llHitboxOn .flowerSvgHitProxy .flowerSvg .hsCore{
 }
 </style>
 
+
+
+
+
+<style id="llRearGrassLayerSway_v1001311099">
+/* Keep the visible stem-cover grass static */
+.llStaticGrassBand{
+  position: absolute;
+  overflow: visible;
+}
+.llStaticGrassBand::before{
+  animation: none !important;
+  will-change: auto !important;
+  z-index: 1;
+  position: absolute;
+  inset: 0;
+  transform: scaleX(calc(var(--grassFlip) * 1)) !important;
+  background-position: 0% 100%, calc(var(--grassTileW, 720px) * 0.5) 100% !important;
+}
+
+/* Add a second rear copy that does the subtle sway */
+.llStaticGrassBand::after{
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: var(--grassImg), var(--grassImg);
+  background-repeat: repeat-x, repeat-x;
+  background-size: var(--grassTileW, 720px) 100%, var(--grassTileW, 720px) 100%;
+  background-position: 0% 100%, calc(var(--grassTileW, 720px) * 0.5 - 10px) 100%;
+  opacity: 0.52;
+  filter: contrast(1.02) saturate(0.92) brightness(0.86) blur(0.55px)
+    drop-shadow(0 -1px 0 rgba(0,0,0,0.26))
+    drop-shadow(0 4px 8px rgba(0,0,0,0.10));
+  transform-origin: 50% 100%;
+  animation: llRearStemGrassSway 9.6s ease-in-out infinite;
+  -webkit-mask-image: linear-gradient(to top,
+    rgba(0,0,0,0) 0%,
+    rgba(0,0,0,0.65) 2.5%,
+    rgba(0,0,0,1) 6%,
+    rgba(0,0,0,1) var(--grassFadeHold, 60%),
+    rgba(0,0,0,0.65) var(--grassFadeMid, 78%),
+    rgba(0,0,0,0) 100%);
+  mask-image: linear-gradient(to top,
+    rgba(0,0,0,0) 0%,
+    rgba(0,0,0,0.65) 2.5%,
+    rgba(0,0,0,1) 6%,
+    rgba(0,0,0,1) var(--grassFadeHold, 60%),
+    rgba(0,0,0,0.65) var(--grassFadeMid, 78%),
+    rgba(0,0,0,0) 100%);
+}
+@keyframes llRearStemGrassSway{
+  0%{
+    transform: scaleX(calc(var(--grassFlip) * 1)) translateX(-7px) skewX(-0.9deg) scaleY(0.992);
+    background-position: 0% 100%, calc(var(--grassTileW, 720px) * 0.5 - 10px) 100%;
+  }
+  50%{
+    transform: scaleX(calc(var(--grassFlip) * 1)) translateX(7px) skewX(0.9deg) scaleY(1.012);
+    background-position: 14px 100%, calc(var(--grassTileW, 720px) * 0.5 + 10px) 100%;
+  }
+  100%{
+    transform: scaleX(calc(var(--grassFlip) * 1)) translateX(-7px) skewX(-0.9deg) scaleY(0.992);
+    background-position: 0% 100%, calc(var(--grassTileW, 720px) * 0.5 - 10px) 100%;
+  }
+}
+</style>
+
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.1.31.10.9.5_NewGrassPngEverywhere_GreenSoftened • Built: 2026-04-06T00:00:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.1.31.10.9.9_RearGrassLayerMoves_FrontGrassStatic • Built: 2026-04-06T00:00:00Z UTC</div>
 
 
 <script>
@@ -2519,7 +2590,7 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v100.1.31.10.9.5_NewGrassPngEverywhere_GreenSoftened.html</span><br>
+File: <span id="__bannerFileName">garden_v100.1.31.10.9.9_RearGrassLayerMoves_FrontGrassStatic.html</span><br>
 Version: <span id="__bannerVersion">v100.1.24_PerformanceHUD_AllWarm_NoDespawn</span><br>
 Created: 2026-04-05 12:35 AM PT</span></div>
 <script>
