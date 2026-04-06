@@ -22,7 +22,7 @@
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v100.1.30_AnchorStateRows_TwoTierReady
+  v100.1.31_CleanState_AnchorRows_DeadLogicRemoved
     + Replace live row-position solving with anchor-state row transforms
     + Add cached row anchor table for front rows, crest handoff, future rows, and hill triplet rows
     + Replace dynamic back-row slot spreading with fixed lane layouts (left / center / right)
@@ -135,7 +135,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.30_AnchorStateRows_TwoTierReady';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.31_CleanState_AnchorRows_DeadLogicRemoved';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -263,7 +263,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 function renderBackRows(){ /* disabled */ }
 
 (function(){
-  const VERSION = 'v100.1.30_AnchorStateRows_TwoTierReady';
+  const VERSION = 'v100.1.31_CleanState_AnchorRows_DeadLogicRemoved';
 
   // ---- Canonical version globals ----
   window.APP_VERSION = VERSION;
@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.1.30_AnchorStateRows_TwoTierReady.html</title>
+<title>garden_v100.1.31_CleanState_AnchorRows_DeadLogicRemoved.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -2429,7 +2429,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.1.30_AnchorStateRows_TwoTierReady.html • v100.1.24_PerformanceHUD_AllWarm_NoDespawn • Built: 2026-04-05T00:35:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.1.31_CleanState_AnchorRows_DeadLogicRemoved.html • v100.1.24_PerformanceHUD_AllWarm_NoDespawn • Built: 2026-04-05T00:35:00Z UTC</div>
 
 
 <script>
@@ -2443,7 +2443,7 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v100.1.30_AnchorStateRows_TwoTierReady.html</span><br>
+File: <span id="__bannerFileName">garden_v100.1.31_CleanState_AnchorRows_DeadLogicRemoved.html</span><br>
 Version: <span id="__bannerVersion">v100.1.24_PerformanceHUD_AllWarm_NoDespawn</span><br>
 Created: 2026-04-05 12:35 AM PT</span></div>
 <script>
@@ -5006,28 +5006,32 @@ const todState = { mode: "realtime", manualMinutes: 720, playRate: 0 };
 let lastTodTick = 0;
 
 // ============================================
-// Phase 2 RENDER API (separate structure rebuild from visual refresh)
+// Clean-state render API
+// - No background structural rebuild queue during normal navigation
+// - Visual refresh is immediate and scoped to currently rendered week bands only
 // ============================================
 function requestTransformRefresh_(){
   CACHED.transformsDirty = true;
 }
 function requestStructuralRebuild_(opts){
   opts = opts || {};
-  CACHED.structureDirty = true;
-  if (opts.refreshGrass) CACHED.visualRefreshGrass = true;
+  try{
+    const focusWeekIndex = Math.max(0, Math.round(__rt.nav.currentOffset));
+    syncRenderedWeeks_(focusWeekIndex|0, /*fullRebuild=*/true);
+    if (opts.refreshGrass){
+      try{ refreshFrontGrass(); }catch(e){}
+    }
+  }catch(e){
+    console.warn('[RENDER] structural rebuild failed', e);
+  }
   CACHED.transformsDirty = true;
 }
-function requestBandVisualRefresh_(opts){
+function refreshRenderedBandVisuals_(opts){
   opts = opts || {};
-  CACHED.visualDirty = true;
-  if (opts.refreshGrass) CACHED.visualRefreshGrass = true;
-  CACHED.transformsDirty = true;
-}
-function refreshRenderedBandVisuals_(){
   try{
     for (const rec of __llRenderedWeeks.values()){
       const band = rec && rec.band;
-      if (!band) continue;
+      if (!band || !band.isConnected) continue;
       band.textContent = '';
       band.dataset.rendered = '';
       renderBandFlowers(band);
@@ -5036,31 +5040,19 @@ function refreshRenderedBandVisuals_(){
     try{ updateFrontText(focusWeekIndex|0); }catch(e){}
     try{ updateRowInteractivity_(focusWeekIndex|0); }catch(e){}
     try{ rebindSelectionToVisibleWrap_('visual refresh'); }catch(e){}
+    if (opts.refreshGrass){
+      try{ refreshFrontGrass(); }catch(e){}
+    }
   }catch(e){
     console.warn('[RENDER] visual refresh failed', e);
   }
+  CACHED.transformsDirty = true;
 }
-function flushRenderQueue_(tNow){
-  if (CACHED.structureDirty){
-    CACHED.structureDirty = false;
-    buildBands();
-    if (CACHED.visualRefreshGrass){
-      try{ refreshFrontGrass(); }catch(e){}
-      CACHED.visualRefreshGrass = false;
-    }
-    CACHED.visualDirty = false;
-    CACHED.transformsDirty = true;
-    return;
-  }
-  if (CACHED.visualDirty){
-    CACHED.visualDirty = false;
-    refreshRenderedBandVisuals_();
-    if (CACHED.visualRefreshGrass){
-      try{ refreshFrontGrass(); }catch(e){}
-      CACHED.visualRefreshGrass = false;
-    }
-    CACHED.transformsDirty = true;
-  }
+function requestBandVisualRefresh_(opts){
+  refreshRenderedBandVisuals_(opts || {});
+}
+function flushRenderQueue_(_tNow){
+  // Intentionally no-op in clean state.
 }
 
 // ============================================
@@ -5072,7 +5064,8 @@ function buildBands(){
   if (!weeksStack || !grassStack) return;
 
   weeksStack.innerHTML = "";
-  grassStack.innerHTML = '<div class="grassHaze" id="grassHaze"></div>';
+  const hazeHtml = '<div class="grassHaze" id="grassHaze"></div>';
+  grassStack.innerHTML = hazeHtml;
 
   bands.length = 0;
   grassBands.length = 0;
@@ -5082,12 +5075,11 @@ function buildBands(){
   __llRenderedWeeks.clear();
   __llBandMetaByWeekIndex.clear();
 
-  // Initialize focus to "today" (relative to the Garden Epoch).
   const tIdx = todayWeekIndex_();
   __rt.nav.targetIndex = tIdx;
   __rt.nav.currentOffset = tIdx;
+  __rt.nav.lastFrontIndex = -1;
 
-  // Render the initial window around today.
   syncRenderedWeeks_(tIdx, /*fullRebuild=*/true);
   CACHED.transformsDirty = true;
 }
@@ -5198,37 +5190,37 @@ if(window.__llForceTodayAfterExport_ && fullRebuild){
   window.__llForceTodayAfterExport_ = false;
 }
 
-
   dbg_("[FRONT] syncRenderedWeeks start focus="+(focusWeekIndex|0)+" fullRebuild="+!!fullRebuild);
-
-  if (fullRebuild){
-    try{
-      dbg_("[FRONT] fullRebuild: clearing rendered bands and recomputing week models");
-      // Clear cached render flags + DOM so bands will re-render using latest data source (export/offline)
-      for (let i=0; i<bands.length; i++){
-        const band = bands[i];
-        if (!band) continue;
-        band.dataset.rendered = "";
-        band.innerHTML = "";
-        // Recompute week model so dayData is rebuilt from current source
-        const bandWeekIdx = Number.isFinite(Number(band.dataset && band.dataset.weekIndex)) ? Number(band.dataset.weekIndex) : (Number.isFinite(Number(band._weekIdx)) ? Number(band._weekIdx) : i);
-        band._weekData = weekModelForIndex_(bandWeekIdx);
-      }
-      if (__llRenderedWeeks && typeof __llRenderedWeeks.clear === "function") __llRenderedWeeks.clear();
-    }catch(e){
-      console.warn("[FRONT] fullRebuild failed", e);
-    }
-  }
 
   const minIdx = Math.max(0, (focusWeekIndex|0) - PAST_WEEKS_RENDERED);
   const maxIdx = (focusWeekIndex|0) + FUTURE_WEEKS_RENDERED;
 
-  // Create needed weeks
-  for (let wi=minIdx; wi<=maxIdx; wi++){
-    ensureWeekNodes_(wi);
+  const created = [];
+  const rerender = [];
+
+  if (fullRebuild){
+    dbg_("[FRONT] clean fullRebuild: rerender current window only");
   }
 
-  // Keep rendered weeks warm once created; do not despawn out-of-range weeks.
+  // Create needed weeks and mark dirty rows for full rebuild
+  for (let wi=minIdx; wi<=maxIdx; wi++){
+    const existed = __llRenderedWeeks.has(wi);
+    ensureWeekNodes_(wi);
+    const rec = __llRenderedWeeks.get(wi);
+    if (rec && rec.band){
+      if (!existed) created.push(rec.band);
+      if (fullRebuild){
+        rec.band.dataset.rendered = '';
+        rec.band.textContent = '';
+        rec.band._weekData = weekModelForIndex_(wi);
+        rerender.push(rec.band);
+      } else if (rec.band.dataset.rendered !== "true") {
+        rerender.push(rec.band);
+      }
+    }
+  }
+
+  // Dispose out-of-range weeks when keep-warm is disabled
   if (!window.__LL_KEEP_RENDERED_WEEKS__){
     for (const wi of Array.from(__llRenderedWeeks.keys())){
       if (wi < minIdx || wi > maxIdx){
@@ -5237,32 +5229,38 @@ if(window.__llForceTodayAfterExport_ && fullRebuild){
     }
   }
 
-  // Re-order DOM (ascending weekIndex) so transforms are stable
+  // Re-order DOM in ascending weekIndex. Do not clear shared scene layers.
   const weeksStack = DOM.weeksStack;
   const grassStack = DOM.grassStack;
+  const entries = Array.from(__llRenderedWeeks.entries()).sort((a,b)=>a[0]-b[0]);
+
   if (weeksStack){
-    const bandsSorted = Array.from(__llRenderedWeeks.entries()).sort((a,b)=>a[0]-b[0]).map(e=>e[1].band);
-    for (const b of bandsSorted) weeksStack.appendChild(b);
+    for (const [, rec] of entries){
+      if (rec && rec.band) weeksStack.appendChild(rec.band);
+    }
   }
   if (grassStack){
-    // Preserve the haze element as the first child
     const haze = grassStack.querySelector('#grassHaze');
-    const gSorted = Array.from(__llRenderedWeeks.entries()).sort((a,b)=>a[0]-b[0]).map(e=>e[1].gband);
-    grassStack.innerHTML = '';
-    if (haze) grassStack.appendChild(haze); else {
-      const hz = document.createElement('div'); hz.className='grassHaze'; hz.id='grassHaze'; grassStack.appendChild(hz);
+    if (haze && grassStack.firstChild !== haze) grassStack.insertBefore(haze, grassStack.firstChild);
+    for (const [, rec] of entries){
+      if (rec && rec.gband) grassStack.appendChild(rec.gband);
     }
-    for (const g of gSorted) grassStack.appendChild(g);
   }
 
   reflowBandArrays_();
 
-  // Render flowers for all bands in range
-  for (const rec of __llRenderedWeeks.values()){
-    renderBandFlowers(rec.band);
+  // Render only newly created / dirty rows
+  const toRender = [];
+  const seen = new Set();
+  for (const b of created.concat(rerender)){
+    if (!b || seen.has(b)) continue;
+    seen.add(b);
+    toRender.push(b);
+  }
+  for (const band of toRender){
+    renderBandFlowers(band);
   }
 
-  // Update week header and row interactivity immediately
   updateFrontText(focusWeekIndex|0);
   try{ updateRowInteractivity_(focusWeekIndex|0); }catch(e){}
   try{ rebindSelectionToVisibleWrap_('syncRenderedWeeks'); }catch(e){}
@@ -5313,7 +5311,7 @@ window.__LL_ASSET_BOOT__ = window.__LL_ASSET_BOOT__ || {
   offlineFallbackMs: 1500
 };
 
-window.__LL_KEEP_RENDERED_WEEKS__ = true;
+window.__LL_KEEP_RENDERED_WEEKS__ = false;
 window.__LL_FLOWER_IMG_CACHE__ = window.__LL_FLOWER_IMG_CACHE__ || new Map();
 
 function warmFlowerAssetUrl_(url){
@@ -5776,98 +5774,10 @@ function restoreBandBaseJitter_(band){
   });
 }
 // Deprecated layout-mode shims kept only for compatibility.
-// Horizontal lane ownership now lives in updateBandSlotSpread_() plus band width.
-function setBandContinuous21Mode_(band, subIndex){
-  restoreBandBaseJitter_(band);
-}
-function setBandEvenSpacingMode_(band, on){
-  restoreBandBaseJitter_(band);
-}
-
-function updateBandSlotSpread_(band, behind, s){
-  if (!band) return;
-
-  const slots = band.querySelectorAll(".flowerSlot");
-  if (!slots || slots.length < 7) return;
-
-  const W = (typeof window.__llEvenSlotsWCurrent === "number" && isFinite(window.__llEvenSlotsWCurrent))
-    ? Math.max(2, Math.min(__LL_EVEN_MAX_WEEKS, window.__llEvenSlotsWCurrent|0))
-    : __LL_EVEN_MAX_WEEKS;
-
-  // Cache so we do not rewrite styles every frame if nothing meaningfully changed
-  const key = "evenA|monoBias|w"+W+"|b"+(Math.round((behind||0)*1000)/1000)+"|s"+(Math.round((s||1)*1000)/1000);
-  if (band.__llSpreadKey === key) return;
-  band.__llSpreadKey = key;
-
-  // Near-front blend: avoid "pop" when a week transitions from front row into the even-slot grid.
-  // b=0 -> exact day centers; b>=BLEND -> fully even-slot behavior.
-  const __b0 = Math.max(0, behind || 0);
-  const __tBlend = __llClamp01_(__b0 / __LL_EVEN_NEARFRONT_BLEND_BEHIND);
-
-  const N = 7 * W;
-  const centerR = Math.floor(W / 2);
-
-  // Stable per-week side bias so rows do not "ping-pong" left/right while scrolling.
-  // Roughly half the weeks drift left and half drift right (deterministic).
-  const weekIso = (band._weekData && band._weekData.iso) ? String(band._weekData.iso)
-              : (band.dataset.weekId || band.dataset.weekKey || band.dataset.weekIndex || "wk");
-  const sideRng = mulberry32(hash32FromString("evenSlotA_side_" + weekIso));
-  const sideSign = (sideRng() < 0.5) ? -1 : +1;
-
-  // Smooth motion during scroll using fractional behind interpolation
-  const b = Math.max(0, behind || 0);
-
-// Use unbounded ranks so deep rows do not "pop" when crossing the W cap.
-// Motion saturates naturally via m0/m1 clamping below.
-const r0 = Math.max(0, Math.floor(b));
-const r1 = r0 + 1;
-const a  = b - r0;
-
-  // Monotonic outward offsets: 0, 1, 2, 3... (clamped), applied with a fixed sideSign.
-  const m0 = Math.min(centerR, r0);
-  const m1 = Math.min(centerR, r1);
-
-  // Saturated ranks for jitter seeding so very deep rows remain stable (no shimmer).
-  const satR0 = Math.min(centerR, r0);
-  const satR1 = Math.min(centerR, r1);
-
-  // Deterministic tiny jitter (keeps from looking too "grid"), stable per week/day/rank.
-  const step = 1 / Math.max(1, N);
-  const maxJit = step * 0.06; // subtle, avoid edge clipping
-
-  // Edges: keep everything on-screen.
-  const edgePad = 0.006; // inset (tighter edges)
-
-  for (let d=0; d<7 && d<slots.length; d++){
-    const k0 = (W * d) + (centerR + sideSign * m0);
-    const k1 = (W * d) + (centerR + sideSign * m1);
-
-    let desired0 = (k0 + 0.5) / N;
-    let desired1 = (k1 + 0.5) / N;
-
-    // jitter per rank/day, then interpolate to keep motion smooth
-    const rr0 = mulberry32(hash32FromString("evenSlotA_jit_" + weekIso + "_" + satR0 + "_" + d));
-    const rr1 = mulberry32(hash32FromString("evenSlotA_jit_" + weekIso + "_" + satR1 + "_" + d));
-    desired0 += (rr0()*2 - 1) * maxJit;
-    desired1 += (rr1()*2 - 1) * maxJit;
-
-    const desiredEven = __llLerp_(desired0, desired1, a);
-
-    // Blend from strict day-centers (front-like) into even-slot layout to prevent popping when scrolling backward.
-    const desiredDay = (d + 0.5) / 7;
-    let desired = __llLerp_(desiredDay, desiredEven, __tBlend);
-
-    desired = Math.max(edgePad, Math.min(1 - edgePad, desired));
-
-    // Compensate for the band’s scale() around center:
-    const invS = 1 / Math.max(0.001, s || 1);
-    let pre  = 0.5 + (desired - 0.5) * invS;
-
-    pre = Math.max(edgePad, Math.min(1 - edgePad, pre));
-
-    slots[d].style.left = (pre * 100).toFixed(3) + "%";
-  }
-}
+// Anchor-state row layout owns horizontal lanes in clean state.
+function setBandContinuous21Mode_(_band, _subIndex){ return; }
+function setBandEvenSpacingMode_(_band, _on){ return; }
+function updateBandSlotSpread_(_band, _behind, _s){ return; }
 
 
 
@@ -7371,7 +7281,6 @@ function updateRowInteractivity_(activeWeekIndex){
   try{
     const aw = (activeWeekIndex|0);
 
-    // Prune disconnected wraps (prevents unbounded growth)
     try{
       for (let i=(flowerWrapEls||[]).length-1; i>=0; i--){
         const w0 = flowerWrapEls[i];
@@ -7379,23 +7288,16 @@ function updateRowInteractivity_(activeWeekIndex){
       }
     }catch(e){}
 
-    // Wraps
     for (const w of (flowerWrapEls || [])){
       if (!w || !w.isConnected) continue;
       const wi = parseInt(w.dataset.weekIndex || '-1', 10);
       const on = (isFinite(wi) && wi === aw);
       w.style.pointerEvents = on ? 'auto' : 'none';
       if (on) w.classList.add('llActiveRow'); else w.classList.remove('llActiveRow');
-    }
 
-    // Hotspots (defensive)
-    const allHs = document.querySelectorAll('.hsCore,[data-role="hotspot"]');
-    allHs.forEach(h=>{
-      const wrap = h.closest('.flowerWrap');
-      if (!wrap) return;
-      const wi = parseInt(wrap.dataset.weekIndex || '-1', 10);
-      h.style.pointerEvents = (wi === aw) ? 'auto' : 'none';
-    });
+      const hsList = w.querySelectorAll('.hsCore,[data-role="hotspot"]');
+      hsList.forEach(h=>{ h.style.pointerEvents = on ? 'auto' : 'none'; });
+    }
   }catch(e){}
 }
 
@@ -11481,7 +11383,7 @@ window.applySelectedAdornments = applySelectedAdornments;
     window.__LL_DISABLE_BACKHILL__ = true;
     window.BRX_DISABLE_LEGACY_BACKROWS = true;
 
-    const VERSION = 'v100.1.30_AnchorStateRows_TwoTierReady';
+    const VERSION = 'v100.1.31_CleanState_AnchorRows_DeadLogicRemoved';
     const hideLegacyGroups = () => {
       ['backRowsG','gridWeeksG','hillGuidesG','gridOverlayG','gridWeeksOverlay','brxHillPngG','brxHillDbgG']
         .forEach(id => {
