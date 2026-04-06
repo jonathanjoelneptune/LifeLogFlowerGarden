@@ -4959,15 +4959,6 @@ function __llCommitWeekNav_(nextIdx, opts){
   const prev = __rt.nav.targetIndex|0;
   const next = __llClampWeekIndex_(nextIdx);
   __rt.nav.targetIndex = next;
-  try{ prewarmOrRenderWeekNow_(next); }catch(e){}
-  try{
-    const dir = (next > prev) ? +1 : (next < prev ? -1 : 0);
-    if (dir > 0){
-      for (let wi = next; wi <= Math.min(next + 2, (typeof todayWeekIndex_ === 'function' ? todayWeekIndex_()|0 : next + 2)); wi++) prewarmOrRenderWeekNow_(wi);
-    } else if (dir < 0){
-      for (let wi = Math.max(0, next - 2); wi <= next; wi++) prewarmOrRenderWeekNow_(wi);
-    }
-  }catch(e){}
   if (opts.snap){
     __rt.nav.currentOffset = next;
   }
@@ -5101,20 +5092,9 @@ const __llPrewarmSet = new Set();
 const __LL_PREWARM_PAST = 7;
 const __LL_PREWARM_FUTURE = 7;
 
-function prewarmOrRenderWeekNow_(weekIdx){
-  const wi = weekIdx|0;
-  if (wi < 0) return;
-  try{ ensureWeekNodes_(wi); }catch(e){}
-  try{
-    const rec = __llRenderedWeeks.get(wi);
-    if (rec && rec.band && rec.band.dataset.rendered !== 'true') renderBandFlowers(rec.band);
-  }catch(e){}
-}
 function queuePrewarmWeek_(weekIdx){
   const wi = weekIdx|0;
-  if (wi < 0) return;
-  const rec = __llRenderedWeeks.get(wi);
-  if (rec && rec.band && rec.band.dataset.rendered === 'true') return;
+  if (wi < 0 || __llRenderedWeeks.has(wi)) return;
   if (__llPrewarmSet.has(wi)) return;
   __llPrewarmSet.add(wi);
   __llPrewarmQueue.push(wi);
@@ -5123,7 +5103,12 @@ function pumpPrewarmQueue_(){
   if (!__llPrewarmQueue.length) return;
   const wi = __llPrewarmQueue.shift();
   __llPrewarmSet.delete(wi);
-  prewarmOrRenderWeekNow_(wi);
+  if (__llRenderedWeeks.has(wi)) return;
+  try{ ensureWeekNodes_(wi); }catch(e){}
+  try{
+    const rec = __llRenderedWeeks.get(wi);
+    if (rec && rec.band && rec.band.dataset.rendered !== 'true') renderBandFlowers(rec.band);
+  }catch(e){}
 }
 function queuePrewarmWindow_(focusWeekIndex){
   const f = focusWeekIndex|0;
@@ -6251,6 +6236,7 @@ function updateCrestDebugLine_(){
   }catch(e){}
 }
 
+
 function applyTransforms(tNow){
   const frontF = __rt.nav.currentOffset;
   const t = tNow * 0.001;
@@ -6282,10 +6268,14 @@ function applyTransforms(tNow){
     }); }catch(e){}
   }
 
+  const depthY = state.depthY;
+  const staggerStrength = state.staggerStrength;
   const yawPx = state.yaw * 3.0;
   const designW = (DOM.weeksStack && DOM.weeksStack.clientWidth) ? DOM.weeksStack.clientWidth : 1200;
+  const sortedWeekIdx = bands.map(b => parseInt((b && b.dataset && b.dataset.weekIndex) ? b.dataset.weekIndex : '0', 10)).filter(v=>Number.isFinite(v)).sort((a,b)=>a-b);
+  const minWeekIdx = sortedWeekIdx.length ? sortedWeekIdx[0] : 0;
+  const maxWeekIdx = sortedWeekIdx.length ? sortedWeekIdx[sortedWeekIdx.length - 1] : 0;
   const stableGroupMax = computeStableTripletGroupsFromCrestLine_();
-  const cache = __llBuildRowAnchorCache_(frontF, designW, stableGroupMax);
 
   for (let i = 0; i < bands.length; i++){
     const band = bands[i];
@@ -6295,11 +6285,13 @@ function applyTransforms(tNow){
     const wi = parseInt((band.dataset && band.dataset.weekIndex) ? band.dataset.weekIndex : String(i), 10);
     const grassFlip = ((wi % 2) === 1) ? -1 : 1;
     const dist = (wi - frontF);
+    const yComp = 1 / (1 + Math.abs(dist) * 0.35);
 
     band.style.display = 'block';
     if (gband) gband.style.display = 'block';
 
-    const meta2 = (__llBandMetaByWeekIndex && __llBandMetaByWeekIndex.get) ? (__llBandMetaByWeekIndex.get((wi|0)) || null) : null;
+    const meta = (__llBandMetaByWeekIndex && __llBandMetaByWeekIndex.get) ? (__llBandMetaByWeekIndex.get((wi|0)) || null) : null;
+    const meta2 = meta || (bandMeta && bandMeta.length ? bandMeta.find(m => (m && (m.weekIndex|0) === (wi|0))) : null);
     if (!meta2) continue;
     const rw = mulberry32(hash32FromString('weekShift_' + meta2.iso));
     const baseShift = (rw() * 2 - 1);
@@ -6307,34 +6299,148 @@ function applyTransforms(tNow){
     band.classList.toggle('frontOutline', Math.abs(dist) < 0.08);
     band.classList.toggle('isFront', Math.abs(dist) < 0.08);
 
-    const anchor = __llAnchorForBandDist_(cache, wi, dist, baseShift, yawPx);
-    if (!anchor){
-      band.style.display = 'none';
-      if (gband) gband.style.display = 'none';
-      continue;
-    }
+    const farOpacityMul = 1.0;
 
-    const isDeepTriplet = (dist <= 0 && (-dist) >= BACK_TRIPLET_START_WEEKS);
-    band.style.transformOrigin = isDeepTriplet ? '50% 100%' : '50% 50%';
-    if (anchor.width == null) setBandFullWidth_(band); else setBandBackWidth_(band, anchor.left || 0, anchor.width || designW);
-    restoreBandBaseJitter_(band);
-    if (isDeepTriplet){
-      try{ updateBandSlotSpread_(band, -dist, anchor.s || 1); }catch(e){}
+    if (dist <= 0){
+      const behind = -dist;
+      band.style.transformOrigin = '50% 50%';
+
+      if (behind < FRONT_VISIBLE_WEEKS){
+        setBandFullWidth_(band);
+        setBandEvenSpacingMode_(band, false);
+        const xBase = (baseShift * 55 * behind * staggerStrength) + (yawPx * behind * 0.35);
+        const x = xBase;
+        const y = -(behind * 15) * yComp;
+        const s = Math.max(0.42, 1 - behind * 0.017);
+        const frontTransitionT = __llClamp01_(FRONT_VISIBLE_WEEKS - behind);
+        const frontOpacity = (behind > (FRONT_VISIBLE_WEEKS - 1)) ? smoothstep(0, 1, frontTransitionT) : 1;
+
+        band.style.opacity = (frontOpacity * farOpacityMul).toFixed(3);
+        if (behind < 0.03){
+          band.style.filter = 'drop-shadow(0 0 14px rgba(255,255,255,0.18)) drop-shadow(0 0 28px rgba(120,190,255,0.12)) brightness(1.04) saturate(1.06) contrast(1.03)';
+        } else {
+          const b = Math.min(1, behind / 18);
+          band.style.filter = `brightness(${(0.98 - b*0.04).toFixed(2)}) saturate(${(1.00 - b*0.02).toFixed(2)}) blur(${(b * 0.18).toFixed(2)}px)`;
+        }
+        band.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0px) scale(${s.toFixed(3)})`;
+        try{ updateBandSlotSpread_(band, behind, s); }catch(e){}
+
+        if (gband){
+          gband.style.setProperty('--grassFlip', String(grassFlip));
+          let grassFade = Math.max(0, 1 - behind * 0.08);
+          gband.style.opacity = (CACHED.grassOpacity * Math.max(0.20, grassFade) * frontOpacity * farOpacityMul).toFixed(3);
+          let gy = (y * GRASS_PARALLAX) + GRASS_Y_OFFSET;
+          if (GRASS_FRONT_CLAMP && Math.abs(dist) < 0.51) gy = GRASS_Y_OFFSET;
+          gband.style.transform = `translate3d(${x.toFixed(1)}px, ${gy.toFixed(1)}px, 0px)`;
+        }
+
+      } else if (behind < BACK_TRIPLET_START_WEEKS){
+        setBandFullWidth_(band);
+        setBandEvenSpacingMode_(band, false);
+        const crestT = (behind - FRONT_VISIBLE_WEEKS) / Math.max(0.001, CREST_BUFFER_WEEKS);
+        const x = (baseShift * 42 * (1 + crestT * 0.18)) + (yawPx * 0.22);
+        const y = -(82 + crestT * CREST_HIDE_DROP);
+        const s = Math.max(0.44, 0.76 - crestT * 0.10);
+
+        band.style.opacity = '0.000';
+        band.style.filter = 'none';
+        band.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0px) scale(${s.toFixed(3)})`;
+        if (gband){
+          gband.style.setProperty('--grassFlip', String(grassFlip));
+          gband.style.opacity = '0.000';
+          gband.style.transform = `translate3d(${x.toFixed(1)}px, ${(y * GRASS_PARALLAX + GRASS_Y_OFFSET).toFixed(1)}px, 0px)`;
+        }
+
+      } else {
+        band.style.transformOrigin = '50% 100%';
+        const backWeeks = Math.max(0, behind - BACK_TRIPLET_START_WEEKS);
+        const backWeeksInt = Math.max(0, Math.floor(backWeeks + 1e-6));
+        const subIndex = (((wi - BACK_TRIPLET_START_WEEKS) % 3) + 3) % 3;
+        const groupF = Math.max(0, (backWeeks - subIndex) / 3);
+        const groupsPastStable = groupF - stableGroupMax;
+        if (groupsPastStable > 2.0001){
+          band.style.display = 'none';
+          if (gband) gband.style.display = 'none';
+          continue;
+        }
+        const tripletCompressionT = __llClamp01_(groupF / Math.max(1, stableGroupMax));
+        let tripletOpacityMul = 1.0;
+        let tripletScaleMul = 1.0;
+        let tripletTightenMul = 1.0;
+        let farBandCrestDrop = 0;
+
+        if (groupsPastStable > 0){
+          if (groupsPastStable <= 1){
+            const t1 = smoothstep(0, 1, groupsPastStable);
+            tripletOpacityMul = lerp(1.0, PRECREST_ROW1_OPACITY, t1);
+            tripletScaleMul = lerp(1.0, PRECREST_ROW1_SCALE, t1);
+            tripletTightenMul = lerp(1.0, PRECREST_ROW1_TIGHTEN, t1);
+            farBandCrestDrop = lerp(0, PRECREST_ROW1_DROP_Y, t1);
+          } else {
+            const t2 = smoothstep(1, 2, groupsPastStable);
+            tripletOpacityMul = lerp(PRECREST_ROW1_OPACITY, PRECREST_ROW2_OPACITY, t2);
+            tripletScaleMul = lerp(PRECREST_ROW1_SCALE, PRECREST_ROW2_SCALE, t2);
+            tripletTightenMul = lerp(PRECREST_ROW1_TIGHTEN, PRECREST_ROW2_TIGHTEN, t2);
+            farBandCrestDrop = lerp(PRECREST_ROW1_DROP_Y, PRECREST_ROW2_DROP_Y, t2);
+          }
+        }
+
+        const rowWidthRatioBase = lerp(BACK_TRIPLET_ROW_WIDTH, BACK_TRIPLET_MIN_ROW_WIDTH, tripletCompressionT);
+        const rowWidthRatio = Math.max(BACK_TRIPLET_MIN_ROW_WIDTH * tripletTightenMul, rowWidthRatioBase * tripletTightenMul);
+        const responsiveGeom = getBackTripletRowGeom_(groupF, tripletTightenMul);
+        const crestViewY = (typeof hillSurfaceYAtX_ === 'function') ? hillSurfaceYAtX_(600) : NaN;
+        if (responsiveGeom && isFinite(crestViewY) && isFinite(responsiveGeom.yView) && responsiveGeom.yView < crestViewY){
+          band.style.display = 'none';
+          if (gband) gband.style.display = 'none';
+          continue;
+        }
+        const fallbackWidth = designW * rowWidthRatio;
+        const fallbackLeft = (designW - fallbackWidth) * 0.5;
+        const fallbackY = -(BACK_TRIPLET_BASE_Y + groupF * BACK_TRIPLET_ROW_Y);
+        const yBase = responsiveGeom ? responsiveGeom.y : fallbackY;
+        const y = yBase + farBandCrestDrop;
+        const sBase = lerp(BACK_TRIPLET_SCALE, BACK_TRIPLET_MIN_SCALE, tripletCompressionT);
+        const s = Math.max(BACK_TRIPLET_MIN_SCALE * tripletScaleMul, sBase * tripletScaleMul) * BACK_TRIPLET_SIZE_BOOST;
+        const blur = Math.min(1.1, groupF * 0.18);
+        const x = (yawPx * 0.04);
+        const rowWidth = responsiveGeom ? (responsiveGeom.width / Math.max(0.001, s)) : fallbackWidth;
+        const rowLeft = responsiveGeom ? (responsiveGeom.centerX - rowWidth * 0.5) : fallbackLeft;
+
+        setBandBackWidth_(band, rowLeft, rowWidth);
+        setBandContinuous21Mode_(band, subIndex);
+        setBandEvenSpacingMode_(band, true);
+        band.style.opacity = tripletOpacityMul.toFixed(3);
+        band.style.filter = `brightness(${(0.92 - groupF * 0.03).toFixed(2)}) saturate(${(0.94 - groupF * 0.03).toFixed(2)}) blur(${blur.toFixed(2)}px)`;
+        band.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0px) scale(${s.toFixed(3)})`;
+        try{ updateBandSlotSpread_(band, behind, s); }catch(e){}
+        if (gband){
+          gband.style.setProperty('--grassFlip', String(grassFlip));
+          gband.style.opacity = '0.000';
+          gband.style.transform = `translate3d(${x.toFixed(1)}px, ${(y * GRASS_PARALLAX + GRASS_Y_OFFSET).toFixed(1)}px, 0px)`;
+        }
+      }
     } else {
-      __llApplySlotPercents_(band, anchor.slotKey || 'front', cache.slotLayouts.get(anchor.slotKey || 'front') || cache.slotLayouts.get('front'));
-    }
-
-    band.style.opacity = (anchor.opacity || 0).toFixed(3);
-    band.style.filter = anchor.filter || 'none';
-    band.style.transform = `translate3d(${(anchor.x || 0).toFixed(1)}px, ${(anchor.y || 0).toFixed(1)}px, 0px) scale(${(anchor.s || 1).toFixed(3)})`;
-
-    if (gband){
-      gband.style.setProperty('--grassFlip', String(grassFlip));
-      gband.style.opacity = (anchor.grassOpacity || 0).toFixed(3);
-      gband.style.transform = `translate3d(${(anchor.x || 0).toFixed(1)}px, ${(anchor.grassY || GRASS_Y_OFFSET).toFixed(1)}px, 0px)`;
+      setBandFullWidth_(band);
+      setBandEvenSpacingMode_(band, false);
+      const ahead = dist;
+      const y = (ahead * depthY);
+      const s = Math.min(1.65, 1 + ahead * 0.18);
+      const o = Math.max(0, 1 - ahead * 1.25);
+      const x = (baseShift * 40 * ahead * staggerStrength) + (yawPx * ahead * 0.25);
+      band.style.opacity = o.toFixed(3);
+      band.style.filter = 'none';
+      band.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0px) scale(${s.toFixed(3)})`;
+      try{ updateBandSlotSpread_(band, 0, 1); }catch(e){}
+      if (gband){
+        gband.style.setProperty('--grassFlip', String(grassFlip));
+        gband.style.opacity = (o*0.86).toFixed(3);
+        let gy = (y * GRASS_PARALLAX) + GRASS_Y_OFFSET;
+        gband.style.transform = `translate3d(${x.toFixed(1)}px, ${gy.toFixed(1)}px, 0px)`;
+      }
     }
   }
 }
+
 function __llFmtWeekRangeLong_(mon){
   try{
     const end = new Date(mon);
