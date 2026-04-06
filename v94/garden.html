@@ -1020,16 +1020,6 @@ body.llHitboxOn .flowerSvgHitProxy .flowerSvg .hsCore {
   filter: contrast(1.06) saturate(1.02) drop-shadow(0 -1px 0 rgba(0,0,0,0.40)) drop-shadow(0 1px 0 rgba(0,0,0,0.16)) drop-shadow(1px 0 0 rgba(0,0,0,0.16)) drop-shadow(-1px 0 0 rgba(0,0,0,0.16));
   }
 
-.llStaticGrassBand{
-  left: calc(-1 * var(--grassOverhang));
-  right: calc(-1 * var(--grassOverhang));
-  bottom: -8px;
-  height: calc(var(--grassBandH) + 18px);
-  opacity: calc(var(--grassOpacity) * 0.96);
-  transform: translate3d(0, 0, 0) !important;
-  z-index: 0;
-}
-
 .grassBand::before {
   content: "";
   position: absolute;
@@ -5155,7 +5145,7 @@ function buildBands(){
   if (!weeksStack || !grassStack) return;
 
   weeksStack.innerHTML = "";
-  const hazeHtml = '<div class="grassHaze" id="grassHaze"></div><div class="grassBand llStaticGrassBand" id="llStaticGrassBand"></div>';
+  const hazeHtml = '<div class="grassHaze" id="grassHaze"></div>';
   grassStack.innerHTML = hazeHtml;
 
   bands.length = 0;
@@ -5222,7 +5212,14 @@ function ensureWeekNodes_(weekIdx){
   band._weekData = week;
   band._weekIdx = weekIdx;
 
-  const gband = null;
+  const gband = document.createElement("div");
+  gband.className = "grassBand";
+  const rgd = mulberry32(hash32FromString("grassDeform_" + week.iso));
+  gband.style.setProperty("--gx", (6 + rgd()*10).toFixed(2) + "px");
+  gband.style.setProperty("--gsk", (0.8 + rgd()*2.2).toFixed(2) + "deg");
+  gband.style.setProperty("--gsy", (0.015 + rgd()*0.025).toFixed(4));
+  gband.style.setProperty("--gdur", (8 + rgd()*10).toFixed(2) + "s");
+  gband.style.setProperty("--gdel", (-rgd()*12).toFixed(2) + "s");
 
   __llRenderedWeeks.set(weekIdx, { band, gband });
   const meta = Object.assign({ weekIndex: weekIdx }, week);
@@ -5236,8 +5233,12 @@ function ensureWeekNodes_(weekIdx){
   if (nextBand) weeksStack.insertBefore(band, nextBand);
   else weeksStack.appendChild(band);
 
+  const nextGrass = grassBands[insertAt] || null;
+  if (nextGrass) grassStack.insertBefore(gband, nextGrass);
+  else grassStack.appendChild(gband);
+
   bands.splice(insertAt, 0, band);
-  grassBands.splice(insertAt, 0, null);
+  grassBands.splice(insertAt, 0, gband);
   bandMeta.splice(insertAt, 0, meta);
 }
 
