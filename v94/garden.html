@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.1.31.10.5_DebugRedHotspots_PngHeadCentered.html</title>
+<title>garden_v100.1.31_CleanState_AnchorRows_DeadLogicRemoved.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -914,15 +914,11 @@ body.llScreenSaverLowPower .flowerWind{
   height: 100%;
   overflow: visible;
   display: block;
-  z-index: 220;
-  pointer-events: auto;
 }
 .flowerHitSvg .hsCore {
   fill: transparent !important;
   stroke: transparent !important;
   opacity: 0 !important;
-  pointer-events: all !important;
-  vector-effect: non-scaling-stroke;
 }
 body.llHitboxOn .flowerHitSvg .hsCore {
   fill: rgba(255,0,0,0.12) !important;
@@ -930,7 +926,16 @@ body.llHitboxOn .flowerHitSvg .hsCore {
   opacity: 1 !important;
 }
 .flowerSvgHitProxy {
-  display: none !important;
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: calc(265px * var(--flowerScale, 1));
+  height: calc(540px * var(--flowerScale, 1));
+  transform: translateX(-50%);
+  overflow: visible;
+  display: block;
+  z-index: 120;
+  pointer-events: auto;
 }
 .flowerSvgHitProxy .flowerSvg {
   width: 100%;
@@ -956,8 +961,8 @@ body.llHitboxOn .flowerSvgHitProxy .flowerSvg .hsCore {
   stroke: rgba(255,0,0,0.95) !important;
 }
 
-.flowerHitSvg { z-index: 220 !important; pointer-events: auto !important; }
-.flowerHitSvg .hsCore { opacity: 0 !important; pointer-events: all !important; }
+.flowerHitSvg { z-index: 5; pointer-events: none; }
+.flowerHitSvg .hsCore { opacity: 0 !important; pointer-events: none !important; }
 .flowerWrap.llSilSelected .flowerPngAsset {
   filter:
     drop-shadow(1px 0px 0px rgba(255,255,255,0.98))
@@ -2441,7 +2446,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.1.31.10.5_DebugRedHotspots_PngHeadCentered • Built: 2026-04-06T00:00:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.1.31.10.1_DebugRedHotspots_PngProxyFix • Built: 2026-04-06T00:00:00Z UTC</div>
 
 
 <script>
@@ -2455,7 +2460,7 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v100.1.31.10.5_DebugRedHotspots_PngHeadCentered.html</span><br>
+File: <span id="__bannerFileName">garden_v100.1.31_CleanState_AnchorRows_DeadLogicRemoved.html</span><br>
 Version: <span id="__bannerVersion">v100.1.24_PerformanceHUD_AllWarm_NoDespawn</span><br>
 Created: 2026-04-05 12:35 AM PT</span></div>
 <script>
@@ -5480,9 +5485,7 @@ function buildFlowerMarkupForDay_(day){
     return `
       <div class="flowerAssetPngWrap" style="--assetDisplayW:${displayW.toFixed(2)}px;--assetDisplayH:${displayH.toFixed(2)}px;">
         <img class="flowerPngAsset" src="${pngUrl}" alt="" crossorigin="anonymous" loading="eager" decoding="async"/>
-        <svg class="flowerHitSvg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${displayW.toFixed(2)} ${displayH.toFixed(2)}" preserveAspectRatio="none" aria-hidden="true">
-          <circle class="hsCore llCoreHotspotPng" data-role="hotspot" data-datekey="${dateKey}" cx="${hsCx.toFixed(2)}" cy="${hsCy.toFixed(2)}" r="${hsR.toFixed(2)}"/>
-        </svg>
+        <div class="flowerSvgHitProxy" aria-hidden="true">${flowerSvg(day)}</div>
       </div>`;
   }
   return `<div class="flowerSvgWrap">${flowerSvg(day)}</div>`;
@@ -5491,9 +5494,15 @@ function buildFlowerMarkupForDay_(day){
 function syncPngHotspotForWrap_(wrapEl, dayForAsset){
   try {
     if (!wrapEl || !dayForAsset) return;
-    var hitSvg = wrapEl.querySelector('.flowerHitSvg');
+    var proxy = wrapEl.querySelector('.flowerSvgHitProxy');
     var assetWrap = wrapEl.querySelector('.flowerAssetPngWrap');
-    if (!hitSvg || !assetWrap) return;
+    if (!proxy || !assetWrap) return;
+    proxy.style.inset = '0';
+    proxy.style.width = '100%';
+    proxy.style.height = '100%';
+    proxy.style.left = '0';
+    proxy.style.bottom = '0';
+    proxy.style.transform = 'none';
 
     var hs = (function(dd){
       var hx = Number(dd && (dd.flowerAssetHotspotCx || dd.HotspotCx));
@@ -5513,13 +5522,12 @@ function syncPngHotspotForWrap_(wrapEl, dayForAsset){
     var hsCy = ((Number(hs.cy) - m.stemY) * m.scaleY) + displayH;
     var hsR = Number(hs.r) * Math.max(m.scaleX, m.scaleY);
 
-    hitSvg.setAttribute('viewBox', '0 0 ' + displayW.toFixed(2) + ' ' + displayH.toFixed(2));
-    var cores = hitSvg.querySelectorAll('.hsCore,[data-role="hotspot"]');
+    var cores = proxy.querySelectorAll('.hsCore,[data-role="hotspot"]');
     cores.forEach(function(c){
       try {
-        c.setAttribute('cx', hsCx.toFixed(2));
-        c.setAttribute('cy', hsCy.toFixed(2));
-        c.setAttribute('r', hsR.toFixed(2));
+        c.setAttribute('cx', String(hsCx));
+        c.setAttribute('cy', String(hsCy));
+        c.setAttribute('r', String(hsR));
         c.style.pointerEvents = 'all';
       } catch(_e){}
     });
@@ -9787,7 +9795,6 @@ document.addEventListener('click', (ev) => {
 
 document.addEventListener('pointerdown', (ev) => {
   try{
-    if (ev.target?.closest?.('.flowerAssetPngWrap,.flowerHitSvg,.hsCore,[data-role="hotspot"]')) return;
     const wrap = ev.target?.closest?.('.flowerWrap');
     if (!wrap) return;
     const wi = parseInt(wrap.dataset.weekIndex||'-1',10);
