@@ -5794,11 +5794,76 @@ function restoreBandBaseJitter_(band){
     wrap.style.setProperty('--jx', ((base) || 0).toFixed(1) + 'px');
   });
 }
-// Deprecated layout-mode shims kept only for compatibility.
-// Anchor-state row layout owns horizontal lanes in clean state.
-function setBandContinuous21Mode_(_band, _subIndex){ return; }
-function setBandEvenSpacingMode_(_band, _on){ return; }
-function updateBandSlotSpread_(_band, _behind, _s){ return; }
+// Compatibility shims retained, but deep back-row horizontal ownership now follows
+// the proven v100.1.26 even-slot spread so hill triplets span continuously.
+function setBandContinuous21Mode_(band, subIndex){
+  restoreBandBaseJitter_(band);
+}
+function setBandEvenSpacingMode_(band, on){
+  restoreBandBaseJitter_(band);
+}
+function updateBandSlotSpread_(band, behind, s){
+  if (!band) return;
+
+  const slots = band.querySelectorAll('.flowerSlot');
+  if (!slots || slots.length < 7) return;
+
+  const W = (typeof window.__llEvenSlotsWCurrent === 'number' && isFinite(window.__llEvenSlotsWCurrent))
+    ? Math.max(2, Math.min(__LL_EVEN_MAX_WEEKS, window.__llEvenSlotsWCurrent|0))
+    : __LL_EVEN_MAX_WEEKS;
+
+  const key = 'evenA|monoBias|w'+W+'|b'+(Math.round((behind||0)*1000)/1000)+'|s'+(Math.round((s||1)*1000)/1000);
+  if (band.__llSpreadKey === key) return;
+  band.__llSpreadKey = key;
+
+  const __b0 = Math.max(0, behind || 0);
+  const __tBlend = __llClamp01_(__b0 / __LL_EVEN_NEARFRONT_BLEND_BEHIND);
+
+  const N = 7 * W;
+  const centerR = Math.floor(W / 2);
+
+  const weekIso = (band._weekData && band._weekData.iso) ? String(band._weekData.iso)
+              : (band.dataset.weekId || band.dataset.weekKey || band.dataset.weekIndex || 'wk');
+  const sideRng = mulberry32(hash32FromString('evenSlotA_side_' + weekIso));
+  const sideSign = (sideRng() < 0.5) ? -1 : +1;
+
+  const b = Math.max(0, behind || 0);
+  const r0 = Math.max(0, Math.floor(b));
+  const r1 = r0 + 1;
+  const a  = b - r0;
+
+  const m0 = Math.min(centerR, r0);
+  const m1 = Math.min(centerR, r1);
+  const satR0 = Math.min(centerR, r0);
+  const satR1 = Math.min(centerR, r1);
+
+  const step = 1 / Math.max(1, N);
+  const maxJit = step * 0.06;
+  const edgePad = 0.006;
+
+  for (let d=0; d<7 && d<slots.length; d++){
+    const k0 = (W * d) + (centerR + sideSign * m0);
+    const k1 = (W * d) + (centerR + sideSign * m1);
+
+    let desired0 = (k0 + 0.5) / N;
+    let desired1 = (k1 + 0.5) / N;
+
+    const rr0 = mulberry32(hash32FromString('evenSlotA_jit_' + weekIso + '_' + satR0 + '_' + d));
+    const rr1 = mulberry32(hash32FromString('evenSlotA_jit_' + weekIso + '_' + satR1 + '_' + d));
+    desired0 += (rr0()*2 - 1) * maxJit;
+    desired1 += (rr1()*2 - 1) * maxJit;
+
+    const desiredEven = __llLerp_(desired0, desired1, a);
+    const desiredDay = (d + 0.5) / 7;
+    let desired = __llLerp_(desiredDay, desiredEven, __tBlend);
+    desired = Math.max(edgePad, Math.min(1 - edgePad, desired));
+
+    const invS = 1 / Math.max(0.001, s || 1);
+    let pre = 0.5 + (desired - 0.5) * invS;
+    pre = Math.max(edgePad, Math.min(1 - edgePad, pre));
+    slots[d].style.left = (pre * 100).toFixed(3) + '%';
+  }
+}
 
 
 
@@ -5837,9 +5902,9 @@ function __llFrontDayPercents_(){
 }
 
 function __llTripletLanePercents_(laneIndex){
-  const laneCenters = [0.1667, 0.5000, 0.8333];
+  const laneCenters = [0.14, 0.50, 0.86];
   const center = laneCenters[Math.max(0, Math.min(2, laneIndex|0))];
-  const span = 0.315;
+  const span = 0.22;
   const out = [];
   for (let d=0; d<7; d++){
     const local = (d - 3) / 6;
@@ -5976,9 +6041,9 @@ function __llBuildRowAnchorCache_(frontF, designW, stableGroupMax){
       const s = Math.max(BACK_TRIPLET_MIN_SCALE * tripletScaleMul, sBase * tripletScaleMul) * BACK_TRIPLET_SIZE_BOOST;
       const rowWidthScaled = responsiveGeom ? responsiveGeom.width : fallbackWidth;
       const rowCenter = responsiveGeom ? responsiveGeom.centerX : (fallbackLeft + fallbackWidth * 0.5);
-      const colCenters = [0.1667, 0.5000, 0.8333];
+      const colCenters = [0.14, 0.50, 0.86];
       const laneCenter = rowCenter + ((colCenters[lane] - 0.5) * rowWidthScaled);
-      const bandWidthScaled = rowWidthScaled * 0.332;
+      const bandWidthScaled = rowWidthScaled * 0.26;
       const bandWidthUnscaled = bandWidthScaled / Math.max(0.001, s);
       const bandLeftUnscaled = laneCenter - bandWidthUnscaled * 0.5;
       __llRowAnchorCache.triplet.set(`${groupInt}|${lane}`, {
@@ -6234,10 +6299,15 @@ function applyTransforms(tNow){
       continue;
     }
 
-    band.style.transformOrigin = (dist <= 0 && (-dist) >= BACK_TRIPLET_START_WEEKS) ? '50% 100%' : '50% 50%';
+    const isDeepTriplet = (dist <= 0 && (-dist) >= BACK_TRIPLET_START_WEEKS);
+    band.style.transformOrigin = isDeepTriplet ? '50% 100%' : '50% 50%';
     if (anchor.width == null) setBandFullWidth_(band); else setBandBackWidth_(band, anchor.left || 0, anchor.width || designW);
     restoreBandBaseJitter_(band);
-    __llApplySlotPercents_(band, anchor.slotKey || 'front', cache.slotLayouts.get(anchor.slotKey || 'front') || cache.slotLayouts.get('front'));
+    if (isDeepTriplet){
+      try{ updateBandSlotSpread_(band, -dist, anchor.s || 1); }catch(e){}
+    } else {
+      __llApplySlotPercents_(band, anchor.slotKey || 'front', cache.slotLayouts.get(anchor.slotKey || 'front') || cache.slotLayouts.get('front'));
+    }
 
     band.style.opacity = (anchor.opacity || 0).toFixed(3);
     band.style.filter = anchor.filter || 'none';
