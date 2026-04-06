@@ -13315,5 +13315,125 @@ try { setTimeout(function(){ try { warmAllFlowerAssetsFromExport_(); } catch(_e)
 })();
 </script>
 
+
+<style id="llSignpostOnlySelectionStyles_v1001311062">
+/* Signpost-only selection mode */
+.weekBand.isFront .flowerWrap,
+.weekBand.frontOutline .flowerWrap,
+.weekBand.isFront .hsCore,
+.weekBand.frontOutline .hsCore,
+.flowerSvgHitProxy,
+.flowerSvgHitProxy .hsCore,
+.flowerHitSvg,
+.flowerHitSvg .hsCore{
+  pointer-events: none !important;
+}
+.dowStrip,
+.dowStrip .dow{
+  pointer-events: auto !important;
+}
+</style>
+<script id="llSignpostOnlySelection_v1001311062">
+(function(){
+  function getFrontWrapByDayIndex_(dayIndex){
+    try{
+      if (typeof __llGetSelectableFrontRowWraps_ === 'function'){
+        const arr = __llGetSelectableFrontRowWraps_() || [];
+        const found = arr.find(function(w){
+          const di = parseInt(w.dataset.dayIndex || w.dataset.dayindex || '-1', 10);
+          return di === dayIndex;
+        });
+        if (found) return found;
+      }
+    }catch(e){}
+    try{
+      const fi = (typeof __rt !== 'undefined' && __rt && __rt.nav && typeof __rt.nav.lastFrontIndex !== 'undefined')
+        ? (__rt.nav.lastFrontIndex|0)
+        : null;
+      const wraps = Array.from(document.querySelectorAll('.flowerWrap[data-day-index],.flowerWrap[data-dayindex]'));
+      return wraps.find(function(w){
+        if (!w || !w.isConnected || !w.dataset) return false;
+        const di = parseInt(w.dataset.dayIndex || w.dataset.dayindex || '-1', 10);
+        if (di !== dayIndex) return false;
+        if (fi === null) return false;
+        return String(w.dataset.weekIndex || '') === String(fi);
+      }) || null;
+    }catch(e){}
+    return null;
+  }
+
+  function selectViaSignpostOnly_(dayIndex){
+    const wrap = getFrontWrapByDayIndex_(dayIndex);
+    if (!wrap) return false;
+    try{ if (typeof __llMarkSuppressDocClear_ === 'function') __llMarkSuppressDocClear_(); }catch(e){}
+    try{ if (typeof clearSelection_ === 'function') clearSelection_('signpost'); }catch(e){}
+    try{ if (typeof __llBindSelectedWrap_ === 'function') __llBindSelectedWrap_(wrap, 'signpost-only'); }catch(e){}
+    try{ if (typeof showSkyBoxesForWrap_ === 'function') showSkyBoxesForWrap_(wrap); }
+    catch(e){
+      try{ if (typeof __llShowSelectionSkyboxes_ === 'function') __llShowSelectionSkyboxes_(wrap, { deferMs: 0 }); }catch(_e){}
+    }
+    try{ if (typeof __llScheduleSelectedAdornments_ === 'function') __llScheduleSelectedAdornments_(wrap); }catch(e){}
+    try{
+      wrap.classList.add('isSelected');
+      wrap.classList.add('llSilSelected');
+    }catch(e){}
+    return true;
+  }
+
+  function bindSignposts_(){
+    const strip = document.getElementById('dowStrip');
+    if (!strip) return;
+    Array.from(strip.querySelectorAll('.dow')).forEach(function(node, idx){
+      if (!node || node.dataset.signpostOnlyBound === '1') return;
+      node.dataset.signpostOnlyBound = '1';
+      const activate = function(ev){
+        try{
+          if (ev){
+            ev.preventDefault();
+            ev.stopPropagation();
+            if (typeof ev.stopImmediatePropagation === 'function') ev.stopImmediatePropagation();
+          }
+        }catch(e){}
+        selectViaSignpostOnly_(idx);
+        return false;
+      };
+      node.addEventListener('pointerdown', activate, true);
+      node.addEventListener('click', activate, true);
+      node.addEventListener('touchstart', activate, {capture:true, passive:false});
+    });
+  }
+
+  // Disable hotspot activation path
+  try{
+    window.__llTryActivateHotspot_ = function(){ return false; };
+  }catch(e){}
+  // Blanket stop click-based flower activation in capture phase
+  document.addEventListener('click', function(ev){
+    if (ev.target && ev.target.closest && ev.target.closest('.flowerWrap,.hsCore,.flowerSvgHitProxy,.flowerHitSvg,[data-role="hotspot"]')){
+      ev.preventDefault();
+      ev.stopPropagation();
+      if (typeof ev.stopImmediatePropagation === 'function') ev.stopImmediatePropagation();
+    }
+  }, true);
+  document.addEventListener('pointerdown', function(ev){
+    if (ev.target && ev.target.closest && ev.target.closest('.flowerWrap,.hsCore,.flowerSvgHitProxy,.flowerHitSvg,[data-role="hotspot"]')){
+      ev.preventDefault();
+      ev.stopPropagation();
+      if (typeof ev.stopImmediatePropagation === 'function') ev.stopImmediatePropagation();
+    }
+  }, true);
+
+  if (document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', bindSignposts_);
+  } else {
+    bindSignposts_();
+  }
+  try{
+    const mo = new MutationObserver(bindSignposts_);
+    mo.observe(document.documentElement, {subtree:true, childList:true});
+  }catch(e){}
+})();
+</script>
+
 </body>
 </html>
