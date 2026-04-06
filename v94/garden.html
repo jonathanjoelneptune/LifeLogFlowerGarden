@@ -4959,6 +4959,15 @@ function __llCommitWeekNav_(nextIdx, opts){
   const prev = __rt.nav.targetIndex|0;
   const next = __llClampWeekIndex_(nextIdx);
   __rt.nav.targetIndex = next;
+  try{ prewarmOrRenderWeekNow_(next); }catch(e){}
+  try{
+    const dir = (next > prev) ? +1 : (next < prev ? -1 : 0);
+    if (dir > 0){
+      for (let wi = next; wi <= Math.min(next + 2, (typeof todayWeekIndex_ === 'function' ? todayWeekIndex_()|0 : next + 2)); wi++) prewarmOrRenderWeekNow_(wi);
+    } else if (dir < 0){
+      for (let wi = Math.max(0, next - 2); wi <= next; wi++) prewarmOrRenderWeekNow_(wi);
+    }
+  }catch(e){}
   if (opts.snap){
     __rt.nav.currentOffset = next;
   }
@@ -5092,9 +5101,20 @@ const __llPrewarmSet = new Set();
 const __LL_PREWARM_PAST = 7;
 const __LL_PREWARM_FUTURE = 7;
 
+function prewarmOrRenderWeekNow_(weekIdx){
+  const wi = weekIdx|0;
+  if (wi < 0) return;
+  try{ ensureWeekNodes_(wi); }catch(e){}
+  try{
+    const rec = __llRenderedWeeks.get(wi);
+    if (rec && rec.band && rec.band.dataset.rendered !== 'true') renderBandFlowers(rec.band);
+  }catch(e){}
+}
 function queuePrewarmWeek_(weekIdx){
   const wi = weekIdx|0;
-  if (wi < 0 || __llRenderedWeeks.has(wi)) return;
+  if (wi < 0) return;
+  const rec = __llRenderedWeeks.get(wi);
+  if (rec && rec.band && rec.band.dataset.rendered === 'true') return;
   if (__llPrewarmSet.has(wi)) return;
   __llPrewarmSet.add(wi);
   __llPrewarmQueue.push(wi);
@@ -5103,12 +5123,7 @@ function pumpPrewarmQueue_(){
   if (!__llPrewarmQueue.length) return;
   const wi = __llPrewarmQueue.shift();
   __llPrewarmSet.delete(wi);
-  if (__llRenderedWeeks.has(wi)) return;
-  try{ ensureWeekNodes_(wi); }catch(e){}
-  try{
-    const rec = __llRenderedWeeks.get(wi);
-    if (rec && rec.band && rec.band.dataset.rendered !== 'true') renderBandFlowers(rec.band);
-  }catch(e){}
+  prewarmOrRenderWeekNow_(wi);
 }
 function queuePrewarmWindow_(focusWeekIndex){
   const f = focusWeekIndex|0;
