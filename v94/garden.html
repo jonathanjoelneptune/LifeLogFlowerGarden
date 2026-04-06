@@ -1020,6 +1020,16 @@ body.llHitboxOn .flowerSvgHitProxy .flowerSvg .hsCore {
   filter: contrast(1.06) saturate(1.02) drop-shadow(0 -1px 0 rgba(0,0,0,0.40)) drop-shadow(0 1px 0 rgba(0,0,0,0.16)) drop-shadow(1px 0 0 rgba(0,0,0,0.16)) drop-shadow(-1px 0 0 rgba(0,0,0,0.16));
   }
 
+.llStaticGrassBand{
+  left: calc(-1 * var(--grassOverhang));
+  right: calc(-1 * var(--grassOverhang));
+  bottom: -8px;
+  height: calc(var(--grassBandH) + 18px);
+  opacity: calc(var(--grassOpacity) * 0.96);
+  transform: translate3d(0, 0, 0) !important;
+  z-index: 0;
+}
+
 .grassBand::before {
   content: "";
   position: absolute;
@@ -4900,6 +4910,13 @@ const SLOT_META = new Map();
 let GRASS_PARALLAX = 0.35;
 let GRASS_Y_OFFSET = 52;
 let GRASS_FRONT_CLAMP = true;
+function __llComputeGrassY_(dist, y){
+  const raw = (y * GRASS_PARALLAX) + GRASS_Y_OFFSET;
+  if (!GRASS_FRONT_CLAMP) return raw;
+  const ad = Math.abs(Number(dist) || 0);
+  const t = smoothstep(0.18, 0.90, ad);
+  return lerp(GRASS_Y_OFFSET, raw, t);
+}
 
 const LL_CONFIG = window.__LL_CONFIG = Object.freeze({
   grass: {
@@ -5064,7 +5081,7 @@ function buildBands(){
   if (!weeksStack || !grassStack) return;
 
   weeksStack.innerHTML = "";
-  const hazeHtml = '<div class="grassHaze" id="grassHaze"></div>';
+  const hazeHtml = '<div class="grassHaze" id="grassHaze"></div><div class="grassBand llStaticGrassBand" id="llStaticGrassBand"></div>';
   grassStack.innerHTML = hazeHtml;
 
   bands.length = 0;
@@ -5131,14 +5148,7 @@ function ensureWeekNodes_(weekIdx){
   band._weekData = week;
   band._weekIdx = weekIdx;
 
-  const gband = document.createElement("div");
-  gband.className = "grassBand";
-  const rgd = mulberry32(hash32FromString("grassDeform_" + week.iso));
-  gband.style.setProperty("--gx", (6 + rgd()*10).toFixed(2) + "px");
-  gband.style.setProperty("--gsk", (0.8 + rgd()*2.2).toFixed(2) + "deg");
-  gband.style.setProperty("--gsy", (0.015 + rgd()*0.025).toFixed(4));
-  gband.style.setProperty("--gdur", (8 + rgd()*10).toFixed(2) + "s");
-  gband.style.setProperty("--gdel", (-rgd()*12).toFixed(2) + "s");
+  const gband = null;
 
   __llRenderedWeeks.set(weekIdx, { band, gband });
   const meta = Object.assign({ weekIndex: weekIdx }, week);
@@ -5152,12 +5162,8 @@ function ensureWeekNodes_(weekIdx){
   if (nextBand) weeksStack.insertBefore(band, nextBand);
   else weeksStack.appendChild(band);
 
-  const nextGrass = grassBands[insertAt] || null;
-  if (nextGrass) grassStack.insertBefore(gband, nextGrass);
-  else grassStack.appendChild(gband);
-
   bands.splice(insertAt, 0, band);
-  grassBands.splice(insertAt, 0, gband);
+  grassBands.splice(insertAt, 0, null);
   bandMeta.splice(insertAt, 0, meta);
 }
 
@@ -5959,7 +5965,7 @@ function __llBuildRowAnchorCache_(frontF, designW, stableGroupMax){
         ? 'drop-shadow(0 0 14px rgba(255,255,255,0.18)) drop-shadow(0 0 28px rgba(120,190,255,0.12)) brightness(1.04) saturate(1.06) contrast(1.03)'
         : `brightness(${brightness.toFixed(2)}) saturate(${saturate.toFixed(2)}) blur(${blur.toFixed(2)}px)`,
       grassOpacity: CACHED.grassOpacity * Math.max(0.20, Math.max(0, 1 - behind * 0.08)) * opacity,
-      grassY: (behind < 0.51 ? GRASS_Y_OFFSET : (y * GRASS_PARALLAX + GRASS_Y_OFFSET)),
+      grassY: __llComputeGrassY_(-behind, y),
       left: 0,
       width: null,
       slotKey: 'front'
@@ -5977,7 +5983,7 @@ function __llBuildRowAnchorCache_(frontF, designW, stableGroupMax){
       opacity: 0,
       filter: 'none',
       grassOpacity: 0,
-      grassY: ((-(82 + crestT * CREST_HIDE_DROP)) * GRASS_PARALLAX + GRASS_Y_OFFSET),
+      grassY: __llComputeGrassY_(-(FRONT_VISIBLE_WEEKS + crestT), (-(82 + crestT * CREST_HIDE_DROP))),
       left: 0,
       width: null,
       slotKey: 'crest'
@@ -5998,7 +6004,7 @@ function __llBuildRowAnchorCache_(frontF, designW, stableGroupMax){
       opacity,
       filter: 'none',
       grassOpacity: opacity * 0.86,
-      grassY: (y * GRASS_PARALLAX + GRASS_Y_OFFSET),
+      grassY: __llComputeGrassY_(dist, y),
       left: 0,
       width: null,
       slotKey: 'future'
@@ -6054,7 +6060,7 @@ function __llBuildRowAnchorCache_(frontF, designW, stableGroupMax){
         opacity: tripletOpacityMul,
         filter: `brightness(${(0.92 - groupInt * 0.03).toFixed(2)}) saturate(${(0.94 - groupInt * 0.03).toFixed(2)}) blur(${Math.min(1.1, groupInt * 0.18).toFixed(2)}px)`,
         grassOpacity: 0,
-        grassY: ((yBase + farBandCrestDrop) * GRASS_PARALLAX + GRASS_Y_OFFSET),
+        grassY: __llComputeGrassY_(-(BACK_TRIPLET_START_WEEKS + groupF * 3 + subIndex), (yBase + farBandCrestDrop)),
         left: bandLeftUnscaled,
         width: bandWidthUnscaled,
         slotKey: `triplet|${lane}`
@@ -6329,8 +6335,7 @@ function applyTransforms(tNow){
           gband.style.setProperty('--grassFlip', String(grassFlip));
           let grassFade = Math.max(0, 1 - behind * 0.08);
           gband.style.opacity = (CACHED.grassOpacity * Math.max(0.20, grassFade) * frontOpacity * farOpacityMul).toFixed(3);
-          let gy = (y * GRASS_PARALLAX) + GRASS_Y_OFFSET;
-          if (GRASS_FRONT_CLAMP && Math.abs(dist) < 0.51) gy = GRASS_Y_OFFSET;
+          let gy = __llComputeGrassY_(dist, y);
           gband.style.transform = `translate3d(${x.toFixed(1)}px, ${gy.toFixed(1)}px, 0px)`;
         }
 
@@ -6348,7 +6353,7 @@ function applyTransforms(tNow){
         if (gband){
           gband.style.setProperty('--grassFlip', String(grassFlip));
           gband.style.opacity = '0.000';
-          gband.style.transform = `translate3d(${x.toFixed(1)}px, ${(y * GRASS_PARALLAX + GRASS_Y_OFFSET).toFixed(1)}px, 0px)`;
+          gband.style.transform = `translate3d(${x.toFixed(1)}px, ${__llComputeGrassY_(dist, y).toFixed(1)}px, 0px)`;
         }
 
       } else {
@@ -6416,7 +6421,7 @@ function applyTransforms(tNow){
         if (gband){
           gband.style.setProperty('--grassFlip', String(grassFlip));
           gband.style.opacity = '0.000';
-          gband.style.transform = `translate3d(${x.toFixed(1)}px, ${(y * GRASS_PARALLAX + GRASS_Y_OFFSET).toFixed(1)}px, 0px)`;
+          gband.style.transform = `translate3d(${x.toFixed(1)}px, ${__llComputeGrassY_(dist, y).toFixed(1)}px, 0px)`;
         }
       }
     } else {
@@ -6434,7 +6439,7 @@ function applyTransforms(tNow){
       if (gband){
         gband.style.setProperty('--grassFlip', String(grassFlip));
         gband.style.opacity = (o*0.86).toFixed(3);
-        let gy = (y * GRASS_PARALLAX) + GRASS_Y_OFFSET;
+        let gy = __llComputeGrassY_(dist, y);
         gband.style.transform = `translate3d(${x.toFixed(1)}px, ${gy.toFixed(1)}px, 0px)`;
       }
     }
