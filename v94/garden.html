@@ -2445,61 +2445,21 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 }
 </style>
 
-
-
-
-<style id="llKillHotspotVisuals_v1001311085">
+<style id="llForceTransparentHotspots_v1001311084">
 .hsCore,
 .hsCore.llHotSelected,
-.flowerHitSvg,
 .flowerHitSvg .hsCore,
-.flowerSvgHitProxy,
-.flowerSvgHitProxy .flowerSvg,
 .flowerSvgHitProxy .flowerSvg .hsCore,
 body.llHitboxOn .weekBand.isFront .hsCore,
 body.llHitboxOn .weekBand:not(.isFront) .hsCore,
-body.llHitboxOn .flowerHitSvg,
 body.llHitboxOn .flowerHitSvg .hsCore,
-body.llHitboxOn .flowerSvgHitProxy,
-body.llHitboxOn .flowerSvgHitProxy .flowerSvg,
 body.llHitboxOn .flowerSvgHitProxy .flowerSvg .hsCore{
   fill: transparent !important;
   stroke: transparent !important;
   opacity: 0 !important;
   filter: none !important;
-  display: none !important;
-  visibility: hidden !important;
 }
 </style>
-<script id="llKillHitboxMode_v1001311085">
-(function(){
-  function kill(){
-    try{ document.body.classList.remove('llHitboxOn'); }catch(e){}
-    try{
-      document.querySelectorAll('.hsCore,.flowerHitSvg,.flowerSvgHitProxy').forEach(function(el){
-        el.style.setProperty('display','none','important');
-        el.style.setProperty('opacity','0','important');
-        el.style.setProperty('visibility','hidden','important');
-        el.style.setProperty('stroke','transparent','important');
-        el.style.setProperty('fill','transparent','important');
-      });
-    }catch(e){}
-  }
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', kill);
-  } else {
-    kill();
-  }
-  window.addEventListener('load', kill);
-  document.addEventListener('keydown', function(ev){
-    if(ev.key === 'b' || ev.key === 'B'){
-      ev.stopImmediatePropagation();
-      ev.preventDefault();
-      kill();
-    }
-  }, true);
-})();
-</script>
 
 </head>
 <body class="">
