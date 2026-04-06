@@ -2446,7 +2446,7 @@ body:not(.llHitboxOn) .hsCore.llHotSelected{
 </style>
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.1.31_CleanState_AnchorRows_DeadLogicRemoved.html • v100.1.24_PerformanceHUD_AllWarm_NoDespawn • Built: 2026-04-05T00:35:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.1.31.10.1_DebugRedHotspots_PngProxyFix • Built: 2026-04-06T00:00:00Z UTC</div>
 
 
 <script>
@@ -5491,7 +5491,48 @@ function buildFlowerMarkupForDay_(day){
   return `<div class="flowerSvgWrap">${flowerSvg(day)}</div>`;
 }
 
-function syncPngHotspotForWrap_(wrapEl, dayForAsset){ return; }
+function syncPngHotspotForWrap_(wrapEl, dayForAsset){
+  try {
+    if (!wrapEl || !dayForAsset) return;
+    var proxy = wrapEl.querySelector('.flowerSvgHitProxy');
+    var assetWrap = wrapEl.querySelector('.flowerAssetPngWrap');
+    if (!proxy || !assetWrap) return;
+    proxy.style.inset = '0';
+    proxy.style.width = '100%';
+    proxy.style.height = '100%';
+    proxy.style.left = '0';
+    proxy.style.bottom = '0';
+    proxy.style.transform = 'none';
+
+    var hs = (function(dd){
+      var hx = Number(dd && (dd.flowerAssetHotspotCx || dd.HotspotCx));
+      var hy = Number(dd && (dd.flowerAssetHotspotCy || dd.HotspotCy));
+      var hr = Number(dd && (dd.flowerAssetHotspotR  || dd.HotspotR));
+      if (isFinite(hx) && isFinite(hy) && isFinite(hr) && hr > 0) return { cx:hx, cy:hy, r:hr };
+      if (typeof hotspotGeomForDay_ === 'function') return hotspotGeomForDay_(dd);
+      var lvl = Number(dd && dd.level) || 1;
+      var topY = ({1:500,2:420,3:300,4:200,5:100})[lvl] || 500;
+      var bloom = {1:{s:1.06*1.5,y:-34,r:20},2:{s:1.06*1.5,y:-62,r:28},3:{s:1.18,y:-72,r:40},4:{s:1.32,y:-78,r:48},5:{s:1.46,y:-82,r:56}}[lvl] || {s:1.06*1.5,y:-34,r:20};
+      return { cx:200, cy:(topY + bloom.y * bloom.s), r:(bloom.r * 2.25 * bloom.s) };
+    })(dayForAsset);
+    var m = computePngAssetMetrics_(dayForAsset);
+    var displayH = m.displayH;
+    var displayW = m.displayW;
+    var hsCx = ((Number(hs.cx) - m.stemX) * m.scaleX) + (displayW * 0.5);
+    var hsCy = ((Number(hs.cy) - m.stemY) * m.scaleY) + displayH;
+    var hsR = Number(hs.r) * Math.max(m.scaleX, m.scaleY);
+
+    var cores = proxy.querySelectorAll('.hsCore,[data-role="hotspot"]');
+    cores.forEach(function(c){
+      try {
+        c.setAttribute('cx', String(hsCx));
+        c.setAttribute('cy', String(hsCy));
+        c.setAttribute('r', String(hsR));
+        c.style.pointerEvents = 'all';
+      } catch(_e){}
+    });
+  } catch(_e){}
+}
 
 let __llAssetCountPending = 0;
 function requestFlowerAssetCountRefresh_(){
@@ -5658,7 +5699,7 @@ flowerWrapEls.push(wrap);
           imgEl.addEventListener('load', function(){
             wrapEl.dataset.renderAsset = (imgEl.naturalWidth > 0 && imgEl.naturalHeight > 0) ? "png" : "svg";
             if (wrapEl.dataset.renderAsset !== "png") swapToSvgFallback_();
-            else requestFlowerAssetCountRefresh_();
+            else { try { syncPngHotspotForWrap_(wrapEl, dayForFallback); } catch(_e) {} requestFlowerAssetCountRefresh_(); }
           }, { once: true });
           imgEl.addEventListener('error', function(){
             swapToSvgFallback_();
@@ -5667,6 +5708,7 @@ flowerWrapEls.push(wrap);
           if (imgEl.complete) {
             if (imgEl.naturalWidth > 0 && imgEl.naturalHeight > 0) {
               wrapEl.dataset.renderAsset = "png";
+              try { syncPngHotspotForWrap_(wrapEl, dayForFallback); } catch(_e) {}
               requestFlowerAssetCountRefresh_();
             } else {
               swapToSvgFallback_();
@@ -9749,6 +9791,22 @@ document.addEventListener('pointerdown', (ev) => {
 
 document.addEventListener('click', (ev) => {
   __llTryActivateHotspot_(ev);
+}, true);
+
+document.addEventListener('pointerdown', (ev) => {
+  try{
+    const wrap = ev.target?.closest?.('.flowerWrap');
+    if (!wrap) return;
+    const wi = parseInt(wrap.dataset.weekIndex||'-1',10);
+    const active = (typeof __rt?.nav?.lastFrontIndex === 'number') ? (__rt.nav.lastFrontIndex|0) : todayWeekIndex_();
+    const band = wrap.closest('.weekBand');
+    const bandFront = !!(band && (band.classList.contains('isFront') || band.classList.contains('frontOutline')));
+    if (!(bandFront || (isFinite(wi) && wi === active))) return;
+    if (typeof __llMarkSuppressDocClear_ === 'function') __llMarkSuppressDocClear_();
+    setSelection_(wrap);
+    ev.preventDefault();
+    ev.stopPropagation();
+  }catch(e){}
 }, true);
 
 
