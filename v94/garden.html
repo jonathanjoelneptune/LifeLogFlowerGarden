@@ -22,7 +22,7 @@
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v100.1.31.10.3_DebugRedHotspots_PngHeadAligned_SingleSelectPath
+  v100.1.31_CleanState_AnchorRows_DeadLogicRemoved
     + Replace live row-position solving with anchor-state row transforms
     + Add cached row anchor table for front rows, crest handoff, future rows, and hill triplet rows
     + Replace dynamic back-row slot spreading with fixed lane layouts (left / center / right)
@@ -135,7 +135,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.31.10.3_DebugRedHotspots_PngHeadAligned_SingleSelectPath';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.31_CleanState_AnchorRows_DeadLogicRemoved';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -263,7 +263,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 function renderBackRows(){ /* disabled */ }
 
 (function(){
-  const VERSION = 'v100.1.31.10.3_DebugRedHotspots_PngHeadAligned_SingleSelectPath';
+  const VERSION = 'v100.1.31_CleanState_AnchorRows_DeadLogicRemoved';
 
   // ---- Canonical version globals ----
   window.APP_VERSION = VERSION;
@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.1.31.10.3_DebugRedHotspots_PngHeadAligned_SingleSelectPath.html</title>
+<title>garden_v100.1.31_CleanState_AnchorRows_DeadLogicRemoved.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -2456,7 +2456,7 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v100.1.31.10.3_DebugRedHotspots_PngHeadAligned_SingleSelectPath.html</span><br>
+File: <span id="__bannerFileName">garden_v100.1.31_CleanState_AnchorRows_DeadLogicRemoved.html</span><br>
 Version: <span id="__bannerVersion">v100.1.24_PerformanceHUD_AllWarm_NoDespawn</span><br>
 Created: 2026-04-05 12:35 AM PT</span></div>
 <script>
@@ -5475,12 +5475,14 @@ function buildFlowerMarkupForDay_(day){
     var m = computePngAssetMetrics_(day);
     var displayH = m.displayH;
     var displayW = m.displayW;
-    var dbgHs = computePngDebugHotspot_(day, m);
+    var hsCx = ((Number(hs.cx) - m.stemX) * m.scaleX) + (displayW * 0.5);
+    var hsCy = ((Number(hs.cy) - m.stemY) * m.scaleY) + displayH;
+    var hsR = Number(hs.r) * Math.max(m.scaleX, m.scaleY);
     return `
       <div class="flowerAssetPngWrap" style="--assetDisplayW:${displayW.toFixed(2)}px;--assetDisplayH:${displayH.toFixed(2)}px;">
         <img class="flowerPngAsset" src="${pngUrl}" alt="" crossorigin="anonymous" loading="eager" decoding="async"/>
         <svg class="flowerHitSvg pngHitSvg" viewBox="0 0 ${displayW.toFixed(2)} ${displayH.toFixed(2)}" preserveAspectRatio="none" aria-hidden="true">
-          <circle class="hsCore" data-role="hotspot" cx="${dbgHs.cx.toFixed(2)}" cy="${dbgHs.cy.toFixed(2)}" r="${dbgHs.r.toFixed(2)}"></circle>
+          <circle class="hsCore" data-role="hotspot" cx="${hsCx.toFixed(2)}" cy="${hsCy.toFixed(2)}" r="${hsR.toFixed(2)}"></circle>
         </svg>
       </div>`;
   }
@@ -5491,20 +5493,37 @@ function syncPngHotspotForWrap_(wrapEl, dayForAsset){
   try {
     if (!wrapEl || !dayForAsset) return;
     var hitSvg = wrapEl.querySelector('.flowerHitSvg.pngHitSvg');
-    if (!hitSvg) return;
+    var assetWrap = wrapEl.querySelector('.flowerAssetPngWrap');
+    if (!hitSvg || !assetWrap) return;
+
+    var hs = (function(dd){
+      var hx = Number(dd && (dd.flowerAssetHotspotCx || dd.HotspotCx));
+      var hy = Number(dd && (dd.flowerAssetHotspotCy || dd.HotspotCy));
+      var hr = Number(dd && (dd.flowerAssetHotspotR  || dd.HotspotR));
+      if (isFinite(hx) && isFinite(hy) && isFinite(hr) && hr > 0) return { cx:hx, cy:hy, r:hr };
+      if (typeof hotspotGeomForDay_ === 'function') return hotspotGeomForDay_(dd);
+      var lvl = Number(dd && dd.level) || 1;
+      var topY = ({1:500,2:420,3:300,4:200,5:100})[lvl] || 500;
+      var bloom = {1:{s:1.06*1.5,y:-34,r:20},2:{s:1.06*1.5,y:-62,r:28},3:{s:1.18,y:-72,r:40},4:{s:1.32,y:-78,r:48},5:{s:1.46,y:-82,r:56}}[lvl] || {s:1.06*1.5,y:-34,r:20};
+      return { cx:200, cy:(topY + bloom.y * bloom.s), r:(bloom.r * 2.25 * bloom.s) };
+    })(dayForAsset);
     var m = computePngAssetMetrics_(dayForAsset);
-    var dbgHs = computePngDebugHotspot_(dayForAsset, m);
-    hitSvg.setAttribute('viewBox', '0 0 ' + m.displayW + ' ' + m.displayH);
+    var displayH = m.displayH;
+    var displayW = m.displayW;
+    var hsCx = ((Number(hs.cx) - m.stemX) * m.scaleX) + (displayW * 0.5);
+    var hsCy = ((Number(hs.cy) - m.stemY) * m.scaleY) + displayH;
+    var hsR = Number(hs.r) * Math.max(m.scaleX, m.scaleY);
+
+    hitSvg.setAttribute('viewBox', '0 0 ' + displayW + ' ' + displayH);
     var core = hitSvg.querySelector('.hsCore,[data-role="hotspot"]');
     if (core){
-      core.setAttribute('cx', String(dbgHs.cx));
-      core.setAttribute('cy', String(dbgHs.cy));
-      core.setAttribute('r', String(dbgHs.r));
+      core.setAttribute('cx', String(hsCx));
+      core.setAttribute('cy', String(hsCy));
+      core.setAttribute('r', String(hsR));
       core.style.pointerEvents = 'all';
     }
   } catch(_e){}
 }
-
 
 let __llAssetCountPending = 0;
 function requestFlowerAssetCountRefresh_(){
@@ -9765,6 +9784,22 @@ document.addEventListener('click', (ev) => {
   __llTryActivateHotspot_(ev);
 }, true);
 
+document.addEventListener('pointerdown', (ev) => {
+  try{
+    const wrap = ev.target?.closest?.('.flowerWrap');
+    if (!wrap) return;
+    const wi = parseInt(wrap.dataset.weekIndex||'-1',10);
+    const active = (typeof __rt?.nav?.lastFrontIndex === 'number') ? (__rt.nav.lastFrontIndex|0) : todayWeekIndex_();
+    const band = wrap.closest('.weekBand');
+    const bandFront = !!(band && (band.classList.contains('isFront') || band.classList.contains('frontOutline')));
+    if (!(bandFront || (isFinite(wi) && wi === active))) return;
+    if (typeof __llMarkSuppressDocClear_ === 'function') __llMarkSuppressDocClear_();
+    setSelection_(wrap);
+    ev.preventDefault();
+    ev.stopPropagation();
+  }catch(e){}
+}, true);
+
 
 // v88: click on empty stage space -> clear selection
 document.addEventListener('click', (ev) => {
@@ -11372,6 +11407,11 @@ window.applySelectedAdornments = applySelectedAdornments;
     const hs = findHotspotFromEvent(ev);
     if(hs){
       window.__LL_LAST_HS__ = hs;
+      // Let the app do its normal selection (which sets .isSelected on wrap),
+      // then apply silhouette + halo + ring next tick.
+      setTimeout(applySelectedAdornments, 0);
+    }else{
+      // If click wasn't on hotspot, still refresh silhouette in case app selection changed by other means.
       setTimeout(applySelectedAdornments, 0);
     }
   }, true);
@@ -11648,7 +11688,7 @@ window.applySelectedAdornments = applySelectedAdornments;
     window.__LL_DISABLE_BACKHILL__ = true;
     window.BRX_DISABLE_LEGACY_BACKROWS = true;
 
-    const VERSION = 'v100.1.31.10.3_DebugRedHotspots_PngHeadAligned_SingleSelectPath';
+    const VERSION = 'v100.1.31_CleanState_AnchorRows_DeadLogicRemoved';
     const hideLegacyGroups = () => {
       ['backRowsG','gridWeeksG','hillGuidesG','gridOverlayG','gridWeeksOverlay','brxHillPngG','brxHillDbgG']
         .forEach(id => {
