@@ -9894,7 +9894,7 @@ document.addEventListener('pointerdown', (ev) => {
   try{
     const t = ev.target;
     if (!t || typeof t.closest !== 'function') return;
-    if (t.closest('.hsCore, .hsHotspot, [data-hotspot], [data-slot], [data-date-key], [data-datekey], .flowerWrap, .flower-wrapper')){
+    if (t.closest('.hsCore, .hsHotspot, [data-hotspot], [data-slot], [data-date-key], [data-datekey], .flowerWrap, .flower-wrapper, .dow.isClickTarget, [data-signpost-select-bound], [data-signpost-select-bound="1"]')){
       if (typeof __llMarkSuppressDocClear_ === 'function') __llMarkSuppressDocClear_();
     }
   }catch(e){}
@@ -9908,7 +9908,7 @@ document.addEventListener('click', (ev) => {
   // the click target gets detached by a re-render.
   if (__llShouldSuppressDocClear_(ev)) return;
   // If the click was on a hotspot or within a flower wrapper, do nothing.
-  if (ev.target?.closest?.('.hsCore,[data-role="hotspot"],[data-date-key],[data-datekey]')) return;
+  if (ev.target?.closest?.('.hsCore,[data-role="hotspot"],[data-date-key],[data-datekey],.dow.isClickTarget,[data-signpost-select-bound],[data-signpost-select-bound="1"]')) return;
   if (isVerboseSelDbg_() && typeof dbg_ === 'function') dbg_('Blank click -> clear selection');
   clearSelection_('blank click');
 }, true);
@@ -13253,6 +13253,12 @@ try { setTimeout(function(){ try { warmAllFlowerAssetsFromExport_(); } catch(_e)
       if (typeof __llMarkSuppressDocClear_ === 'function') __llMarkSuppressDocClear_();
       if (typeof setSelection_ === 'function'){
         setSelection_(wrap);
+        try{
+          if (typeof __llMarkSuppressDocClear_ === 'function') __llMarkSuppressDocClear_();
+          if (typeof __llBindSelectedWrap_ === 'function') __llBindSelectedWrap_(wrap, 'signpost');
+          if (typeof __llShowSelectionSkyboxes_ === 'function') __llShowSelectionSkyboxes_(wrap, { deferMs: 0 });
+          if (typeof __llScheduleSelectedAdornments_ === 'function') __llScheduleSelectedAdornments_(wrap);
+        }catch(e){}
         try{
           if (typeof dbg_ === 'function'){
             dbg_('Signpost Selected - dayIndex=' + dayIndex + (reason ? ' (' + reason + ')' : ''));
