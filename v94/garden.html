@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.1.31.10.8.7_FixSelectionRegression_KeepStaticGrass.html</title>
+<title>garden_v100.1.31.10.9.5_NewGrassPngEverywhere_GreenSoftened.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -382,16 +382,13 @@ function renderBackRows(){ /* disabled */ }
   --grassOverhang: 10vw;
   --grassFadeHold: 62%;
   --grassFadeMid: 82%;
-  --grassOpacity: 1.;
+  --grassOpacity: 1.0;
   --grassBandH: 480px;
   --grassW: 50%;
-  --grassH: 100%;
+  --grassH: 140%;
   --grassBgSize: var(--grassW) var(--grassH);
-  --grassFilter: blur(0.25px) hue-rotate(-18deg) saturate(1.22) brightness(0.88) contrast(1.08)
-  drop-shadow(0 -1px 0 rgba(0,0,0,0.35))
-  drop-shadow(0 1px 0 rgba(0,0,0,0.12))
-  drop-shadow(1px 0 0 rgba(0,0,0,0.12))
-  drop-shadow(-1px 0 0 rgba(0,0,0,0.12));  --grassDeformMul: 1;
+  --grassFilter: blur(0.25px) hue-rotate(-18deg) saturate(1.22) brightness(0.88) contrast(1.08) drop-shadow(0 -1px 0 rgba(0,0,0,0.35)) drop-shadow(0 1px 0 rgba(0,0,0,0.12)) drop-shadow(1px 0 0 rgba(0,0,0,0.12)) drop-shadow(-1px 0 0 rgba(0,0,0,0.12));
+  --grassDeformMul: 1;
   --grassTileW: 720px;
 
   /* Clouds */
@@ -1103,27 +1100,32 @@ body.llHitboxOn .flowerSvgHitProxy .flowerSvg .hsCore {
   position: absolute;
   left: 0;
   right: 0;
-  margin: 0 92px;
-  bottom: 8px;
-  height: 95px;
+  margin: 0 0;
+  bottom: 6px;
+  height: 132px;
   pointer-events: none;
   z-index: 6;
   opacity: 0.98;
-  filter: hue-rotate(var(--fgGrassHue)) saturate(var(--fgGrassSat)) brightness(var(--fgGrassBright)) drop-shadow(0 10px 14px rgba(0,0,0,0.22));
+  overflow: visible;
+  background-image: url("https://github.com/jonathanjoelneptune/LifeLogFlowerGarden/blob/main/v94/%E2%80%94Pngtree%E2%80%94green%20grass%20clipart_13155454.png?raw=true");
+  background-repeat: repeat-x;
+  background-position: center bottom;
+  background-size: auto 86%;
+  filter:
+    hue-rotate(var(--fgGrassHue))
+    saturate(var(--fgGrassSat))
+    brightness(var(--fgGrassBright))
+    drop-shadow(0 8px 12px rgba(0,0,0,0.18));
 }
 .frontGrass::before {
   content: "";
   position: absolute;
-  left: 0; right: 0; bottom: 0;
-  height: 52px;
-  background: linear-gradient(180deg, rgba(14,90,42,0.00) 0%, rgba(14,90,42,0.65) 40%, rgba(14,90,42,0.98) 100%);
+  inset: 0;
+  background: none;
   pointer-events: none;
 }
-.frontGrass .tuft {
-  position: absolute;
-  transform: translateX(-50%);
-}
-.frontGrass svg { width: 100%; height: 100%; display: block; }
+.frontGrass .tuft { display: none !important; }
+.frontGrass svg { display: none !important; }
 
 /* ---------- DOW Strip ---------- */
 .dowGrass {
@@ -2477,9 +2479,33 @@ body.llHitboxOn .flowerSvgHitProxy .flowerSvg .hsCore{
 }
 </style>
 
+
+
+
+
+<style id="llForceGreenerGrassLateOverride_v1001311095">
+:root{
+  --grassFilter: blur(0.25px) hue-rotate(44deg) saturate(0.98) brightness(0.76) contrast(1.06)
+    drop-shadow(0 -1px 0 rgba(0,0,0,0.35))
+    drop-shadow(0 1px 0 rgba(0,0,0,0.12))
+    drop-shadow(1px 0 0 rgba(0,0,0,0.12))
+    drop-shadow(-1px 0 0 rgba(0,0,0,0.12));
+  --fgGrassHue: 0deg;
+  --fgGrassSat: 0.94;
+  --fgGrassBright: 0.94;
+}
+.grassBand::before{
+  filter: var(--grassFilter) hue-rotate(var(--fgGrassHue)) saturate(var(--fgGrassSat)) brightness(var(--fgGrassBright))
+    drop-shadow(0 -1px 0 rgba(0,0,0,0.55))
+    drop-shadow(0 1px 0 rgba(0,0,0,0.22))
+    drop-shadow(1px 0 0 rgba(0,0,0,0.22))
+    drop-shadow(-1px 0 0 rgba(0,0,0,0.22)) !important;
+}
+</style>
+
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.1.31.10.8.7_FixSelectionRegression_KeepStaticGrass • Built: 2026-04-06T00:00:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.1.31.10.9.5_NewGrassPngEverywhere_GreenSoftened • Built: 2026-04-06T00:00:00Z UTC</div>
 
 
 <script>
@@ -2493,7 +2519,7 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v100.1.31.10.8.7_FixSelectionRegression_KeepStaticGrass.html</span><br>
+File: <span id="__bannerFileName">garden_v100.1.31.10.9.5_NewGrassPngEverywhere_GreenSoftened.html</span><br>
 Version: <span id="__bannerVersion">v100.1.24_PerformanceHUD_AllWarm_NoDespawn</span><br>
 Created: 2026-04-05 12:35 AM PT</span></div>
 <script>
@@ -5772,31 +5798,11 @@ function initStableWind(uid){
 // Front Grass
 // ============================================
 function buildFrontGrassTufts(seedKey){
-  const r = mulberry32(hash32FromString("frontGrass_" + seedKey));
-  let out = "";
-  const rows = [
-    { n: 300, yMin: 0, yMax: 14, sMin: 1.05, sMax: 1.60, oMin: 0.92, oMax: 1.00 },
-    { n: 250, yMin: 8, yMax: 28, sMin: 0.70, sMax: 1.15, oMin: 0.70, oMax: 0.94 },
-    { n: 200, yMin: 20, yMax: 46, sMin: 0.42, sMax: 0.85, oMin: 0.35, oMax: 0.78 }
-  ];
-
-  for (const row of rows){
-    for (let i=0;i<row.n;i++){
-      const x = r()*100, y = row.yMin + r()*(row.yMax-row.yMin);
-      const s = row.sMin + r()*(row.sMax-row.sMin);
-      const o = row.oMin + r()*(row.oMax-row.oMin);
-      const w = (52*s), h = (34*s);
-      const sway = (r()*10 - 5);
-      out += `<div class="tuft" style="left:${x.toFixed(2)}%;bottom:${y.toFixed(1)}px;width:${w.toFixed(1)}px;height:${h.toFixed(1)}px;opacity:${o.toFixed(2)};transform:translateX(-50%) rotate(${sway.toFixed(1)}deg);">${tuftSvg("fg_"+seedKey+"_"+i, 5, 1.0)}</div>`;
-    }
-  }
-  return out;
+  return "";
 }
 
 function refreshFrontGrass(){
-  const now = new Date();
-  const seedKey = `${now.getFullYear()}-${pad2(now.getMonth()+1)}-${pad2(now.getDate())}`;
-  if (DOM.frontGrassEl) DOM.frontGrassEl.innerHTML = buildFrontGrassTufts(seedKey);
+  if (DOM.frontGrassEl) DOM.frontGrassEl.innerHTML = "";
 }
 
 // ============================================
