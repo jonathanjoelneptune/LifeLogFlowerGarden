@@ -5089,8 +5089,8 @@ const __llRenderedWeeks = new Map();      // weekIndex -> { band, gband }
 const __llBandMetaByWeekIndex = new Map(); // weekIndex -> { weekMon, iso, weekLevel, weekIndex }
 const __llPrewarmQueue = [];
 const __llPrewarmSet = new Set();
-const __LL_PREWARM_PAST = 3;
-const __LL_PREWARM_FUTURE = 1;
+const __LL_PREWARM_PAST = 7;
+const __LL_PREWARM_FUTURE = 7;
 
 function queuePrewarmWeek_(weekIdx){
   const wi = weekIdx|0;
@@ -7355,6 +7355,13 @@ function tick(tNow){
     applyTransforms(tNow);
     CACHED.transformsDirty = false;
   }
+
+  try{
+    const prewarmFocus = Math.round((__rt && __rt.nav && typeof __rt.nav.targetIndex === 'number') ? __rt.nav.targetIndex : 0);
+    queuePrewarmWindow_(prewarmFocus);
+    pumpPrewarmQueue_();
+    pumpPrewarmQueue_();
+  }catch(e){}
 
   if (lowPowerSS){
     if (!__llLastTodTickTs){
