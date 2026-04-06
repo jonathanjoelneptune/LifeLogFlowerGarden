@@ -5087,6 +5087,33 @@ function buildBands(){
 // v99.3.28_TodayPoll_ApplyUpdateAndDebug: Render manager
 const __llRenderedWeeks = new Map();      // weekIndex -> { band, gband }
 const __llBandMetaByWeekIndex = new Map(); // weekIndex -> { weekMon, iso, weekLevel, weekIndex }
+const __llPrewarmQueue = [];
+const __llPrewarmSet = new Set();
+const __LL_PREWARM_PAST = 3;
+const __LL_PREWARM_FUTURE = 1;
+
+function queuePrewarmWeek_(weekIdx){
+  const wi = weekIdx|0;
+  if (wi < 0 || __llRenderedWeeks.has(wi)) return;
+  if (__llPrewarmSet.has(wi)) return;
+  __llPrewarmSet.add(wi);
+  __llPrewarmQueue.push(wi);
+}
+function pumpPrewarmQueue_(){
+  if (!__llPrewarmQueue.length) return;
+  const wi = __llPrewarmQueue.shift();
+  __llPrewarmSet.delete(wi);
+  if (__llRenderedWeeks.has(wi)) return;
+  try{ ensureWeekNodes_(wi); }catch(e){}
+  try{
+    const rec = __llRenderedWeeks.get(wi);
+    if (rec && rec.band && rec.band.dataset.rendered !== 'true') renderBandFlowers(rec.band);
+  }catch(e){}
+}
+function queuePrewarmWindow_(focusWeekIndex){
+  const f = focusWeekIndex|0;
+  for (let wi = Math.max(0, f - __LL_PREWARM_PAST); wi <= (f + __LL_PREWARM_FUTURE); wi++) queuePrewarmWeek_(wi);
+}
 
 function ensureWeekNodes_(weekIdx){
   if (__llRenderedWeeks.has(weekIdx)) return;
@@ -5114,14 +5141,24 @@ function ensureWeekNodes_(weekIdx){
   gband.style.setProperty("--gdel", (-rgd()*12).toFixed(2) + "s");
 
   __llRenderedWeeks.set(weekIdx, { band, gband });
-  __llBandMetaByWeekIndex.set(weekIdx, Object.assign({ weekIndex: weekIdx }, week));
+  const meta = Object.assign({ weekIndex: weekIdx }, week);
+  __llBandMetaByWeekIndex.set(weekIdx, meta);
 
-  weeksStack.appendChild(band);
-  grassStack.appendChild(gband);
+  // Insert in sorted order once, so normal row sync does not need to reorder all bands.
+  let insertAt = bands.findIndex((b)=> ((parseInt((b && b.dataset && b.dataset.weekIndex) || '-999999', 10)|0) > (weekIdx|0)));
+  if (insertAt < 0) insertAt = bands.length;
 
-  bands.push(band);
-  grassBands.push(gband);
-  bandMeta.push(Object.assign({ weekIndex: weekIdx }, week));
+  const nextBand = bands[insertAt] || null;
+  if (nextBand) weeksStack.insertBefore(band, nextBand);
+  else weeksStack.appendChild(band);
+
+  const nextGrass = grassBands[insertAt] || null;
+  if (nextGrass) grassStack.insertBefore(gband, nextGrass);
+  else grassStack.appendChild(gband);
+
+  bands.splice(insertAt, 0, band);
+  grassBands.splice(insertAt, 0, gband);
+  bandMeta.splice(insertAt, 0, meta);
 }
 
 function disposeWeekNodes_(weekIdx){
@@ -5149,8 +5186,7 @@ function disposeWeekNodes_(weekIdx){
       if (wi === weekIdx) bands.splice(i,1);
     }
     for (let i=grassBands.length-1; i>=0; i--){
-      // grass band doesn't carry weekIndex; keep arrays aligned by DOM order rebuild below
-      // we will rebuild grassBands from __llRenderedWeeks when syncing
+      if (grassBands[i] === rec.gband) grassBands.splice(i,1);
     }
     for (let i=bandMeta.length-1; i>=0; i--){
       if ((bandMeta[i]?.weekIndex|0) === (weekIdx|0)) bandMeta.splice(i,1);
@@ -5229,25 +5265,13 @@ if(window.__llForceTodayAfterExport_ && fullRebuild){
     }
   }
 
-  // Re-order DOM in ascending weekIndex. Do not clear shared scene layers.
-  const weeksStack = DOM.weeksStack;
+  // Keep DOM order stable by inserting/removing in sorted order once.
+  // Normal row sync should not re-append every rendered band or rebuild linear arrays.
   const grassStack = DOM.grassStack;
-  const entries = Array.from(__llRenderedWeeks.entries()).sort((a,b)=>a[0]-b[0]);
-
-  if (weeksStack){
-    for (const [, rec] of entries){
-      if (rec && rec.band) weeksStack.appendChild(rec.band);
-    }
-  }
   if (grassStack){
     const haze = grassStack.querySelector('#grassHaze');
     if (haze && grassStack.firstChild !== haze) grassStack.insertBefore(haze, grassStack.firstChild);
-    for (const [, rec] of entries){
-      if (rec && rec.gband) grassStack.appendChild(rec.gband);
-    }
   }
-
-  reflowBandArrays_();
 
   // Render only newly created / dirty rows
   const toRender = [];
@@ -5261,9 +5285,6 @@ if(window.__llForceTodayAfterExport_ && fullRebuild){
     renderBandFlowers(band);
   }
 
-  updateFrontText(focusWeekIndex|0);
-  try{ updateRowInteractivity_(focusWeekIndex|0); }catch(e){}
-  try{ rebindSelectionToVisibleWrap_('syncRenderedWeeks'); }catch(e){}
 }
 
 // Expose rebuild hook for GardenExport loader (different script scope)
@@ -5816,9 +5837,9 @@ function __llFrontDayPercents_(){
 }
 
 function __llTripletLanePercents_(laneIndex){
-  const laneCenters = [0.18, 0.50, 0.82];
+  const laneCenters = [0.14, 0.50, 0.86];
   const center = laneCenters[Math.max(0, Math.min(2, laneIndex|0))];
-  const span = 0.18;
+  const span = 0.22;
   const out = [];
   for (let d=0; d<7; d++){
     const local = (d - 3) / 6;
@@ -5955,9 +5976,9 @@ function __llBuildRowAnchorCache_(frontF, designW, stableGroupMax){
       const s = Math.max(BACK_TRIPLET_MIN_SCALE * tripletScaleMul, sBase * tripletScaleMul) * BACK_TRIPLET_SIZE_BOOST;
       const rowWidthScaled = responsiveGeom ? responsiveGeom.width : fallbackWidth;
       const rowCenter = responsiveGeom ? responsiveGeom.centerX : (fallbackLeft + fallbackWidth * 0.5);
-      const colCenters = [0.18, 0.50, 0.82];
+      const colCenters = [0.14, 0.50, 0.86];
       const laneCenter = rowCenter + ((colCenters[lane] - 0.5) * rowWidthScaled);
-      const bandWidthScaled = rowWidthScaled * 0.34;
+      const bandWidthScaled = rowWidthScaled * 0.26;
       const bandWidthUnscaled = bandWidthScaled / Math.max(0.001, s);
       const bandLeftUnscaled = laneCenter - bandWidthUnscaled * 0.5;
       __llRowAnchorCache.triplet.set(`${groupInt}|${lane}`, {
@@ -6173,10 +6194,12 @@ function applyTransforms(tNow){
       if (typeof hideSkyBoxes_ === 'function') hideSkyBoxes_('row change', __llLastRowDir);
       if (typeof dbg_==='function') dbg_(`Row change -> keep selection (hide boxes) dir=${__llLastRowDir}`);
     }catch(e){}
-    try{ requestAnimationFrame(()=>{ try{ rebindSelectionToVisibleWrap_('row change'); }catch(e){} }); }catch(e){}
-    updateFrontText(frontIndexVisual);
-    const fs = document.getElementById('frontSpotlight');
-    if (fs) fs.classList.add('on');
+    try{ requestAnimationFrame(()=>{
+      try{ updateFrontText(frontIndexVisual); }catch(e){}
+      try{ updateRowInteractivity_(frontIndexVisual|0); }catch(e){}
+      try{ rebindSelectionToVisibleWrap_('row change'); }catch(e){}
+      try{ const fs = document.getElementById('frontSpotlight'); if (fs) fs.classList.add('on'); }catch(e){}
+    }); }catch(e){}
   }
 
   const yawPx = state.yaw * 3.0;
