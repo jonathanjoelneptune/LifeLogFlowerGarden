@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.1.31.10.9.8.11_BackgroundMissingFlowerGen_DebugLog.html</title>
+<title>garden_v100.1.31.10.9.8.11.1_BackgroundMissingFlowerGen_DebugLog_FixPanelNull.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -2568,7 +2568,7 @@ body.llHitboxOn .flowerSvgHitProxy .flowerSvg .hsCore{
 
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.1.31.10.9.8.11_BackgroundMissingFlowerGen_DebugLog • Built: 2026-04-06T00:00:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.1.31.10.9.8.11.1_BackgroundMissingFlowerGen_DebugLog_FixPanelNull • Built: 2026-04-06T00:00:00Z UTC</div>
 
 
 <script>
@@ -2582,7 +2582,7 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v100.1.31.10.9.8.11_BackgroundMissingFlowerGen_DebugLog.html</span><br>
+File: <span id="__bannerFileName">garden_v100.1.31.10.9.8.11.1_BackgroundMissingFlowerGen_DebugLog_FixPanelNull.html</span><br>
 Version: <span id="__bannerVersion">v100.1.24_PerformanceHUD_AllWarm_NoDespawn</span><br>
 Created: 2026-04-05 12:35 AM PT</span></div>
 <script>
@@ -13395,7 +13395,10 @@ try { setTimeout(function(){ try { warmAllFlowerAssetsFromExport_(); } catch(_e)
     document.getElementById('fagRun').addEventListener('click', function(){ runGenerator_().catch(function(err){ log('ERROR ' + err.message); setStatus('Failed.'); }); });
     document.getElementById('fagReset').addEventListener('click', function(){ resetGeneratorAssets_().catch(function(err){ log('ERROR ' + err.message); setStatus('Reset failed.'); }); });
   }
-  document.getElementById('fagStop').addEventListener('click', function(){ stopRequested = true; });
+  if (GEN_MODE) {
+    var fagStopBtn = document.getElementById('fagStop');
+    if (fagStopBtn) fagStopBtn.addEventListener('click', function(){ stopRequested = true; });
+  }
 })();
 </script>
 
