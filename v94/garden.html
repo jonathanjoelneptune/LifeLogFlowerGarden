@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.1.31.10.9.8.7_FixStaleWeekFlash_PrepareVisibleBands.html</title>
+<title>garden_v100.1.31.10.9.8.8_BackHillMediumTexturePass.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -2550,9 +2550,25 @@ body.llHitboxOn .flowerSvgHitProxy .flowerSvg .hsCore{
 }
 </style>
 
+
+<style id="llBackHillMediumTexturePass_v10013110988">
+#hillTexturePass{
+  pointer-events: none;
+}
+#hillTexturePass path:nth-child(1){
+  mix-blend-mode: soft-light;
+}
+#hillTexturePass path:nth-child(2){
+  mix-blend-mode: multiply;
+}
+#hillTexturePass path:nth-child(3){
+  mix-blend-mode: soft-light;
+}
+</style>
+
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.1.31.10.9.8.7_FixStaleWeekFlash_PrepareVisibleBands • Built: 2026-04-06T00:00:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.1.31.10.9.8.8_BackHillMediumTexturePass • Built: 2026-04-06T00:00:00Z UTC</div>
 
 
 <script>
@@ -2566,7 +2582,7 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v100.1.31.10.9.8.7_FixStaleWeekFlash_PrepareVisibleBands.html</span><br>
+File: <span id="__bannerFileName">garden_v100.1.31.10.9.8.8_BackHillMediumTexturePass.html</span><br>
 Version: <span id="__bannerVersion">v100.1.24_PerformanceHUD_AllWarm_NoDespawn</span><br>
 Created: 2026-04-05 12:35 AM PT</span></div>
 <script>
@@ -3511,6 +3527,39 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   C560,255 640,255 680,275
   C810,325 980,445 1200,500
   L1200,500 L0,500 Z"/></clipPath>
+
+      <!-- medium hill texture pass -->
+      <linearGradient id="hillCrestShade" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="rgba(255,255,255,0.09)"/>
+        <stop offset="24%" stop-color="rgba(255,255,255,0.04)"/>
+        <stop offset="48%" stop-color="rgba(0,0,0,0.00)"/>
+        <stop offset="72%" stop-color="rgba(0,0,0,0.06)"/>
+        <stop offset="100%" stop-color="rgba(0,0,0,0.16)"/>
+      </linearGradient>
+
+      <filter id="hillTextureMottle" x="-20%" y="-20%" width="140%" height="140%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.009 0.028" numOctaves="2" seed="7" stitchTiles="stitch" result="noise"/>
+        <feGaussianBlur in="noise" stdDeviation="0.65" result="noiseSoft"/>
+        <feColorMatrix in="noiseSoft" type="saturate" values="0" result="mono"/>
+        <feComponentTransfer in="mono" result="mottle">
+          <feFuncR type="gamma" amplitude="1.0" exponent="1.0" offset="0"/>
+          <feFuncG type="gamma" amplitude="1.0" exponent="1.0" offset="0"/>
+          <feFuncB type="gamma" amplitude="1.0" exponent="1.0" offset="0"/>
+          <feFuncA type="table" tableValues="0 0.04 0.10 0.16 0.10 0.04 0"/>
+        </feComponentTransfer>
+      </filter>
+
+      <filter id="hillTextureGrain" x="-20%" y="-20%" width="140%" height="140%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.028 0.11" numOctaves="2" seed="13" stitchTiles="stitch" result="noise"/>
+        <feGaussianBlur in="noise" stdDeviation="0.22" result="noiseSoft"/>
+        <feColorMatrix in="noiseSoft" type="saturate" values="0" result="mono"/>
+        <feComponentTransfer in="mono" result="grain">
+          <feFuncR type="gamma" amplitude="1.0" exponent="1.0" offset="0"/>
+          <feFuncG type="gamma" amplitude="1.0" exponent="1.0" offset="0"/>
+          <feFuncB type="gamma" amplitude="1.0" exponent="1.0" offset="0"/>
+          <feFuncA type="table" tableValues="0 0.02 0.05 0.08 0.05 0.02 0"/>
+        </feComponentTransfer>
+      </filter>
 </defs>
 
     <!-- SINGLE MOUND (background hill) -->
@@ -3521,6 +3570,31 @@ window.__LL_exportFrontFlowerPNGs__ = function(){
   C810,325 980,445 1200,500
   L1200,500 L0,500 Z"
           fill="url(#hillMain)" filter="url(#hillEdgeSoft)"/>
+
+    <!-- medium texture shading pass -->
+    <g id="hillTexturePass" clip-path="url(#hillClipMain)">
+      <path d="M0,500
+  C220,445 390,325 520,275
+  C560,255 640,255 680,275
+  C810,325 980,445 1200,500
+  L1200,500 L0,500 Z"
+          fill="url(#hillCrestShade)" opacity="0.62"/>
+
+      <path d="M0,500
+  C220,445 390,325 520,275
+  C560,255 640,255 680,275
+  C810,325 980,445 1200,500
+  L1200,500 L0,500 Z"
+          fill="rgba(8,22,15,0.90)" opacity="0.18" filter="url(#hillTextureMottle)"/>
+
+      <path d="M0,500
+  C220,445 390,325 520,275
+  C560,255 640,255 680,275
+  C810,325 980,445 1200,500
+  L1200,500 L0,500 Z"
+          fill="rgba(255,255,255,0.75)" opacity="0.06" filter="url(#hillTextureGrain)"/>
+    </g>
+
 <!-- very faint rim along crest (subtle) -->
     <path id="hillMainRim"
           d="M0,500
