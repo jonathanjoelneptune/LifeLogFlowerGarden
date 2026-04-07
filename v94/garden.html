@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.1.31.10.9.8.11.1_BackgroundMissingFlowerGen_DebugLog_FixPanelNull.html</title>
+<title>garden_v100.1.31.10.9.8.11.2_BackgroundMissingFlowerGen_ForcedStart_DebugTrim.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -2566,9 +2566,34 @@ body.llHitboxOn .flowerSvgHitProxy .flowerSvg .hsCore{
 }
 </style>
 
+
+<style id="llDebugTrimMarker_v100131109812"></style>
+<script id="llDebugTrimScript_v100131109812">
+(function(){
+  try{
+    if (window.__llDebugTrimInstalled) return;
+    var orig = window.appendDebugLog_;
+    if (typeof orig !== 'function') return;
+    window.appendDebugLog_ = function(msg){
+      try{
+        var s = String(msg == null ? '' : msg);
+        if (
+          s.indexOf('[FRONT] syncRenderedWeeks start focus=') !== -1 ||
+          s.indexOf('[FRONT] clean fullRebuild: rerender current window only') !== -1
+        ){
+          return;
+        }
+      }catch(_e){}
+      return orig.apply(this, arguments);
+    };
+    window.__llDebugTrimInstalled = true;
+  }catch(_e){}
+})();
+</script>
+
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.1.31.10.9.8.11.1_BackgroundMissingFlowerGen_DebugLog_FixPanelNull • Built: 2026-04-06T00:00:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.1.31.10.9.8.11.2_BackgroundMissingFlowerGen_ForcedStart_DebugTrim • Built: 2026-04-06T00:00:00Z UTC</div>
 
 
 <script>
@@ -2582,7 +2607,7 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v100.1.31.10.9.8.11.1_BackgroundMissingFlowerGen_DebugLog_FixPanelNull.html</span><br>
+File: <span id="__bannerFileName">garden_v100.1.31.10.9.8.11.2_BackgroundMissingFlowerGen_ForcedStart_DebugTrim.html</span><br>
 Version: <span id="__bannerVersion">v100.1.24_PerformanceHUD_AllWarm_NoDespawn</span><br>
 Created: 2026-04-05 12:35 AM PT</span></div>
 <script>
@@ -12903,76 +12928,110 @@ try { setTimeout(function(){ try { warmAllFlowerAssetsFromExport_(); } catch(_e)
 })();
 </script>
 
-<script id="llBackgroundMissingFlowerGen_v100131109811">
+
+<script id="llBackgroundMissingFlowerGen_v100131109812">
 (function(){
   var started = false;
+  var attempts = 0;
+  var lastReason = '';
 
   function dbg(msg){
     try { if (typeof appendDebugLog_ === 'function') appendDebugLog_(msg); } catch(_e){}
   }
 
-  function hasSecret(){
+  function getSecret(){
     try {
-      return !!String(window.__FLOWER_ASSET_SECRET__ || localStorage.getItem('FLOWER_ASSET_SECRET') || '').trim();
+      return String(window.__FLOWER_ASSET_SECRET__ || localStorage.getItem('FLOWER_ASSET_SECRET') || 'inthemiddleofthenight').trim();
     } catch(_e) {
-      return false;
+      return '';
     }
   }
 
-  function exportReady(){
+  function hasUsableExport(){
     try {
       var ex = window.__LL_EXPORT || null;
-      if (ex && ex.byDate && typeof ex.byDate.forEach === 'function') return true;
-    } catch(_e){}
-    return false;
-  }
-
-  function flowersLikelyLoaded(){
-    try {
-      return document.querySelectorAll('.flowerWrap').length > 0;
+      return !!(ex && ex.byDate && typeof ex.byDate.forEach === 'function' && ex.byDate.size >= 1);
     } catch(_e){
       return false;
     }
   }
 
-  async function tryStart(){
-    if (started) return;
-    if (window.__LLFlowerAssetGenIsGenMode_ && window.__LLFlowerAssetGenIsGenMode_()) return;
-    if (!hasSecret()) return;
-    if (!exportReady()) return;
-    if (!flowersLikelyLoaded()) return;
-    if (typeof window.__LLFlowerAssetGenRun_ !== 'function') return;
+  function generatorReady(){
+    return typeof window.__LLFlowerAssetGenRun_ === 'function';
+  }
+
+  function maybeStart(){
+    if (started) return true;
+    attempts++;
+
+    var reason = '';
+    if (window.__LLFlowerAssetGenIsGenMode_ && window.__LLFlowerAssetGenIsGenMode_()) {
+      reason = 'already in explicit generator mode';
+    } else if (!generatorReady()) {
+      reason = 'generator runner not ready';
+    } else if (!hasUsableExport()) {
+      reason = 'export not ready';
+    } else if (!getSecret()) {
+      reason = 'missing secret';
+    }
+
+    if (reason) {
+      if (reason !== lastReason || attempts === 1 || attempts % 5 === 0) {
+        dbg('[FLOWERGEN] waiting :: ' + reason + ' (attempt ' + attempts + ')');
+        lastReason = reason;
+      }
+      return false;
+    }
 
     started = true;
     dbg('[FLOWERGEN] background missing-flower scan starting');
-    try {
-      await window.__LLFlowerAssetGenRun_();
-      dbg('[FLOWERGEN] background missing-flower scan finished');
-    } catch (err){
-      dbg('[FLOWERGEN] background missing-flower scan failed :: ' + String(err && err.message || err));
-    }
+    Promise.resolve()
+      .then(function(){ return window.__LLFlowerAssetGenRun_(); })
+      .then(function(){
+        dbg('[FLOWERGEN] background missing-flower scan finished');
+      })
+      .catch(function(err){
+        dbg('[FLOWERGEN] background missing-flower scan failed :: ' + String(err && err.message || err));
+      });
+    return true;
   }
 
   function arm(){
-    // wait a bit after the garden is visibly up, then poll readiness
     setTimeout(function(){
-      var attempts = 0;
+      maybeStart();
       var timer = setInterval(function(){
-        attempts++;
-        tryStart();
-        if (started || attempts >= 30) clearInterval(timer);
-      }, 2000);
-    }, 5000);
+        if (maybeStart() || attempts >= 20) clearInterval(timer);
+      }, 3000);
+    }, 8000);
   }
+
+  // Also try again right after export application / rebuild cycle
+  try{
+    var prevApplyExport = window.applyExport;
+    if (typeof prevApplyExport === 'function' && !window.__llFlowerGenApplyExportWrapped) {
+      window.applyExport = function(){
+        var out = prevApplyExport.apply(this, arguments);
+        setTimeout(function(){
+          dbg('[FLOWERGEN] export applied, retrying background scan');
+          maybeStart();
+        }, 1500);
+        return out;
+      };
+      window.__llFlowerGenApplyExportWrapped = true;
+    }
+  }catch(_e){}
 
   if (document.readyState === 'loading'){
     document.addEventListener('DOMContentLoaded', arm, { once:true });
   } else {
     arm();
   }
-  window.addEventListener('load', arm, { once:true });
+  window.addEventListener('load', function(){
+    dbg('[FLOWERGEN] window.load observed, background scan armed');
+  }, { once:true });
 })();
 </script>
+
 
 <script>
 (function(){
