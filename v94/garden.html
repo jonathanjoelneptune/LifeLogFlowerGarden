@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.1.31.10.9.8.8_BackHillMediumTexturePass.html</title>
+<title>garden_v100.1.31.10.9.8.11_BackgroundMissingFlowerGen_DebugLog.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -2568,7 +2568,7 @@ body.llHitboxOn .flowerSvgHitProxy .flowerSvg .hsCore{
 
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.1.31.10.9.8.8_BackHillMediumTexturePass • Built: 2026-04-06T00:00:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.1.31.10.9.8.11_BackgroundMissingFlowerGen_DebugLog • Built: 2026-04-06T00:00:00Z UTC</div>
 
 
 <script>
@@ -2582,7 +2582,7 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v100.1.31.10.9.8.8_BackHillMediumTexturePass.html</span><br>
+File: <span id="__bannerFileName">garden_v100.1.31.10.9.8.11_BackgroundMissingFlowerGen_DebugLog.html</span><br>
 Version: <span id="__bannerVersion">v100.1.24_PerformanceHUD_AllWarm_NoDespawn</span><br>
 Created: 2026-04-05 12:35 AM PT</span></div>
 <script>
@@ -12903,6 +12903,77 @@ try { setTimeout(function(){ try { warmAllFlowerAssetsFromExport_(); } catch(_e)
 })();
 </script>
 
+<script id="llBackgroundMissingFlowerGen_v100131109811">
+(function(){
+  var started = false;
+
+  function dbg(msg){
+    try { if (typeof appendDebugLog_ === 'function') appendDebugLog_(msg); } catch(_e){}
+  }
+
+  function hasSecret(){
+    try {
+      return !!String(window.__FLOWER_ASSET_SECRET__ || localStorage.getItem('FLOWER_ASSET_SECRET') || '').trim();
+    } catch(_e) {
+      return false;
+    }
+  }
+
+  function exportReady(){
+    try {
+      var ex = window.__LL_EXPORT || null;
+      if (ex && ex.byDate && typeof ex.byDate.forEach === 'function') return true;
+    } catch(_e){}
+    return false;
+  }
+
+  function flowersLikelyLoaded(){
+    try {
+      return document.querySelectorAll('.flowerWrap').length > 0;
+    } catch(_e){
+      return false;
+    }
+  }
+
+  async function tryStart(){
+    if (started) return;
+    if (window.__LLFlowerAssetGenIsGenMode_ && window.__LLFlowerAssetGenIsGenMode_()) return;
+    if (!hasSecret()) return;
+    if (!exportReady()) return;
+    if (!flowersLikelyLoaded()) return;
+    if (typeof window.__LLFlowerAssetGenRun_ !== 'function') return;
+
+    started = true;
+    dbg('[FLOWERGEN] background missing-flower scan starting');
+    try {
+      await window.__LLFlowerAssetGenRun_();
+      dbg('[FLOWERGEN] background missing-flower scan finished');
+    } catch (err){
+      dbg('[FLOWERGEN] background missing-flower scan failed :: ' + String(err && err.message || err));
+    }
+  }
+
+  function arm(){
+    // wait a bit after the garden is visibly up, then poll readiness
+    setTimeout(function(){
+      var attempts = 0;
+      var timer = setInterval(function(){
+        attempts++;
+        tryStart();
+        if (started || attempts >= 30) clearInterval(timer);
+      }, 2000);
+    }, 5000);
+  }
+
+  if (document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', arm, { once:true });
+  } else {
+    arm();
+  }
+  window.addEventListener('load', arm, { once:true });
+})();
+</script>
+
 <script>
 (function(){
   try {
@@ -12929,7 +13000,7 @@ try { setTimeout(function(){ try { warmAllFlowerAssetsFromExport_(); } catch(_e)
   function isGenMode(){
     try { return new URLSearchParams(location.search).get('flowerAssetGen') === '1'; } catch (e) { return false; }
   }
-  if (!isGenMode()) return;
+  var GEN_MODE = isGenMode();
 
   var RELAY_URL = String(window.__FLOWER_ASSET_RELAY_URL__ || localStorage.getItem('FLOWER_ASSET_RELAY_URL') || 'https://flower-assets-relay-501002014766.us-central1.run.app').trim().replace(/\/$/, '');
   var SECRET = String(window.__FLOWER_ASSET_SECRET__ || localStorage.getItem('FLOWER_ASSET_SECRET') || 'inthemiddleofthenight').trim();
@@ -12974,9 +13045,14 @@ try { setTimeout(function(){ try { warmAllFlowerAssetsFromExport_(); } catch(_e)
   }
 
   function log(msg){
-    var el = document.getElementById('fagLog');
-    if (!el) return;
-    el.textContent = String(msg) + '\n' + el.textContent;
+    var s = String(msg);
+    try {
+      var el = document.getElementById('fagLog');
+      if (el) el.textContent = s + '\n' + el.textContent;
+    } catch(_e){}
+    try {
+      if (typeof appendDebugLog_ === 'function') appendDebugLog_(s);
+    } catch(_e){}
   }
   function setStatus(msg){
     var el = document.getElementById('fagStatus');
@@ -13278,6 +13354,7 @@ try { setTimeout(function(){ try { warmAllFlowerAssetsFromExport_(); } catch(_e)
     var skippedExisting = all.length - missing.length;
     setStatus('Missing historical flowers: ' + missing.length);
     log('Historical days: ' + all.length + ' | Existing/skipped: ' + skippedExisting + ' | Missing: ' + missing.length);
+    try { if (typeof appendDebugLog_ === 'function') appendDebugLog_('[FLOWERGEN] missing historical flowers=' + missing.length); } catch(_e) {}
     for (var i = 0; i < missing.length; i++) {
       if (stopRequested) break;
       var day = missing[i];
@@ -13285,30 +13362,39 @@ try { setTimeout(function(){ try { warmAllFlowerAssetsFromExport_(); } catch(_e)
       try {
         await upsertDayAsset_(day);
         log('OK ' + day.dateKey);
+        try { if (typeof appendDebugLog_ === 'function') appendDebugLog_('[FLOWERGEN] generated ' + day.dateKey); } catch(_e) {}
       } catch (err) {
-        log('ERROR ' + day.dateKey + ' :: ' + String(err && err.message || err));
+        var emsg = String(err && err.message || err);
+        log('ERROR ' + day.dateKey + ' :: ' + emsg);
+        try { if (typeof appendDebugLog_ === 'function') appendDebugLog_('[FLOWERGEN] failed ' + day.dateKey + ' :: ' + emsg); } catch(_e) {}
       }
     }
     setStatus(stopRequested ? 'Stopped.' : 'Done.');
   }
 
-  mkPanel();
-  document.getElementById('fagSaveSecret').addEventListener('click', function(){
-    SECRET = String(document.getElementById('fagSecret').value || '').trim();
-    if (SECRET) {
-      RELAY_URL = String(document.getElementById('fagRelay').value || '').trim().replace(/\/$/, '');
-      localStorage.setItem('FLOWER_ASSET_SECRET', SECRET);
-      localStorage.setItem('FLOWER_ASSET_RELAY_URL', RELAY_URL);
-      document.getElementById('fagRelayReadout').textContent = RELAY_URL;
-      setStatus('Secret and relay saved in localStorage for this browser.');
-    } else {
-      localStorage.removeItem('FLOWER_ASSET_SECRET');
-      localStorage.removeItem('FLOWER_ASSET_RELAY_URL');
-      setStatus('Secret and relay cleared.');
-    }
-  });
-  document.getElementById('fagRun').addEventListener('click', function(){ runGenerator_().catch(function(err){ log('ERROR ' + err.message); setStatus('Failed.'); }); });
-  document.getElementById('fagReset').addEventListener('click', function(){ resetGeneratorAssets_().catch(function(err){ log('ERROR ' + err.message); setStatus('Reset failed.'); }); });
+  window.__LLFlowerAssetGenRun_ = runGenerator_;
+  window.__LLFlowerAssetGenReset_ = resetGeneratorAssets_;
+  window.__LLFlowerAssetGenIsGenMode_ = function(){ return GEN_MODE; };
+
+  if (GEN_MODE) {
+    mkPanel();
+    document.getElementById('fagSaveSecret').addEventListener('click', function(){
+      SECRET = String(document.getElementById('fagSecret').value || '').trim();
+      if (SECRET) {
+        RELAY_URL = String(document.getElementById('fagRelay').value || '').trim().replace(/\/$/, '');
+        localStorage.setItem('FLOWER_ASSET_SECRET', SECRET);
+        localStorage.setItem('FLOWER_ASSET_RELAY_URL', RELAY_URL);
+        document.getElementById('fagRelayReadout').textContent = RELAY_URL;
+        setStatus('Secret and relay saved in localStorage for this browser.');
+      } else {
+        localStorage.removeItem('FLOWER_ASSET_SECRET');
+        localStorage.removeItem('FLOWER_ASSET_RELAY_URL');
+        setStatus('Secret and relay cleared.');
+      }
+    });
+    document.getElementById('fagRun').addEventListener('click', function(){ runGenerator_().catch(function(err){ log('ERROR ' + err.message); setStatus('Failed.'); }); });
+    document.getElementById('fagReset').addEventListener('click', function(){ resetGeneratorAssets_().catch(function(err){ log('ERROR ' + err.message); setStatus('Reset failed.'); }); });
+  }
   document.getElementById('fagStop').addEventListener('click', function(){ stopRequested = true; });
 })();
 </script>
