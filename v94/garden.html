@@ -19,10 +19,11 @@
 
 
 
+
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v100.1.31_CleanState_AnchorRows_DeadLogicRemoved
+  v100.1.32_DayThemesFillStyles_SvgDevMode
     + Replace live row-position solving with anchor-state row transforms
     + Add cached row anchor table for front rows, crest handoff, future rows, and hill triplet rows
     + Replace dynamic back-row slot spreading with fixed lane layouts (left / center / right)
@@ -70,6 +71,24 @@
 
 // v99.3.28_TodayPoll_ApplyUpdateAndDebug: export usage flag (global)
 var usingExport = false;
+
+// Developer render mode override: ?svgmode=1 or ?rendermode=svg forces SVG flowers even when PNGs exist.
+window.__LL_DEV_RENDER_MODE__ = (function(){
+  try{
+    const qs = new URLSearchParams(location.search || '');
+    const explicit = String(qs.get('rendermode') || qs.get('flowermode') || '').trim().toLowerCase();
+    if (explicit === 'svg' || explicit === 'png' || explicit === 'auto') return explicit;
+    const svgFlag = String(qs.get('svgmode') || qs.get('svg') || '').trim().toLowerCase();
+    if (svgFlag === '1' || svgFlag === 'true' || svgFlag === 'yes' || svgFlag === 'on') return 'svg';
+    const pngFlag = String(qs.get('pngmode') || '').trim().toLowerCase();
+    if (pngFlag === '1' || pngFlag === 'true' || pngFlag === 'yes' || pngFlag === 'on') return 'png';
+  }catch(e){}
+  return 'auto';
+})();
+function flowerRenderModeIsSvg_(){
+  try { return String(window.__LL_DEV_RENDER_MODE__ || 'auto').toLowerCase() === 'svg'; } catch(e) {}
+  return false;
+}
 
 // v99.3.28_TodayPoll_ApplyUpdateAndDebug: Back-hill system hard-disabled (keep hill silhouette only).
 // Disables: back hill guides, envelope grid, back hill flowers/PNGs, and all back-hill scroll/overlay logic.
@@ -327,7 +346,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.1.31.10.9.8.11.2_BackgroundMissingFlowerGen_ForcedStart_DebugTrim.html</title>
+<title>garden_v100.1.32.0_DayThemesFillStyles_SvgDevMode.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -4474,6 +4493,48 @@ function tuftSvg(uid, weekLevel, size=1.0){
 // ============================================
 // Flower SVG Generation
 // ============================================
+function normalizeFillStyle_(style){
+  const s = String(style || '').trim().toLowerCase();
+  if (!s) return '';
+  if (s === 'alternating' || s === 'alternatingpetals') return 'alternating_petals';
+  if (s === 'ringsplit' || s === 'ring-split' || s === 'ring split') return 'ring_split';
+  if (s === 'centerout' || s === 'center-out' || s === 'center out') return 'center_out';
+  if (s === 'tipaccent' || s === 'tip-accent' || s === 'tip accent') return 'tip_accent';
+  if (s === 'mosaic4' || s === 'mosaic_4' || s === 'four_color_mosaic') return 'petal_mosaic';
+  return s;
+}
+
+function resolveFlowerFillSpec_(day){
+  const level = Number(day && day.level) || 1;
+  const uid = String(day && day.uid || '');
+  const dateKey = String(day && day.dateKey || '');
+  const rr = mulberry32(hash32FromString('fillstyle_' + uid + '_' + dateKey + '_L' + level));
+
+  const styleRaw = normalizeFillStyle_(day && day.fillStyle);
+  const variantRaw = String(day && day.fillVariant || '').trim().toLowerCase();
+  let style = styleRaw;
+  let variant = variantRaw;
+
+  if (!style) {
+    const roll = rr();
+    if (roll < 0.28) style = 'alternating_petals';
+    else if (roll < 0.53) style = 'ring_split';
+    else if (roll < 0.76) style = 'center_out';
+    else if (roll < 0.92) style = 'tip_accent';
+    else style = 'petal_mosaic';
+  }
+
+  if (!variant) {
+    if (style === 'center_out') variant = (rr() < 0.5) ? 'outer_primary' : 'outer_secondary';
+    else if (style === 'ring_split') variant = (rr() < 0.5) ? 'warm_outer' : 'cool_outer';
+    else if (style === 'tip_accent') variant = (rr() < 0.5) ? 'primary_body' : 'secondary_body';
+    else if (style === 'alternating_petals') variant = (rr() < 0.5) ? 'primary_first' : 'secondary_first';
+    else variant = 'default';
+  }
+
+  return { style, variant, themeVersion: String(day && day.themeVersion || '') };
+}
+
 function flowerSvg(day){
   const { level, primary, secondary, month, uid, stemCore, stemHi, stemEdge } = day;
   const dateKey = day.dateKey || fmtDateKey(day.dateObj);
@@ -4482,12 +4543,16 @@ function flowerSvg(day){
   const mirror = (level === 4 || level === 5) ? (rMirror() < 0.5 ? -1 : 1) : 1;
 
   
-  // --- v99.3.28_TodayPoll_ApplyUpdateAndDebug: 4-color deterministic petal system ---
-  // C1: Primary, C2: Secondary, C3: Primary-dominant blend (80/20), C4: Secondary-dominant blend (20/80)
+  // --- DayThemes fill-style aware petal system ---
+  const fillSpec = resolveFlowerFillSpec_(day);
+  const fillStyle = fillSpec.style;
+  const fillVariant = fillSpec.variant;
+
+  // C1 primary, C2 secondary, C3/C4 blended support colors
   const C1 = primary;
   const C2 = secondary;
-  const C3 = mixHex(primary, secondary, 0.30); // primary-dominant 70/30
-  const C4 = mixHex(primary, secondary, 0.70); // secondary-dominant 30/70
+  const C3 = mixHex(primary, secondary, 0.30);
+  const C4 = mixHex(primary, secondary, 0.70);
   const PETAL_COLORS = [C1, C2, C3, C4];
   const PETAL_W = [0.35, 0.35, 0.15, 0.15];
 
@@ -4502,44 +4567,50 @@ function flowerSvg(day){
     if (nn <= 0) return [];
     const r = mulberry32(hash32FromString(seedKey));
     const out = new Array(nn);
-
-    // Small-N readability rules
-    if (nn === 1) { out[0] = 0; return out; }                // C1
-    if (nn === 2) { out[0] = 0; out[1] = 1;                  // C1, C2
-      if (r() < 0.5) { const t = out[0]; out[0] = out[1]; out[1] = t; }
-      return out;
-    }
-    if (nn === 3) { out[0] = 0; out[1] = 1; out[2] = (r() < 0.5) ? 2 : 3; return out; } // C1,C2,blend
-    if (nn === 4) { out[0] = 0; out[1] = 1; out[2] = 2; out[3] = 3;                    // all four
-      // deterministic shuffle
-      for (let i=nn-1;i>0;i--){
-        const j = Math.floor(r() * (i+1));
-        const tmp = out[i]; out[i] = out[j]; out[j] = tmp;
-      }
-      return out;
-    }
-
-    // General case: weighted fills, approximate distribution, guaranteed at least one C1 and one C2
+    if (nn === 1) { out[0] = 0; return out; }
+    if (nn === 2) { out[0] = 0; out[1] = 1; if (r() < 0.5) { const t = out[0]; out[0] = out[1]; out[1] = t; } return out; }
+    if (nn === 3) { out[0] = 0; out[1] = 1; out[2] = (r() < 0.5) ? 2 : 3; return out; }
+    if (nn === 4) { out[0] = 0; out[1] = 1; out[2] = 2; out[3] = 3; for (let i=nn-1;i>0;i--){ const j = Math.floor(r() * (i+1)); const tmp = out[i]; out[i] = out[j]; out[j] = tmp; } return out; }
     for (let i=0;i<nn;i++) out[i] = pickWeightedIndex_(r);
-
-    // Force at least one C1 and one C2
     const i1 = Math.floor(r() * nn);
     let i2 = Math.floor(r() * nn);
     if (i2 === i1) i2 = (i1 + 1 + Math.floor(r() * (nn-1))) % nn;
-    out[i1] = 0; // C1
-    out[i2] = 1; // C2
-
+    out[i1] = 0;
+    out[i2] = 1;
     return out;
   }
 
-  // Deterministic per-flower (date+level+uid) petal maps
   const petalSeedBase = `petals_${uid}_${dateKey}_L${level}`;
-  const petalMapOuter = buildPetalColorList_(9999, petalSeedBase + "_outer"); // we slice to length later
+  const petalMapOuter = buildPetalColorList_(9999, petalSeedBase + "_outer");
   const petalMapInner = buildPetalColorList_(9999, petalSeedBase + "_inner");
 
   function petalFill_(map, i){
     const idx = map[i % map.length] || 0;
     return PETAL_COLORS[idx] || C1;
+  }
+
+  function petalPlan_(ring, i, n){
+    const outer = (ring === 'outer');
+    if (fillStyle === 'alternating_petals') {
+      const primaryFirst = (fillVariant !== 'secondary_first');
+      const evenColor = primaryFirst ? (outer ? C1 : C3) : (outer ? C2 : C4);
+      const oddColor  = primaryFirst ? (outer ? C2 : C4) : (outer ? C1 : C3);
+      return { fill: (i % 2 === 0) ? evenColor : oddColor, accent: null };
+    }
+    if (fillStyle === 'ring_split') {
+      const warmOuter = (fillVariant !== 'cool_outer');
+      if (outer) return { fill: (i % 2 === 0) ? (warmOuter ? C1 : C2) : (warmOuter ? C3 : C4), accent: null };
+      return { fill: (i % 2 === 0) ? (warmOuter ? C2 : C1) : (warmOuter ? C4 : C3), accent: null };
+    }
+    if (fillStyle === 'center_out') {
+      const outerPrimary = (fillVariant !== 'outer_secondary');
+      return { fill: outer ? (outerPrimary ? ((i % 3 === 0) ? C3 : C1) : ((i % 3 === 0) ? C4 : C2)) : (outerPrimary ? ((i % 2 === 0) ? C2 : C4) : ((i % 2 === 0) ? C1 : C3)), accent: null };
+    }
+    if (fillStyle === 'tip_accent') {
+      const primaryBody = (fillVariant !== 'secondary_body');
+      return { fill: outer ? (primaryBody ? C1 : C2) : (primaryBody ? C3 : C4), accent: outer ? (primaryBody ? C2 : C1) : (primaryBody ? C4 : C3) };
+    }
+    return { fill: petalFill_(outer ? petalMapOuter : petalMapInner, i), accent: null };
   }
 const monthC = (MONTH_COLORS[month] || "#C7D4E2");
   // Slight tint toward the day's colors for cohesion
@@ -4571,6 +4642,14 @@ const monthC = (MONTH_COLORS[month] || "#C7D4E2");
     `;
   };
 
+  const petalAccentEllipse = (cx, cy, rx, ry, rotDeg, fill) => {
+    const acx = cx;
+    const acy = cy - (ry * 0.56);
+    return `
+      <ellipse class="petalHi" cx="${acx.toFixed(2)}" cy="${acy.toFixed(2)}" rx="${(rx * 0.54).toFixed(2)}" ry="${(ry * 0.30).toFixed(2)}" transform="rotate(${rotDeg} ${cx} ${cy})"
+        fill="${fill}" opacity="0.86" stroke="rgba(255,255,255,0.16)" stroke-width="1.0"/>
+    `;
+  };
 
   const leafPathEl = (d, fill) =>
     `<path d="${d}" fill="${fill}" stroke="var(--strokeLeaf)" stroke-width="1.7" stroke-linejoin="round"/>`;
@@ -4611,21 +4690,22 @@ const monthC = (MONTH_COLORS[month] || "#C7D4E2");
   }
 
   function head(scale, diskR, yHead, outerN, innerN){
-    // Full-circle classic coloring: stable, symmetric rings (no per-petal stagger)
     let petals = "";
     const rxO = diskR * 0.30, ryO = diskR * 2.05;
     for (let i=0;i<outerN;i++){
       const a = i*(360/outerN);
-      const fill = (i % 2 === 0) ? C1 : C3;
-      petals += petalEllipse(0,yHead,rxO,ryO,a,fill);
+      const plan = petalPlan_('outer', i, outerN);
+      petals += petalEllipse(0, yHead, rxO, ryO, a, plan.fill);
+      if (plan.accent) petals += petalAccentEllipse(0, yHead, rxO, ryO, a, plan.accent);
     }
 
     let inner = "";
     const rxI = diskR * 0.22, ryI = diskR * 1.55;
     for (let i=0;i<innerN;i++){
       const a = i*(360/innerN) + 12;
-      const fill = (i % 2 === 0) ? C2 : C4;
-      inner += petalEllipse(0,yHead+3,rxI,ryI,a,fill,0.40);
+      const plan = petalPlan_('inner', i, innerN);
+      inner += petalEllipse(0, yHead+3, rxI, ryI, a, plan.fill, 0.40);
+      if (plan.accent) inner += petalAccentEllipse(0, yHead+3, rxI, ryI, a, plan.accent);
     }
 
     return `<g transform="scale(${scale.toFixed(3)})">
@@ -4888,6 +4968,9 @@ const days = [];
     let flowerAssetImageUrl = "";
     let flowerAssetStemBaseX = "";
     let flowerAssetStemBaseY = "";
+    let fillStyle = "";
+    let fillVariant = "";
+    let themeVersion = "";
 
     // v99.3.28_TodayPoll_ApplyUpdateAndDebug: Lifetime metrics per-day (from GardenExport JSON)
     let streakIndex = "";
@@ -4960,6 +5043,9 @@ const days = [];
       flowerAssetImageUrl = getFieldCI_(exportRow, ["ImageUrl"]) || "";
       flowerAssetStemBaseX = getFieldCI_(exportRow, ["StemBaseX"]) || "";
       flowerAssetStemBaseY = getFieldCI_(exportRow, ["StemBaseY"]) || "";
+      fillStyle = getFieldCI_(exportRow, ["FillStyle", "FlowerFillStyle"]) || "";
+      fillVariant = getFieldCI_(exportRow, ["FillVariant", "FlowerFillVariant"]) || "";
+      themeVersion = getFieldCI_(exportRow, ["ThemeVersion"]) || "";
 
       // Week label override (if present and not already set)
       if (!weekLevelLabel && exportRow.WeekLevelLabel != null) weekLevelLabel = String(exportRow.WeekLevelLabel);
@@ -5076,6 +5162,9 @@ const stemColors = stemColorsForMonthIndex_(monthIndex);
       flowerAssetImageUrl,
       flowerAssetStemBaseX,
       flowerAssetStemBaseY,
+      fillStyle,
+      fillVariant,
+      themeVersion,
       __hasConfirmedNoPng: !!exportRow && !String(flowerAssetDriveFileId || flowerAssetImageUrl || '').trim(),
       stemCore: stemColors.stem,
       stemDark: stemColors.stemDark,
@@ -5709,6 +5798,9 @@ function computePngAssetMetrics_(day){
 }
 
 function buildFlowerMarkupForDay_(day){
+  if (flowerRenderModeIsSvg_()) {
+    return `<div class="flowerSvgWrap">${flowerSvg(day)}</div>`;
+  }
   var pngUrl = flowerAssetRenderUrl_(day);
   if (pngUrl) {
     warmFlowerAssetUrl_(pngUrl);
