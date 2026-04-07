@@ -327,7 +327,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.1.31.10.9.8.6.3_TwoBandGrassActuallySynced_NoTufts.html</title>
+<title>garden_v100.1.31.10.9.8.7_FixStaleWeekFlash_PrepareVisibleBands.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -2550,224 +2550,9 @@ body.llHitboxOn .flowerSvgHitProxy .flowerSvg .hsCore{
 }
 </style>
 
-
-<style id="llTwoBandScrollGrassStyles_v10013110985b">
-.llStaticGrassBand{ z-index: 2; }
-.llScrollGrassBand{
-  position: absolute;
-  left: calc(-1 * var(--grassOverhang));
-  right: calc(-1 * var(--grassOverhang));
-  bottom: -2px;
-  height: calc(var(--grassBandH) - 28px);
-  pointer-events: none;
-  z-index: 1;
-  opacity: 0;
-  transform: translate3d(0px, 0px, 0px) scale(1);
-  transition:
-    transform 520ms cubic-bezier(.22,.61,.36,1),
-    opacity 520ms cubic-bezier(.22,.61,.36,1),
-    filter 520ms cubic-bezier(.22,.61,.36,1);
-  -webkit-mask-image: linear-gradient(to top,
-    rgba(0,0,0,0) 0%,
-    rgba(0,0,0,0.65) 2.5%,
-    rgba(0,0,0,1) 6%,
-    rgba(0,0,0,1) var(--grassFadeHold, 60%),
-    rgba(0,0,0,0.65) var(--grassFadeMid, 78%),
-    rgba(0,0,0,0) 100%);
-  mask-image: linear-gradient(to top,
-    rgba(0,0,0,0) 0%,
-    rgba(0,0,0,0.65) 2.5%,
-    rgba(0,0,0,1) 6%,
-    rgba(0,0,0,1) var(--grassFadeHold, 60%),
-    rgba(0,0,0,0.65) var(--grassFadeMid, 78%),
-    rgba(0,0,0,0) 100%);
-}
-.llScrollGrassBand::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  background-image: var(--grassImg), var(--grassImg);
-  background-repeat: repeat-x, repeat-x;
-  background-size: var(--grassTileW, 720px) 100%, var(--grassTileW, 720px) 100%;
-  background-position: var(--llGrassPos1, 0px) 100%, var(--llGrassPos2, calc(var(--grassTileW, 720px) * 0.5)) 100%;
-  filter: var(--grassFilter) hue-rotate(var(--fgGrassHue)) saturate(calc(var(--fgGrassSat) * 0.96)) brightness(calc(var(--fgGrassBright) * 0.92))
-    drop-shadow(0 -1px 0 rgba(0,0,0,0.36))
-    drop-shadow(0 1px 0 rgba(0,0,0,0.14))
-    drop-shadow(1px 0 0 rgba(0,0,0,0.14))
-    drop-shadow(-1px 0 0 rgba(0,0,0,0.14));
-}
-.llScrollGrassBand.isFront{
-  opacity: calc(var(--grassOpacity) * 0.28);
-  transform: translate3d(0px, 10px, 0px) scale(1);
-}
-.llScrollGrassBand.isRear{
-  opacity: calc(var(--grassOpacity) * 0.14);
-  transform: translate3d(0px, 0px, 0px) scaleX(0.93) scaleY(1.08);
-  filter: blur(0.2px);
-}
-.llScrollGrassBand.toFront{
-  opacity: calc(var(--grassOpacity) * 0.28);
-  transform: translate3d(0px, 10px, 0px) scale(1);
-}
-.llScrollGrassBand.toRear{
-  opacity: calc(var(--grassOpacity) * 0.14);
-  transform: translate3d(0px, 0px, 0px) scaleX(0.93) scaleY(1.08);
-  filter: blur(0.2px);
-}
-.llScrollGrassBand.toOffFront{
-  opacity: 0;
-  transform: translate3d(0px, 42px, 0px) scale(1.03);
-}
-.llScrollGrassBand.toOffBack{
-  opacity: 0;
-  transform: translate3d(0px, -34px, 0px) scale(0.88);
-}
-</style>
-
-
-
-
-
-<style id="llSyncGrassToRowAnim_v100131109862">
-/* Keep front-most static grass hidden for this debug/viewing build */
-#frontGrass,
-.frontGrass,
-#llStaticGrassBand,
-.llStaticGrassBand{
-  display: none !important;
-  opacity: 0 !important;
-  visibility: hidden !important;
-}
-
-/* Make the two scrolling illusion bands fully opaque and visible */
-#llScrollGrassA,
-#llScrollGrassB,
-.llScrollGrassBand{
-  z-index: 6 !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-  transition-property: transform, opacity !important;
-  transition-duration: var(--rowTransitionMs, 460ms) !important;
-  transition-timing-function: cubic-bezier(.22,.72,.18,1) !important;
-  will-change: transform, opacity !important;
-}
-.llScrollGrassBand.isFront,
-.llScrollGrassBand.toFront,
-.llScrollGrassBand.isRear,
-.llScrollGrassBand.toRear{
-  opacity: 1 !important;
-}
-
-/* If the row animation is using movement classes, keep the grass on that same cadence */
-body.rowAnimating #llScrollGrassA,
-body.rowAnimating #llScrollGrassB,
-body.rowAnimating .llScrollGrassBand,
-body.isRowAnimating #llScrollGrassA,
-body.isRowAnimating #llScrollGrassB,
-body.isRowAnimating .llScrollGrassBand,
-body.row-transitioning #llScrollGrassA,
-body.row-transitioning #llScrollGrassB,
-body.row-transitioning .llScrollGrassBand{
-  transition-duration: var(--rowTransitionMs, 460ms) !important;
-}
-
-/* Guard against any fade styling from the prior debug build */
-.llScrollGrassBand *{
-  opacity: 1 !important;
-}
-</style>
-<script id="llSyncGrassToRowAnimScript_v100131109862">
-(function(){
-  function syncGrassToRowAnimation(){
-    try{
-      var root = document.documentElement;
-      var body = document.body;
-      var ms = 460;
-
-      // Prefer explicit row timing vars if present in the file
-      var candidates = [
-        '--rowTransitionMs',
-        '--rowAnimMs',
-        '--weekTransitionMs',
-        '--bandTransitionMs'
-      ];
-      for (var i=0; i<candidates.length; i++){
-        var v = getComputedStyle(root).getPropertyValue(candidates[i]).trim();
-        if (v){
-          var n = parseFloat(v);
-          if (isFinite(n) && n > 0){ ms = n; break; }
-        }
-      }
-      root.style.setProperty('--rowTransitionMs', String(ms) + 'ms');
-
-      // Monkey-patch the existing row-settle hook so grass transition starts immediately with row anim
-      if (!window.__llGrassSyncWrapped && typeof window.startRowChange_ === 'function'){
-        var orig = window.startRowChange_;
-        window.startRowChange_ = function(){
-          try{
-            if (body) {
-              body.classList.add('rowAnimating');
-              body.classList.add('isRowAnimating');
-              body.classList.add('row-transitioning');
-            }
-            var a = document.getElementById('llScrollGrassA');
-            var b = document.getElementById('llScrollGrassB');
-            if (a) a.style.transitionDuration = ms + 'ms';
-            if (b) b.style.transitionDuration = ms + 'ms';
-          }catch(e){}
-          return orig.apply(this, arguments);
-        };
-        window.__llGrassSyncWrapped = true;
-      }
-
-      // Also watch for any generic transition-complete and clear our body classes
-      if (!window.__llGrassSyncEndHook){
-        var clear = function(){
-          try{
-            if (body){
-              body.classList.remove('rowAnimating');
-              body.classList.remove('isRowAnimating');
-              body.classList.remove('row-transitioning');
-            }
-          }catch(e){}
-        };
-        window.addEventListener('transitionend', function(ev){
-          try{
-            var t = ev && ev.target;
-            if (t && ((t.classList && (t.classList.contains('weekBand') || t.classList.contains('weekWrap'))) || (t.dataset && t.dataset.weekIndex != null))){
-              clear();
-            }
-          }catch(e){}
-        }, true);
-        window.__llGrassSyncEndHook = true;
-      }
-    }catch(e){}
-  }
-
-  if (document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', syncGrassToRowAnimation, {once:true});
-  } else {
-    syncGrassToRowAnimation();
-  }
-  window.addEventListener('load', syncGrassToRowAnimation);
-})();
-</script>
-
-
-<style id="llHideLegacyGrassTufts_v100131109863">
-/* Hide old row grass / tufts that were revealing the true row timing */
-.grassBand:not(.llScrollGrassBand),
-.grassBand:not(.llScrollGrassBand)::before,
-.grassBand:not(.llScrollGrassBand) .tuft,
-.tuft{
-  opacity: 0 !important;
-  visibility: hidden !important;
-}
-</style>
-
 </head>
 <body class="">
-  <div id="llPinkBanner">garden_v100.1.31.10.9.8.6.3_TwoBandGrassActuallySynced_NoTufts • Built: 2026-04-06T00:00:00Z UTC</div>
+  <div id="llPinkBanner">garden_v100.1.31.10.9.8.7_FixStaleWeekFlash_PrepareVisibleBands • Built: 2026-04-06T00:00:00Z UTC</div>
 
 
 <script>
@@ -2781,7 +2566,7 @@ window.__DISABLE_LEGACY_BACKROWS = true;
 
 </style>
 <div id="__versionBanner">LifeLog Garden Walk<br>
-File: <span id="__bannerFileName">garden_v100.1.31.10.9.8.6.3_TwoBandGrassActuallySynced_NoTufts.html</span><br>
+File: <span id="__bannerFileName">garden_v100.1.31.10.9.8.7_FixStaleWeekFlash_PrepareVisibleBands.html</span><br>
 Version: <span id="__bannerVersion">v100.1.24_PerformanceHUD_AllWarm_NoDespawn</span><br>
 Created: 2026-04-05 12:35 AM PT</span></div>
 <script>
@@ -5304,8 +5089,17 @@ function __llCommitWeekNav_(nextIdx, opts){
   const prev = __rt.nav.targetIndex|0;
   const next = __llClampWeekIndex_(nextIdx);
   __rt.nav.targetIndex = next;
+  if (prev !== next && !opts.snap){
+    __llRowTransitionActive = true;
+    try{
+      if (typeof syncRenderedWeeks_ === 'function'){
+        syncRenderedWeeks_(next, false);
+      }
+    }catch(e){}
+  }
   if (opts.snap){
     __rt.nav.currentOffset = next;
+    __llRowTransitionActive = false;
   }
   if (next === 0 && prev > 0 && opts.triggerCue !== false){
     try{ triggerEpochClampCue_(opts.reason || 'nav:epoch'); }catch(e){}
@@ -5409,9 +5203,8 @@ function buildBands(){
   if (!weeksStack || !grassStack) return;
 
   weeksStack.innerHTML = "";
-  const hazeHtml = '<div class="grassHaze" id="grassHaze"></div><div class="llScrollGrassBand" id="llScrollGrassA"></div><div class="llScrollGrassBand" id="llScrollGrassB"></div><div class="grassBand llStaticGrassBand" id="llStaticGrassBand"></div>';
+  const hazeHtml = '<div class="grassHaze" id="grassHaze"></div><div class="grassBand llStaticGrassBand" id="llStaticGrassBand"></div>';
   grassStack.innerHTML = hazeHtml;
-  try{ initScrollGrassBands_(); }catch(e){}
 
   bands.length = 0;
   grassBands.length = 0;
@@ -5438,6 +5231,48 @@ const __llPrewarmSet = new Set();
 const __LL_PREWARM_PAST = 7;
 const __LL_PREWARM_FUTURE = 7;
 
+let __llRowTransitionActive = false;
+
+function invalidateBandRender_(band, reason){
+  try{
+    if (!band) return;
+    band.dataset.rendered = "false";
+    band.dataset.renderValid = "false";
+    band.dataset.contentWeekIndex = "";
+    band.dataset.contentSignature = "";
+    band.dataset.pendingReason = String(reason || "");
+    band.style.opacity = "0.000";
+    band.style.visibility = "hidden";
+    band.textContent = "";
+  }catch(e){}
+}
+
+function markBandRenderValid_(band){
+  try{
+    if (!band) return;
+    band.dataset.rendered = "true";
+    band.dataset.renderValid = "true";
+    band.dataset.contentWeekIndex = String(band._weekIdx|0);
+    band.dataset.contentSignature = String((band._weekIdx|0)) + ":" + String((band._weekData && band._weekData.weekMon) || "");
+    band.dataset.pendingReason = "";
+  }catch(e){}
+}
+
+function isBandRenderValidForWeek_(band, weekIdx){
+  try{
+    if (!band) return false;
+    if (String(band.dataset.rendered) !== "true") return false;
+    if (String(band.dataset.renderValid) !== "true") return false;
+    if (String(band.dataset.contentWeekIndex || "") !== String(weekIdx|0)) return false;
+    if ((band._weekIdx|0) !== (weekIdx|0)) return false;
+    const childCount = band.children ? band.children.length : 0;
+    if (childCount < 7) return false;
+    return true;
+  }catch(e){}
+  return false;
+}
+
+
 function queuePrewarmWeek_(weekIdx){
   const wi = weekIdx|0;
   if (wi < 0 || __llRenderedWeeks.has(wi)) return;
@@ -5446,6 +5281,7 @@ function queuePrewarmWeek_(weekIdx){
   __llPrewarmQueue.push(wi);
 }
 function pumpPrewarmQueue_(){
+  if (__llRowTransitionActive) return;
   if (!__llPrewarmQueue.length) return;
   const wi = __llPrewarmQueue.shift();
   __llPrewarmSet.delete(wi);
@@ -5453,7 +5289,10 @@ function pumpPrewarmQueue_(){
   try{ ensureWeekNodes_(wi); }catch(e){}
   try{
     const rec = __llRenderedWeeks.get(wi);
-    if (rec && rec.band && rec.band.dataset.rendered !== 'true') renderBandFlowers(rec.band);
+    if (rec && rec.band && !isBandRenderValidForWeek_(rec.band, wi)) {
+      invalidateBandRender_(rec.band, 'prewarm');
+      renderBandFlowers(rec.band);
+    }
   }catch(e){}
 }
 function queuePrewarmWindow_(focusWeekIndex){
@@ -5474,6 +5313,10 @@ function ensureWeekNodes_(weekIdx){
   band.className = "weekBand weekWrap";
   band.dataset.weekIndex = String(weekIdx);
   band.dataset.rendered = "false";
+  band.dataset.renderValid = "false";
+  band.dataset.contentWeekIndex = "";
+  band.style.opacity = "0.000";
+  band.style.visibility = "hidden";
   band._weekData = week;
   band._weekIdx = weekIdx;
 
@@ -5579,13 +5422,16 @@ if(window.__llForceTodayAfterExport_ && fullRebuild){
     ensureWeekNodes_(wi);
     const rec = __llRenderedWeeks.get(wi);
     if (rec && rec.band){
+      rec.band._weekIdx = wi;
+      rec.band._weekData = weekModelForIndex_(wi);
+      rec.band.dataset.weekIndex = String(wi);
+      const visibleSoon = Math.abs((wi|0) - (focusWeekIndex|0)) <= (FRONT_VISIBLE_WEEKS + 2);
       if (!existed) created.push(rec.band);
       if (fullRebuild){
-        rec.band.dataset.rendered = '';
-        rec.band.textContent = '';
-        rec.band._weekData = weekModelForIndex_(wi);
+        invalidateBandRender_(rec.band, 'fullRebuild');
         rerender.push(rec.band);
-      } else if (rec.band.dataset.rendered !== "true") {
+      } else if (!isBandRenderValidForWeek_(rec.band, wi) || visibleSoon) {
+        if (!isBandRenderValidForWeek_(rec.band, wi)) invalidateBandRender_(rec.band, 'windowSync');
         rerender.push(rec.band);
       }
     }
@@ -5887,11 +5733,14 @@ function requestFlowerAssetCountRefresh_(){
 }
 
 function renderBandFlowers(band){
-  if (!band || band.dataset.rendered === "true") return;
+  if (!band) return;
 
   const week = band._weekData;
   const weekIdx = band._weekIdx;
   if (!week) return;
+  if (isBandRenderValidForWeek_(band, weekIdx)) return;
+
+  invalidateBandRender_(band, 'renderStart');
 
   for (let d = 0; d < 7; d++){
     const dayData = week.days[d];
@@ -6041,7 +5890,7 @@ flowerWrapEls.push(wrap);
     band.appendChild(slot);
   }
 
-  band.dataset.rendered = "true";
+  markBandRenderValid_(band);
   requestFlowerAssetCountRefresh_();
 }
 
@@ -6594,92 +6443,6 @@ function updateCrestDebugLine_(){
 }
 
 
-
-const __llScrollGrass = {
-  a: null,
-  b: null,
-  frontEl: null,
-  rearEl: null,
-  focusIndex: null,
-  animating: false,
-  timer: 0
-};
-
-function initScrollGrassBands_(){
-  const st = __llScrollGrass;
-  st.a = document.getElementById('llScrollGrassA');
-  st.b = document.getElementById('llScrollGrassB');
-  if (!st.a || !st.b) return;
-  st.a.style.setProperty('--llGrassPos1', '0px');
-  st.a.style.setProperty('--llGrassPos2', 'calc(var(--grassTileW, 720px) * 0.5)');
-  st.b.style.setProperty('--llGrassPos1', '14px');
-  st.b.style.setProperty('--llGrassPos2', 'calc(var(--grassTileW, 720px) * 0.5 + 14px)');
-  st.frontEl = st.a;
-  st.rearEl = st.b;
-  st.focusIndex = (__rt && __rt.nav) ? (__rt.nav.targetIndex|0) : 0;
-  placeScrollGrassBand_(st.frontEl, 'front', true);
-  placeScrollGrassBand_(st.rearEl, 'rear', true);
-}
-function placeScrollGrassBand_(el, stateName, immediate){
-  if (!el) return;
-  if (immediate){
-    const old = el.style.transition;
-    el.style.transition = 'none';
-    el.classList.remove('isFront','isRear','toFront','toRear','toOffFront','toOffBack');
-    if (stateName === 'front') el.classList.add('isFront');
-    else if (stateName === 'rear') el.classList.add('isRear');
-    else if (stateName === 'offFront') el.classList.add('toOffFront');
-    else if (stateName === 'offBack') el.classList.add('toOffBack');
-    void el.offsetHeight;
-    el.style.transition = old || '';
-    return;
-  }
-  el.classList.remove('isFront','isRear');
-  if (stateName === 'front') el.classList.add('toFront');
-  else if (stateName === 'rear') el.classList.add('toRear');
-  else if (stateName === 'offFront') el.classList.add('toOffFront');
-  else if (stateName === 'offBack') el.classList.add('toOffBack');
-}
-function finalizeScrollGrassState_(el, stateName){
-  if (!el) return;
-  el.classList.remove('toFront','toRear','toOffFront','toOffBack','isFront','isRear');
-  if (stateName === 'front') el.classList.add('isFront');
-  else if (stateName === 'rear') el.classList.add('isRear');
-  else if (stateName === 'offFront') el.classList.add('toOffFront');
-  else if (stateName === 'offBack') el.classList.add('toOffBack');
-}
-function animateScrollGrassTransition_(prevIdx, nextIdx){
-  const st = __llScrollGrass;
-  if (!st.a || !st.b) initScrollGrassBands_();
-  if (!st.a || !st.b) return;
-  if (prevIdx === nextIdx) return;
-  const dir = (nextIdx|0) > (prevIdx|0) ? 1 : -1;
-  const outgoing = st.frontEl || st.a;
-  const incoming = st.rearEl || st.b;
-  if (!outgoing || !incoming) return;
-
-  if (st.timer) { try{ clearTimeout(st.timer); }catch(e){} st.timer = 0; }
-  st.animating = true;
-
-  // Start from stable anchors.
-  finalizeScrollGrassState_(outgoing, 'front');
-  finalizeScrollGrassState_(incoming, 'rear');
-  void outgoing.offsetHeight;
-
-  requestAnimationFrame(function(){
-    placeScrollGrassBand_(incoming, 'front', false);
-    placeScrollGrassBand_(outgoing, dir < 0 ? 'offFront' : 'offBack', false);
-  });
-
-  st.timer = setTimeout(function(){
-    finalizeScrollGrassState_(incoming, 'front');
-    finalizeScrollGrassState_(outgoing, 'rear');
-    st.frontEl = incoming;
-    st.rearEl = outgoing;
-    st.focusIndex = nextIdx|0;
-    st.animating = false;
-  }, 540);
-}
 function applyTransforms(tNow){
   const frontF = __rt.nav.currentOffset;
   const t = tNow * 0.001;
@@ -6698,6 +6461,7 @@ function applyTransforms(tNow){
     const prevFront = __rt.nav.lastFrontIndex;
     __llLastRowDir = (prevFront < 0) ? 0 : (frontIndexVisual > prevFront ? +1 : -1);
     __rt.nav.lastFrontIndex = frontIndexVisual;
+    __llRowTransitionActive = false;
     try{ syncRenderedWeeks_(frontIndexVisual); }catch(e){}
     try{
       if (typeof hideSkyBoxes_ === 'function') hideSkyBoxes_('row change', __llLastRowDir);
@@ -6732,6 +6496,21 @@ function applyTransforms(tNow){
 
     band.style.display = 'block';
     if (gband) gband.style.display = 'block';
+
+    const __llNearVisible = Math.abs(dist) <= (FRONT_VISIBLE_WEEKS + 1.5);
+    const __llBandReady = isBandRenderValidForWeek_(band, wi);
+    if (__llNearVisible && !__llBandReady){
+      band.style.opacity = '0.000';
+      band.style.visibility = 'hidden';
+      if (gband){
+        gband.style.opacity = '0.000';
+        gband.style.visibility = 'hidden';
+      }
+      continue;
+    } else {
+      band.style.visibility = 'visible';
+      if (gband) gband.style.visibility = 'visible';
+    }
 
     const meta = (__llBandMetaByWeekIndex && __llBandMetaByWeekIndex.get) ? (__llBandMetaByWeekIndex.get((wi|0)) || null) : null;
     const meta2 = meta || (bandMeta && bandMeta.length ? bandMeta.find(m => (m && (m.weekIndex|0) === (wi|0))) : null);
