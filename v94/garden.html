@@ -23,7 +23,7 @@
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v100.1.32_DayThemesFillStyles_SvgDevMode
+  v100.1.33_IntenseFillVariants_SvgDevMode
     + Replace live row-position solving with anchor-state row transforms
     + Add cached row anchor table for front rows, crest handoff, future rows, and hill triplet rows
     + Replace dynamic back-row slot spreading with fixed lane layouts (left / center / right)
@@ -154,7 +154,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.31_CleanState_AnchorRows_DeadLogicRemoved';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.33_IntenseFillVariants_SvgDevMode';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -282,7 +282,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 function renderBackRows(){ /* disabled */ }
 
 (function(){
-  const VERSION = 'v100.1.31_CleanState_AnchorRows_DeadLogicRemoved';
+  const VERSION = 'v100.1.33_IntenseFillVariants_SvgDevMode';
 
   // ---- Canonical version globals ----
   window.APP_VERSION = VERSION;
@@ -346,7 +346,7 @@ function renderBackRows(){ /* disabled */ }
 
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>garden_v100.1.32.0_DayThemesFillStyles_SvgDevMode.html</title>
+<title>garden_v100.1.33.0_IntenseFillVariants_SvgDevMode.html</title>
 <style>
 /* ============================================
    v99.3.28_TodayPoll_ApplyUpdateAndDebug.0: CLEANED + OPTIMIZED CSS
@@ -4591,26 +4591,62 @@ function flowerSvg(day){
 
   function petalPlan_(ring, i, n){
     const outer = (ring === 'outer');
+    const compactBloom = (level <= 2);
+    const mediumBloom = (level === 3);
+    const ringFrac = Math.max(0, Math.min(1, n > 1 ? (i / (n - 1)) : 0));
+    const centerBias = Math.abs(ringFrac - 0.5);
+    const stripeMod = compactBloom ? 2 : (mediumBloom ? 3 : 4);
+
     if (fillStyle === 'alternating_petals') {
       const primaryFirst = (fillVariant !== 'secondary_first');
-      const evenColor = primaryFirst ? (outer ? C1 : C3) : (outer ? C2 : C4);
-      const oddColor  = primaryFirst ? (outer ? C2 : C4) : (outer ? C1 : C3);
-      return { fill: (i % 2 === 0) ? evenColor : oddColor, accent: null };
+      const firstColor = primaryFirst ? C1 : C2;
+      const secondColor = primaryFirst ? C2 : C1;
+      return { fill: (i % 2 === 0) ? firstColor : secondColor, accent: null, accentScale: 0 };
     }
+
     if (fillStyle === 'ring_split') {
       const warmOuter = (fillVariant !== 'cool_outer');
-      if (outer) return { fill: (i % 2 === 0) ? (warmOuter ? C1 : C2) : (warmOuter ? C3 : C4), accent: null };
-      return { fill: (i % 2 === 0) ? (warmOuter ? C2 : C1) : (warmOuter ? C4 : C3), accent: null };
+      const outerFill = warmOuter ? C1 : C2;
+      const innerFill = warmOuter ? C2 : C1;
+      const fill = outer ? outerFill : innerFill;
+      const accent = compactBloom
+        ? (((i % stripeMod) === 0) ? (outer ? innerFill : outerFill) : null)
+        : null;
+      return { fill, accent, accentScale: compactBloom ? 0.78 : 0 };
     }
+
     if (fillStyle === 'center_out') {
       const outerPrimary = (fillVariant !== 'outer_secondary');
-      return { fill: outer ? (outerPrimary ? ((i % 3 === 0) ? C3 : C1) : ((i % 3 === 0) ? C4 : C2)) : (outerPrimary ? ((i % 2 === 0) ? C2 : C4) : ((i % 2 === 0) ? C1 : C3)), accent: null };
+      const outerBase = outerPrimary ? C1 : C2;
+      const innerBase = outerPrimary ? C2 : C1;
+      const outerShade = outerPrimary ? C3 : C4;
+      const innerShade = outerPrimary ? C4 : C3;
+      if (outer) {
+        const fill = compactBloom
+          ? (((i % stripeMod) === 0) ? outerShade : outerBase)
+          : ((centerBias > 0.28) ? outerBase : outerShade);
+        return { fill, accent: null, accentScale: 0 };
+      }
+      const fill = compactBloom
+        ? (((i % stripeMod) === 0) ? innerShade : innerBase)
+        : ((centerBias > 0.24) ? innerShade : innerBase);
+      return { fill, accent: null, accentScale: 0 };
     }
+
     if (fillStyle === 'tip_accent') {
       const primaryBody = (fillVariant !== 'secondary_body');
-      return { fill: outer ? (primaryBody ? C1 : C2) : (primaryBody ? C3 : C4), accent: outer ? (primaryBody ? C2 : C1) : (primaryBody ? C4 : C3) };
+      const bodyOuter = primaryBody ? C1 : C2;
+      const bodyInner = primaryBody ? C3 : C4;
+      const accentOuter = primaryBody ? C2 : C1;
+      const accentInner = primaryBody ? C4 : C3;
+      return {
+        fill: outer ? bodyOuter : bodyInner,
+        accent: outer ? accentOuter : accentInner,
+        accentScale: compactBloom ? 1.05 : (mediumBloom ? 0.88 : 0.74)
+      };
     }
-    return { fill: petalFill_(outer ? petalMapOuter : petalMapInner, i), accent: null };
+
+    return { fill: petalFill_(outer ? petalMapOuter : petalMapInner, i), accent: null, accentScale: 0 };
   }
 const monthC = (MONTH_COLORS[month] || "#C7D4E2");
   // Slight tint toward the day's colors for cohesion
@@ -4642,12 +4678,15 @@ const monthC = (MONTH_COLORS[month] || "#C7D4E2");
     `;
   };
 
-  const petalAccentEllipse = (cx, cy, rx, ry, rotDeg, fill) => {
+  const petalAccentEllipse = (cx, cy, rx, ry, rotDeg, fill, accentScale=1) => {
+    const scale = Math.max(0.55, Number(accentScale) || 1);
     const acx = cx;
-    const acy = cy - (ry * 0.56);
+    const acy = cy - (ry * (0.48 + 0.08 * scale));
+    const arx = rx * (0.46 + 0.18 * scale);
+    const ary = ry * (0.18 + 0.16 * scale);
     return `
-      <ellipse class="petalHi" cx="${acx.toFixed(2)}" cy="${acy.toFixed(2)}" rx="${(rx * 0.54).toFixed(2)}" ry="${(ry * 0.30).toFixed(2)}" transform="rotate(${rotDeg} ${cx} ${cy})"
-        fill="${fill}" opacity="0.86" stroke="rgba(255,255,255,0.16)" stroke-width="1.0"/>
+      <ellipse class="petalHi" cx="${acx.toFixed(2)}" cy="${acy.toFixed(2)}" rx="${arx.toFixed(2)}" ry="${ary.toFixed(2)}" transform="rotate(${rotDeg} ${cx} ${cy})"
+        fill="${fill}" opacity="${Math.min(0.94, 0.74 + (0.12 * scale)).toFixed(2)}" stroke="rgba(255,255,255,0.18)" stroke-width="${(0.95 + 0.30 * scale).toFixed(2)}"/>
     `;
   };
 
@@ -4691,21 +4730,27 @@ const monthC = (MONTH_COLORS[month] || "#C7D4E2");
 
   function head(scale, diskR, yHead, outerN, innerN){
     let petals = "";
-    const rxO = diskR * 0.30, ryO = diskR * 2.05;
+    const compactHead = diskR <= 28;
+    const mediumHead = (diskR > 28 && diskR <= 40);
+    const rxOMul = compactHead ? 0.34 : 0.30;
+    const ryOMul = compactHead ? 2.22 : (mediumHead ? 2.12 : 2.05);
+    const rxIMul = compactHead ? 0.26 : 0.22;
+    const ryIMul = compactHead ? 1.72 : (mediumHead ? 1.62 : 1.55);
+    const rxO = diskR * rxOMul, ryO = diskR * ryOMul;
     for (let i=0;i<outerN;i++){
       const a = i*(360/outerN);
       const plan = petalPlan_('outer', i, outerN);
       petals += petalEllipse(0, yHead, rxO, ryO, a, plan.fill);
-      if (plan.accent) petals += petalAccentEllipse(0, yHead, rxO, ryO, a, plan.accent);
+      if (plan.accent) petals += petalAccentEllipse(0, yHead, rxO, ryO, a, plan.accent, plan.accentScale || 1);
     }
 
     let inner = "";
-    const rxI = diskR * 0.22, ryI = diskR * 1.55;
+    const rxI = diskR * rxIMul, ryI = diskR * ryIMul;
     for (let i=0;i<innerN;i++){
       const a = i*(360/innerN) + 12;
       const plan = petalPlan_('inner', i, innerN);
       inner += petalEllipse(0, yHead+3, rxI, ryI, a, plan.fill, 0.40);
-      if (plan.accent) inner += petalAccentEllipse(0, yHead+3, rxI, ryI, a, plan.accent);
+      if (plan.accent) inner += petalAccentEllipse(0, yHead+3, rxI, ryI, a, plan.accent, plan.accentScale || 1);
     }
 
     return `<g transform="scale(${scale.toFixed(3)})">
@@ -12044,7 +12089,7 @@ window.applySelectedAdornments = applySelectedAdornments;
     window.__LL_DISABLE_BACKHILL__ = true;
     window.BRX_DISABLE_LEGACY_BACKROWS = true;
 
-    const VERSION = 'v100.1.31_CleanState_AnchorRows_DeadLogicRemoved';
+    const VERSION = 'v100.1.33_IntenseFillVariants_SvgDevMode';
     const hideLegacyGroups = () => {
       ['backRowsG','gridWeeksG','hillGuidesG','gridOverlayG','gridWeeksOverlay','brxHillPngG','brxHillDbgG']
         .forEach(id => {
