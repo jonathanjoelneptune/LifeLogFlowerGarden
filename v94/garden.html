@@ -23,7 +23,7 @@
 <!DOCTYPE html>
 <!--
   CHANGELOG
-  v100.1.33_IntenseFillVariants_SvgDevMode
+  v100.1.34_FlowerFinishPass_Structured300_SvgDevMode
     + Replace live row-position solving with anchor-state row transforms
     + Add cached row anchor table for front rows, crest handoff, future rows, and hill triplet rows
     + Replace dynamic back-row slot spreading with fixed lane layouts (left / center / right)
@@ -154,7 +154,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 <script>
 (() => {
   // Version globals (avoid const/var redeclare across blocks)
-  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.33_IntenseFillVariants_SvgDevMode';
+  if (!window.APP_VERSION) window.APP_VERSION = 'v100.1.34_FlowerFinishPass_Structured300_SvgDevMode';
   if (!window.VERSION) window.VERSION = window.APP_VERSION;
 
   // Mini PNG fallback: transparent 1x1 (used only if external mini not available)
@@ -282,7 +282,7 @@ const dayUid_ = (typeof window !== 'undefined' && window.dayUid_) ? window.dayUi
 function renderBackRows(){ /* disabled */ }
 
 (function(){
-  const VERSION = 'v100.1.33_IntenseFillVariants_SvgDevMode';
+  const VERSION = 'v100.1.34_FlowerFinishPass_Structured300_SvgDevMode';
 
   // ---- Canonical version globals ----
   window.APP_VERSION = VERSION;
@@ -4591,69 +4591,46 @@ function flowerSvg(day){
 
   function petalPlan_(ring, i, n){
     const outer = (ring === 'outer');
-    const compactBloom = (level <= 2);
-    const mediumBloom = (level === 3);
-    const ringFrac = Math.max(0, Math.min(1, n > 1 ? (i / (n - 1)) : 0));
-    const centerBias = Math.abs(ringFrac - 0.5);
-    const stripeMod = compactBloom ? 2 : (mediumBloom ? 3 : 4);
-
     if (fillStyle === 'alternating_petals') {
       const primaryFirst = (fillVariant !== 'secondary_first');
-      const firstColor = primaryFirst ? C1 : C2;
-      const secondColor = primaryFirst ? C2 : C1;
-      return { fill: (i % 2 === 0) ? firstColor : secondColor, accent: null, accentScale: 0 };
+      const evenColor = primaryFirst ? (outer ? C1 : C3) : (outer ? C2 : C4);
+      const oddColor  = primaryFirst ? (outer ? C2 : C4) : (outer ? C1 : C3);
+      return { fill: (i % 2 === 0) ? evenColor : oddColor, accent: null };
     }
-
     if (fillStyle === 'ring_split') {
       const warmOuter = (fillVariant !== 'cool_outer');
-      const outerFill = warmOuter ? C1 : C2;
-      const innerFill = warmOuter ? C2 : C1;
-      const fill = outer ? outerFill : innerFill;
-      const accent = compactBloom
-        ? (((i % stripeMod) === 0) ? (outer ? innerFill : outerFill) : null)
-        : null;
-      return { fill, accent, accentScale: compactBloom ? 0.78 : 0 };
+      if (outer) return { fill: (i % 2 === 0) ? (warmOuter ? C1 : C2) : (warmOuter ? C3 : C4), accent: null };
+      return { fill: (i % 2 === 0) ? (warmOuter ? C2 : C1) : (warmOuter ? C4 : C3), accent: null };
     }
-
     if (fillStyle === 'center_out') {
       const outerPrimary = (fillVariant !== 'outer_secondary');
-      const outerBase = outerPrimary ? C1 : C2;
-      const innerBase = outerPrimary ? C2 : C1;
-      const outerShade = outerPrimary ? C3 : C4;
-      const innerShade = outerPrimary ? C4 : C3;
-      if (outer) {
-        const fill = compactBloom
-          ? (((i % stripeMod) === 0) ? outerShade : outerBase)
-          : ((centerBias > 0.28) ? outerBase : outerShade);
-        return { fill, accent: null, accentScale: 0 };
-      }
-      const fill = compactBloom
-        ? (((i % stripeMod) === 0) ? innerShade : innerBase)
-        : ((centerBias > 0.24) ? innerShade : innerBase);
-      return { fill, accent: null, accentScale: 0 };
-    }
-
-    if (fillStyle === 'tip_accent') {
-      const primaryBody = (fillVariant !== 'secondary_body');
-      const bodyOuter = primaryBody ? C1 : C2;
-      const bodyInner = primaryBody ? C3 : C4;
-      const accentOuter = primaryBody ? C2 : C1;
-      const accentInner = primaryBody ? C4 : C3;
       return {
-        fill: outer ? bodyOuter : bodyInner,
-        accent: outer ? accentOuter : accentInner,
-        accentScale: compactBloom ? 1.05 : (mediumBloom ? 0.88 : 0.74)
+        fill: outer
+          ? (outerPrimary ? ((i % 3 === 0) ? C3 : C1) : ((i % 3 === 0) ? C4 : C2))
+          : (outerPrimary ? ((i % 2 === 0) ? C2 : C4) : ((i % 2 === 0) ? C1 : C3)),
+        accent: null
       };
     }
-
-    return { fill: petalFill_(outer ? petalMapOuter : petalMapInner, i), accent: null, accentScale: 0 };
+    if (fillStyle === 'tip_accent') {
+      const primaryBody = (fillVariant !== 'secondary_body');
+      return {
+        fill: outer ? (primaryBody ? C1 : C2) : (primaryBody ? C3 : C4),
+        accent: outer ? (primaryBody ? C2 : C1) : (primaryBody ? C4 : C3),
+        accentScale: outer ? 1.0 : 0.92
+      };
+    }
+    return { fill: petalFill_(outer ? petalMapOuter : petalMapInner, i), accent: null };
   }
-const monthC = (MONTH_COLORS[month] || "#C7D4E2");
-  // Slight tint toward the day's colors for cohesion
-  const diskTint = mixHex(monthC, mixHex(primary, secondary, 0.50), 0.30);
-  const diskBase = darken(diskTint, 0.40);
-  const diskHi   = lighten(diskTint, 0.14);
-  const diskEdge = darken(diskTint, 0.62);
+
+  const monthC = (MONTH_COLORS[month] || "#C7D4E2");
+  const paletteMid = mixHex(primary, secondary, 0.50);
+  const diskTint = mixHex(monthC, paletteMid, 0.34);
+  const diskBase = darken(diskTint, 0.38);
+  const diskMid  = mixHex(diskBase, diskTint, 0.46);
+  const diskHi   = lighten(diskTint, 0.18);
+  const diskHot  = mixHex(lighten(paletteMid, 0.22), '#FFFFFF', 0.38);
+  const diskEdge = darken(diskTint, 0.64);
+  const centerSeed = mulberry32(hash32FromString("center_" + uid + "_" + dateKey + "_L" + level));
 
   let leafFillA = lighten(stemCore, 0.18);
   let leafFillB = darken(stemCore, 0.12);
@@ -4670,25 +4647,74 @@ const monthC = (MONTH_COLORS[month] || "#C7D4E2");
   const TOP_Y = { 1: 500, 2: 420, 3: 300, 4: 200, 5: 100 };
   const LEAF_Y = { 1: 770, 2: 505, 3: 605, 4: 580, 5: 560 };
 
-  const petalEllipse = (cx, cy, rx, ry, rotDeg, fill, strokeAlpha=0.46) => {
-    const strokeCol = 'rgba(0,0,0,0.90)';
-    return `
-      <ellipse class="petal" cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" transform="rotate(${rotDeg} ${cx} ${cy})"
-        fill="${fill}" stroke="${strokeCol}" stroke-width="3.40" stroke-linejoin="round" opacity="0.99"/>
-    `;
-  };
+  function petalRand_(ring, i, tag){
+    return mulberry32(hash32FromString(`${uid}_${dateKey}_${level}_${fillStyle}_${fillVariant}_${ring}_${i}_${tag}`));
+  }
 
-  const petalAccentEllipse = (cx, cy, rx, ry, rotDeg, fill, accentScale=1) => {
-    const scale = Math.max(0.55, Number(accentScale) || 1);
-    const acx = cx;
-    const acy = cy - (ry * (0.48 + 0.08 * scale));
-    const arx = rx * (0.46 + 0.18 * scale);
-    const ary = ry * (0.18 + 0.16 * scale);
+  function petalFinish_(fill, ring, accentFill){
+    const isInner = (ring === 'inner');
+    const body = fill;
+    const bodyShade = darken(body, isInner ? 0.12 : 0.16);
+    const bodyLift = lighten(body, isInner ? 0.08 : 0.11);
+    const rim = darken(body, isInner ? 0.38 : 0.44);
+    const glaze = mixHex(bodyLift, '#FFFFFF', isInner ? 0.20 : 0.28);
+    const baseShadow = mixHex(bodyShade, diskEdge, 0.34);
+    const accentStroke = accentFill ? darken(accentFill, 0.28) : rim;
+    return { body, bodyShade, bodyLift, rim, glaze, baseShadow, accentStroke };
+  }
+
+  function petalEllipse(cx, cy, rx, ry, rotDeg, fill, ring, seedKey){
+    const rrPetal = petalRand_(ring, seedKey, 'geom');
+    const rotJitter = (rrPetal()*2 - 1) * (level <= 2 ? 2.6 : 1.8);
+    const rxScale = 0.95 + rrPetal()*0.12;
+    const ryScale = 0.95 + rrPetal()*0.14;
+    const xOff = (rrPetal()*2 - 1) * (level <= 2 ? 1.3 : 0.9);
+    const yOff = (rrPetal()*2 - 1) * (level <= 2 ? 1.0 : 0.75);
+
+    const grx = rx * rxScale;
+    const gry = ry * ryScale;
+    const gcx = cx + xOff;
+    const gcy = cy + yOff;
+    const finish = petalFinish_(fill, ring, null);
+    const shadowCy = gcy + gry * 0.10;
+    const glazeCy = gcy - gry * 0.17;
+    const tipCy = gcy - gry * 0.31;
+    const tipRx = grx * (ring === 'inner' ? 0.72 : 0.66);
+    const tipRy = gry * (ring === 'inner' ? 0.46 : 0.42);
+
     return `
-      <ellipse class="petalHi" cx="${acx.toFixed(2)}" cy="${acy.toFixed(2)}" rx="${arx.toFixed(2)}" ry="${ary.toFixed(2)}" transform="rotate(${rotDeg} ${cx} ${cy})"
-        fill="${fill}" opacity="${Math.min(0.94, 0.74 + (0.12 * scale)).toFixed(2)}" stroke="rgba(255,255,255,0.18)" stroke-width="${(0.95 + 0.30 * scale).toFixed(2)}"/>
+      <g class="petalWrap" transform="rotate(${(rotDeg + rotJitter).toFixed(2)} ${gcx.toFixed(2)} ${gcy.toFixed(2)})">
+        <ellipse class="petalShadow" cx="${gcx.toFixed(2)}" cy="${shadowCy.toFixed(2)}" rx="${(grx*0.98).toFixed(2)}" ry="${(gry*0.98).toFixed(2)}"
+          fill="${finish.baseShadow}" opacity="${ring === 'inner' ? '0.20' : '0.24'}"/>
+        <ellipse class="petal" cx="${gcx.toFixed(2)}" cy="${gcy.toFixed(2)}" rx="${grx.toFixed(2)}" ry="${gry.toFixed(2)}"
+          fill="${finish.body}" stroke="${finish.rim}" stroke-width="${ring === 'inner' ? '2.20' : '2.70'}" stroke-linejoin="round" opacity="0.995"/>
+        <ellipse class="petalBodyShade" cx="${gcx.toFixed(2)}" cy="${(gcy + gry*0.12).toFixed(2)}" rx="${(grx*0.88).toFixed(2)}" ry="${(gry*0.84).toFixed(2)}"
+          fill="${finish.bodyShade}" opacity="${ring === 'inner' ? '0.18' : '0.22'}"/>
+        <ellipse class="petalGlaze" cx="${gcx.toFixed(2)}" cy="${glazeCy.toFixed(2)}" rx="${(grx*0.76).toFixed(2)}" ry="${(gry*0.54).toFixed(2)}"
+          fill="${finish.glaze}" opacity="${ring === 'inner' ? '0.18' : '0.24'}"/>
+        <ellipse class="petalTipLight" cx="${gcx.toFixed(2)}" cy="${tipCy.toFixed(2)}" rx="${tipRx.toFixed(2)}" ry="${tipRy.toFixed(2)}"
+          fill="${finish.bodyLift}" opacity="${ring === 'inner' ? '0.10' : '0.14'}"/>
+      </g>
     `;
-  };
+  }
+
+  function petalAccentEllipse(cx, cy, rx, ry, rotDeg, fill, accentScale, ring, seedKey){
+    const rrPetal = petalRand_(ring, seedKey, 'accent');
+    const acScale = Number(accentScale || 1);
+    const grx = rx * (0.58 + rrPetal()*0.08) * acScale;
+    const gry = ry * (0.34 + rrPetal()*0.06) * acScale;
+    const gcx = cx + (rrPetal()*2 - 1) * 0.7;
+    const gcy = cy - (ry * (0.48 + rrPetal()*0.08));
+    const finish = petalFinish_(fill, ring, fill);
+    return `
+      <g class="petalAccentWrap" transform="rotate(${rotDeg.toFixed(2)} ${cx.toFixed(2)} ${cy.toFixed(2)})">
+        <ellipse class="petalAccent" cx="${gcx.toFixed(2)}" cy="${gcy.toFixed(2)}" rx="${grx.toFixed(2)}" ry="${gry.toFixed(2)}"
+          fill="${fill}" opacity="0.96" stroke="${finish.accentStroke}" stroke-width="${ring === 'inner' ? '1.35' : '1.55'}"/>
+        <ellipse class="petalAccentGlow" cx="${gcx.toFixed(2)}" cy="${(gcy - gry*0.12).toFixed(2)}" rx="${(grx*0.70).toFixed(2)}" ry="${(gry*0.50).toFixed(2)}"
+          fill="${mixHex(fill, '#FFFFFF', 0.38)}" opacity="0.20"/>
+      </g>
+    `;
+  }
 
   const leafPathEl = (d, fill) =>
     `<path d="${d}" fill="${fill}" stroke="var(--strokeLeaf)" stroke-width="1.7" stroke-linejoin="round"/>`;
@@ -4704,12 +4730,27 @@ const monthC = (MONTH_COLORS[month] || "#C7D4E2");
   `;
 
   function disk(cx, cy, r){
+    const seedDots = [];
+    const dotCount = Math.max(7, Math.round(r * 0.22));
+    for (let i=0; i<dotCount; i++){
+      const ang = centerSeed() * Math.PI * 2;
+      const rr = r * (0.12 + centerSeed() * 0.46);
+      const x = cx + Math.cos(ang) * rr;
+      const y = cy + Math.sin(ang) * rr;
+      const dr = Math.max(0.9, r * (0.030 + centerSeed() * 0.014));
+      const fill = (i % 3 === 0) ? diskHot : (i % 2 === 0 ? diskHi : mixHex(diskMid, primary, 0.18));
+      seedDots.push(`<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${dr.toFixed(2)}" fill="${fill}" opacity="${(0.34 + centerSeed()*0.28).toFixed(2)}"/>`);
+    }
+
     return `
-      <circle cx="${cx}" cy="${cy}" r="${r}" fill="${diskEdge}"/>
-      <circle cx="${cx}" cy="${cy}" r="${r*0.90}" fill="${diskEdge}" opacity="0.55"/>
-      <circle cx="${cx}" cy="${cy}" r="${r*0.78}" fill="${diskBase}" opacity="0.96"/>
-      <circle cx="${cx}" cy="${cy}" r="${r*0.52}" fill="${diskHi}" opacity="0.88"/>
-      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(0,0,0,0.28)" stroke-width="${Math.max(1.3, r*0.06)}"/>
+      <circle cx="${cx}" cy="${cy}" r="${r.toFixed(2)}" fill="${diskEdge}"/>
+      <circle cx="${cx}" cy="${cy}" r="${(r*0.92).toFixed(2)}" fill="${diskBase}" opacity="0.98"/>
+      <circle cx="${cx}" cy="${cy}" r="${(r*0.78).toFixed(2)}" fill="${diskMid}" opacity="0.98"/>
+      <circle cx="${cx}" cy="${cy}" r="${(r*0.60).toFixed(2)}" fill="${diskHi}" opacity="0.88"/>
+      <circle cx="${(cx - r*0.10).toFixed(2)}" cy="${(cy - r*0.16).toFixed(2)}" r="${(r*0.22).toFixed(2)}" fill="${diskHot}" opacity="0.36"/>
+      <circle cx="${cx}" cy="${cy}" r="${(r*0.70).toFixed(2)}" fill="none" stroke="${mixHex(diskHot, '#FFFFFF', 0.24)}" stroke-width="${Math.max(1.0, r*0.045).toFixed(2)}" opacity="0.26"/>
+      <g class="diskSeeds">${seedDots.join('')}</g>
+      <circle cx="${cx}" cy="${cy}" r="${r.toFixed(2)}" fill="none" stroke="${mixHex(diskEdge, '#000000', 0.32)}" stroke-width="${Math.max(1.3, r*0.06).toFixed(2)}"/>
     `;
   }
 
@@ -4730,34 +4771,39 @@ const monthC = (MONTH_COLORS[month] || "#C7D4E2");
 
   function head(scale, diskR, yHead, outerN, innerN){
     let petals = "";
-    const compactHead = diskR <= 28;
-    const mediumHead = (diskR > 28 && diskR <= 40);
+    const bloomSeed = mulberry32(hash32FromString(`bloom_${uid}_${dateKey}_${level}_${fillStyle}_${fillVariant}`));
+    const centerX = (bloomSeed()*2 - 1) * (level <= 2 ? 1.8 : 1.1);
+    const centerY = yHead + (bloomSeed()*2 - 1) * (level <= 2 ? 1.3 : 0.9);
+    const headLean = (bloomSeed()*2 - 1) * (level <= 2 ? 2.2 : 1.2);
+    const compactHead = level <= 2;
+    const mediumHead = level === 3;
     const rxOMul = compactHead ? 0.34 : 0.30;
     const ryOMul = compactHead ? 2.22 : (mediumHead ? 2.12 : 2.05);
     const rxIMul = compactHead ? 0.26 : 0.22;
     const ryIMul = compactHead ? 1.72 : (mediumHead ? 1.62 : 1.55);
     const rxO = diskR * rxOMul, ryO = diskR * ryOMul;
+
     for (let i=0;i<outerN;i++){
-      const a = i*(360/outerN);
+      const a = i*(360/outerN) + headLean;
       const plan = petalPlan_('outer', i, outerN);
-      petals += petalEllipse(0, yHead, rxO, ryO, a, plan.fill);
-      if (plan.accent) petals += petalAccentEllipse(0, yHead, rxO, ryO, a, plan.accent, plan.accentScale || 1);
+      petals += petalEllipse(centerX, centerY, rxO, ryO, a, plan.fill, 'outer', i);
+      if (plan.accent) petals += petalAccentEllipse(centerX, centerY, rxO, ryO, a, plan.accent, plan.accentScale || 1, 'outer', i);
     }
 
     let inner = "";
     const rxI = diskR * rxIMul, ryI = diskR * ryIMul;
     for (let i=0;i<innerN;i++){
-      const a = i*(360/innerN) + 12;
+      const a = i*(360/innerN) + 12 + headLean * 0.7;
       const plan = petalPlan_('inner', i, innerN);
-      inner += petalEllipse(0, yHead+3, rxI, ryI, a, plan.fill, 0.40);
-      if (plan.accent) inner += petalAccentEllipse(0, yHead+3, rxI, ryI, a, plan.accent, plan.accentScale || 1);
+      inner += petalEllipse(centerX, centerY+3, rxI, ryI, a, plan.fill, 'inner', i);
+      if (plan.accent) inner += petalAccentEllipse(centerX, centerY+3, rxI, ryI, a, plan.accent, plan.accentScale || 0.92, 'inner', i);
     }
 
     return `<g transform="scale(${scale.toFixed(3)})">
       ${petals}${inner}
-      ${disk(0,yHead,diskR)}
-      ${deedsIndicator(0, yHead, level, diskR)}
-      <circle class="hsCore llCoreHotspotSvg" data-role="hotspot" data-datekey="${dateKey}" cx="0" cy="${yHead}" r="${(diskR*2.25).toFixed(2)}"/>
+      ${disk(centerX,centerY,diskR)}
+      ${deedsIndicator(centerX, centerY, level, diskR)}
+      <circle class="hsCore llCoreHotspotSvg" data-role="hotspot" data-datekey="${dateKey}" cx="${centerX.toFixed(2)}" cy="${centerY.toFixed(2)}" r="${(diskR*2.25).toFixed(2)}"/>
     </g>`;
   }
 
@@ -12089,7 +12135,7 @@ window.applySelectedAdornments = applySelectedAdornments;
     window.__LL_DISABLE_BACKHILL__ = true;
     window.BRX_DISABLE_LEGACY_BACKROWS = true;
 
-    const VERSION = 'v100.1.33_IntenseFillVariants_SvgDevMode';
+    const VERSION = 'v100.1.34_FlowerFinishPass_Structured300_SvgDevMode';
     const hideLegacyGroups = () => {
       ['backRowsG','gridWeeksG','hillGuidesG','gridOverlayG','gridWeeksOverlay','brxHillPngG','brxHillDbgG']
         .forEach(id => {
