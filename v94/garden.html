@@ -6820,8 +6820,8 @@ function applyTransforms(tNow){
         if (behind < 0.03){
           band.style.filter = 'drop-shadow(0 0 14px rgba(255,255,255,0.18)) drop-shadow(0 0 28px rgba(120,190,255,0.12)) brightness(1.04) saturate(1.06) contrast(1.03)';
         } else {
-          const b = Math.min(1, behind / 18);
-          band.style.filter = `brightness(${(0.98 - b*0.04).toFixed(2)}) saturate(${(1.00 - b*0.02).toFixed(2)}) blur(${(b * 0.18).toFixed(2)}px)`;
+          const b = Math.min(1, behind / 3);
+          band.style.filter = `brightness(${(0.86 - b*0.12).toFixed(2)}) saturate(${(0.92 - b*0.18).toFixed(2)}) blur(${(b * 1.00).toFixed(2)}px)`;
         }
         band.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0px) scale(${s.toFixed(3)})`;
         try{ updateBandSlotSpread_(band, behind, s); }catch(e){}
@@ -6928,7 +6928,8 @@ function applyTransforms(tNow){
       const o = Math.max(0, 1 - ahead * 1.25);
       const x = (baseShift * 40 * ahead * staggerStrength) + (yawPx * ahead * 0.25);
       band.style.opacity = o.toFixed(3);
-      band.style.filter = 'none';
+      const fb = Math.min(1, ahead / 3);
+      band.style.filter = `brightness(${(0.90 - fb*0.08).toFixed(2)}) saturate(${(0.94 - fb*0.10).toFixed(2)}) blur(${(fb * 0.55).toFixed(2)}px)`;
       band.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0px) scale(${s.toFixed(3)})`;
       try{ updateBandSlotSpread_(band, 0, 1); }catch(e){}
       if (gband){
@@ -10358,7 +10359,7 @@ document.addEventListener('click', (ev) => {
 //   &ssOpen=5000   (how long a skybox stays open)
 //   &ssWait=5000   (how long to wait after closing before opening the next)
 // Notes:
-// - Current implementation chooses randomly from *any row* (no auto-scroll).
+// - Screensaver picks from any row, then brings that row to the front before opening the selection.
 // - Any user interaction (mouse/keyboard/wheel/touch) stops screensaver immediately.
 // - Press "S" to toggle screensaver on/off (debug-friendly).
 
@@ -10552,6 +10553,69 @@ function __llPickRandomWrap_(list){
   return list[(Math.random() * list.length) | 0];
 }
 
+function __llFindWrapByDateKey_(dateKey, weekIdx){
+  try{
+    const dk = String(dateKey || '').trim();
+    const wi = Number.isFinite(weekIdx) ? String(weekIdx|0) : null;
+    return (flowerWrapEls || []).find((w) => {
+      if (!w || !w.isConnected || !w.dataset) return false;
+      const wdk = String(w.dataset.dateKey || w.dataset.datekey || '').trim();
+      if (!wdk || wdk !== dk) return false;
+      if (wi == null) return true;
+      return String(w.dataset.weekIndex || '') === wi;
+    }) || null;
+  }catch(e){
+    return null;
+  }
+}
+
+function __llSetScreenSaverFocusWeek_(weekIdx){
+  try{
+    const idx = Math.max(0, weekIdx|0);
+    if (window.__LL && typeof window.__LL.navSetWeekIndex === 'function'){
+      window.__LL.navSetWeekIndex(idx, { snap:false, applyNow:true, syncWeeks:true, reason:'screensaver-focus', triggerCue:false });
+    } else {
+      __rt.nav.targetIndex = idx;
+      CACHED.transformsDirty = true;
+      try{ if (typeof syncRenderedWeeks_ === 'function') syncRenderedWeeks_(idx, false); }catch(e){}
+      try{ if (typeof applyTransforms === 'function') applyTransforms((typeof performance !== 'undefined' && performance.now) ? performance.now() : undefined); }catch(e){}
+    }
+  }catch(e){}
+}
+
+function __llWaitForFrontRowThenSelect_(dateKey, weekIdx, tok, tries){
+  tries = (tries == null) ? 0 : tries|0;
+  if (!__LL_SCREENSAVER.enabled) return;
+  if ((tok|0) !== (__LL_SCREENSAVER.token|0)) return;
+
+  const settled = Math.abs((__rt.nav.currentOffset || 0) - (weekIdx|0)) <= 0.10;
+  const frontIdx = Math.round(__rt.nav.currentOffset || 0);
+  const wrap = __llFindWrapByDateKey_(dateKey, weekIdx);
+
+  if (settled && frontIdx === (weekIdx|0) && wrap){
+    try{
+      if (typeof __llMarkSuppressDocClear_ === 'function') __llMarkSuppressDocClear_();
+      if (typeof setSelection_ === 'function') setSelection_(wrap);
+      if (typeof dbg_ === 'function') dbg_(`Screensaver: OPEN ${wrap.dataset.dateKey || wrap.dataset.datekey || ''} (front row)`);
+    }catch(e){}
+    return;
+  }
+
+  if (tries > 90){
+    const fallback = wrap || __llFindWrapByDateKey_(dateKey, null);
+    if (fallback){
+      try{
+        if (typeof __llMarkSuppressDocClear_ === 'function') __llMarkSuppressDocClear_();
+        if (typeof setSelection_ === 'function') setSelection_(fallback);
+        if (typeof dbg_ === 'function') dbg_(`Screensaver: OPEN ${fallback.dataset.dateKey || fallback.dataset.datekey || ''} (fallback)`);
+      }catch(e){}
+    }
+    return;
+  }
+
+  setTimeout(() => __llWaitForFrontRowThenSelect_(dateKey, weekIdx, tok, tries + 1), 40);
+}
+
 function __llStopScreenSaver_(why){
   try{
     __LL_SCREENSAVER.enabled = false;
@@ -10587,10 +10651,16 @@ function __llScreenSaverLoop_(tok){
     try{ if (typeof clearSelection_ === 'function') clearSelection_('screensaver-pre'); }catch(e){}
     try{ if (typeof hideSkyBoxes_ === 'function') hideSkyBoxes_('screensaver-pre'); }catch(e){}
 
-    // Open selection + skyboxes
-    if (typeof __llMarkSuppressDocClear_ === 'function') __llMarkSuppressDocClear_();
-    if (typeof setSelection_ === 'function') setSelection_(next);
-    if (typeof dbg_ === 'function') dbg_(`Screensaver: OPEN ${next.dataset.dateKey || next.dataset.datekey || ''}`);
+    const targetWeekIdx = parseInt((next && next.dataset && next.dataset.weekIndex) ? next.dataset.weekIndex : '-1', 10);
+    const targetDateKey = String((next && next.dataset && (next.dataset.dateKey || next.dataset.datekey)) || '').trim();
+    if (Number.isFinite(targetWeekIdx) && targetWeekIdx >= 0){
+      __llSetScreenSaverFocusWeek_(targetWeekIdx);
+      __llWaitForFrontRowThenSelect_(targetDateKey, targetWeekIdx, tok, 0);
+    } else {
+      if (typeof __llMarkSuppressDocClear_ === 'function') __llMarkSuppressDocClear_();
+      if (typeof setSelection_ === 'function') setSelection_(next);
+      if (typeof dbg_ === 'function') dbg_(`Screensaver: OPEN ${next.dataset.dateKey || next.dataset.datekey || ''}`);
+    }
   }catch(e){}
 
   const activeOpenMs = __llGetScreenSaverOpenMs_();
@@ -11604,6 +11674,14 @@ initUi();
 
   window.addEventListener('resize', layoutSolve);
   window.addEventListener('resize', drawStars);
+
+  try{
+    if (!document.getElementById('frontSpotlight') && DOM.stage){
+      const fs = document.createElement('div');
+      fs.id = 'frontSpotlight';
+      DOM.stage.appendChild(fs);
+    }
+  }catch(e){}
 
   buildBands();
   refreshFrontGrass();
