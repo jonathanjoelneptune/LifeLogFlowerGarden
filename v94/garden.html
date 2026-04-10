@@ -4531,11 +4531,11 @@ function resolveFlowerFillSpec_(day){
       variant = ringVariants[Math.floor(rr() * ringVariants.length)];
     }
     else if (style === 'tip_accent') {
-      const tipVariants = ['primary_body_thin_tip', 'primary_body_thick_tip', 'secondary_body_thin_tip', 'secondary_body_thick_tip'];
+      const tipVariants = ['primary_body_thin_tip', 'primary_body_thick_tip'];
       variant = tipVariants[Math.floor(rr() * tipVariants.length)];
     }
     else if (style === 'alternating_petals') {
-      const altVariants = ['primary_first', 'secondary_first', 'paired_primary_first', 'paired_secondary_first'];
+      const altVariants = ['primary_first', 'paired_primary_first'];
       variant = altVariants[Math.floor(rr() * altVariants.length)];
     }
     else variant = 'default';
@@ -4557,18 +4557,14 @@ function flowerSvg(day){
   const fillStyle = fillSpec.style;
   const fillVariant = fillSpec.variant;
 
-  // C1 primary, C2 secondary, C3/C4 blended support colors
+  // Primary-forward 2-color petal system
   const C1 = primary;
   const C2 = secondary;
-  const C3 = mixHex(primary, secondary, 0.30);
-  const C4 = mixHex(primary, secondary, 0.70);
-  const PETAL_COLORS = [C1, C2, C3, C4];
-  const PETAL_W = [0.35, 0.35, 0.15, 0.15];
+  const PETAL_COLORS = [C1, C2];
+  const PETAL_W = [0.82, 0.18];
 
   function pickWeightedIndex_(r){
-    const x = r();
-    const a = PETAL_W[0], b = a + PETAL_W[1], c = b + PETAL_W[2];
-    return (x < a) ? 0 : (x < b) ? 1 : (x < c) ? 2 : 3;
+    return (r() < PETAL_W[0]) ? 0 : 1;
   }
 
   function buildPetalColorList_(n, seedKey){
@@ -4578,8 +4574,8 @@ function flowerSvg(day){
     const out = new Array(nn);
     if (nn === 1) { out[0] = 0; return out; }
     if (nn === 2) { out[0] = 0; out[1] = 1; if (r() < 0.5) { const t = out[0]; out[0] = out[1]; out[1] = t; } return out; }
-    if (nn === 3) { out[0] = 0; out[1] = 1; out[2] = (r() < 0.5) ? 2 : 3; return out; }
-    if (nn === 4) { out[0] = 0; out[1] = 1; out[2] = 2; out[3] = 3; for (let i=nn-1;i>0;i--){ const j = Math.floor(r() * (i+1)); const tmp = out[i]; out[i] = out[j]; out[j] = tmp; } return out; }
+    if (nn === 3) { out[0] = 0; out[1] = 0; out[2] = 1; if (r() < 0.5) out.reverse(); return out; }
+    if (nn === 4) { out[0] = 0; out[1] = 0; out[2] = 0; out[3] = 1; for (let i=nn-1;i>0;i--){ const j = Math.floor(r() * (i+1)); const tmp = out[i]; out[i] = out[j]; out[j] = tmp; } return out; }
     for (let i=0;i<nn;i++) out[i] = pickWeightedIndex_(r);
     const i1 = Math.floor(r() * nn);
     let i2 = Math.floor(r() * nn);
@@ -4641,12 +4637,11 @@ function flowerSvg(day){
 
     if (fillStyle === 'alternating_petals') {
       const v = String(fillVariant || '').toLowerCase();
-      const primaryFirst = (v.indexOf('secondary_first') === -1);
-      const paired = (v.indexOf('paired_') === 0);
-      const firstColor = primaryFirst ? C1 : C2;
-      const secondColor = primaryFirst ? C2 : C1;
-      const useFirst = paired ? ((Math.floor(i / 2) % 2) === 0) : ((i % 2) === 0);
-      return { fill: useFirst ? firstColor : secondColor, accent: null, accentScale: 0 };
+      const grouped = (v.indexOf('paired_') === 0);
+      const cycle = grouped ? 4 : 5;
+      const pos = grouped ? (i % cycle) : (i % cycle);
+      const useSecondary = grouped ? (pos === cycle - 1) : (pos === cycle - 1);
+      return { fill: useSecondary ? C2 : C1, accent: null, accentScale: 0 };
     }
 
     if (fillStyle === 'ring_split') {
@@ -4661,8 +4656,8 @@ function flowerSvg(day){
       else if (v.indexOf('diag_nw_primary') >= 0) primaryOnPositive = true;
       else primaryOnPositive = (v !== 'cool_outer');
 
-      const primaryBase = outer ? C1 : C3;
-      const secondaryBase = outer ? C2 : C4;
+      const primaryBase = C1;
+      const secondaryBase = C2;
       const onPrimarySide = scoreForMode_(mode) >= 0;
       const fill = (onPrimarySide === primaryOnPositive) ? primaryBase : secondaryBase;
       return { fill, accent: null, accentScale: 0 };
@@ -4671,34 +4666,26 @@ function flowerSvg(day){
     if (fillStyle === 'center_out') {
       const v = String(fillVariant || '').toLowerCase();
       const outerPrimary = (v !== 'outer_secondary');
-      const outerBase = outerPrimary ? C1 : C2;
-      const innerBase = outerPrimary ? C2 : C1;
-      const outerShade = outerPrimary ? C3 : C4;
-      const innerShade = outerPrimary ? C4 : C3;
-      if (outer) {
-        const fill = compactBloom
-          ? (((i % stripeMod) === 0) ? outerShade : outerBase)
-          : ((centerBias > 0.28) ? outerBase : outerShade);
+      if (outerPrimary) {
+        if (outer) return { fill: C1, accent: null, accentScale: 0 };
+        const accentEvery = compactBloom ? 5 : (mediumBloom ? 6 : 7);
+        const fill = ((i % accentEvery) === accentEvery - 1) ? C2 : C1;
         return { fill, accent: null, accentScale: 0 };
       }
-      const fill = compactBloom
-        ? (((i % stripeMod) === 0) ? innerShade : innerBase)
-        : ((centerBias > 0.24) ? innerShade : innerBase);
-      return { fill, accent: null, accentScale: 0 };
+      if (outer) {
+        const fill = ((i % (compactBloom ? 4 : 5)) === 0) ? C2 : C1;
+        return { fill, accent: null, accentScale: 0 };
+      }
+      return { fill: C2, accent: null, accentScale: 0 };
     }
 
     if (fillStyle === 'tip_accent') {
       const v = String(fillVariant || '').toLowerCase();
-      const primaryBody = (v.indexOf('secondary_body') === -1);
       const thickTip = (v.indexOf('thick_tip') >= 0);
-      const bodyOuter = primaryBody ? C1 : C2;
-      const bodyInner = primaryBody ? C3 : C4;
-      const accentOuter = primaryBody ? C2 : C1;
-      const accentInner = primaryBody ? C4 : C3;
       return {
-        fill: outer ? bodyOuter : bodyInner,
-        accent: outer ? accentOuter : accentInner,
-        accentScale: thickTip ? (compactBloom ? 1.18 : (mediumBloom ? 1.02 : 0.88)) : (compactBloom ? 0.90 : (mediumBloom ? 0.76 : 0.64))
+        fill: C1,
+        accent: C2,
+        accentScale: thickTip ? (compactBloom ? 1.08 : (mediumBloom ? 0.92 : 0.80)) : (compactBloom ? 0.82 : (mediumBloom ? 0.68 : 0.56))
       };
     }
 
