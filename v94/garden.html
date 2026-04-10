@@ -5343,7 +5343,8 @@ const __rt = window.__LL_RUNTIME = window.__LL_RUNTIME || {
     currentOffset: 0,
     lastWheelAt: 0,
     lastFrontIndex: -1,
-    lastBackRowsFrontIndex: LL_CONFIG.nav.backRowsRefreshGuard
+    lastBackRowsFrontIndex: LL_CONFIG.nav.backRowsRefreshGuard,
+    glide: null
   },
   visual: {
     seasonOverride: LL_CONFIG.visual.defaultSeasonOverride
@@ -5412,6 +5413,35 @@ window.__LL.navGoToToday = function(){
 
 window.__LL.getRuntimeState = function(){ return __rt; };
 window.__LL.getConfig = function(){ return LL_CONFIG; };
+
+function __llEaseInOutCubic_(t){
+  t = Math.max(0, Math.min(1, Number(t) || 0));
+  return (t < 0.5) ? (4 * t * t * t) : (1 - Math.pow(-2 * t + 2, 3) / 2);
+}
+function __llStartScreenSaverGlide_(weekIdx){
+  try{
+    const idx = __llClampWeekIndex_(weekIdx|0);
+    const start = Number(__rt.nav.currentOffset || 0);
+    const dist = Math.abs(idx - start);
+    __rt.nav.targetIndex = idx;
+    const minMs = ((__LL_SCREENSAVER && __LL_SCREENSAVER.glideMinMs) ? (__LL_SCREENSAVER.glideMinMs|0) : 1400);
+    const maxMs = ((__LL_SCREENSAVER && __LL_SCREENSAVER.glideMaxMs) ? (__LL_SCREENSAVER.glideMaxMs|0) : 4200);
+    const perWeek = ((__LL_SCREENSAVER && __LL_SCREENSAVER.glidePerWeekMs) ? (__LL_SCREENSAVER.glidePerWeekMs|0) : 420);
+    const durationMs = Math.max(minMs, Math.min(maxMs, Math.round(minMs + (dist * perWeek))));
+    __rt.nav.glide = {
+      mode: 'screensaver',
+      startOffset: start,
+      targetIndex: idx,
+      startTs: ((typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now()),
+      durationMs: durationMs
+    };
+    __llRowTransitionActive = true;
+    CACHED.transformsDirty = true;
+    try{ if (typeof syncRenderedWeeks_ === 'function') syncRenderedWeeks_(idx, false); }catch(e){}
+    return idx;
+  }catch(e){}
+  return weekIdx|0;
+}
 
 // =========================================================
 
@@ -7965,9 +7995,25 @@ function tick(tNow){
 
   flushRenderQueue_(tNow);
 
-  const offsetChanged = Math.abs(__rt.nav.targetIndex - __rt.nav.currentOffset) > LL_CONFIG.motion.offsetDirtyEpsilon;
+  let offsetChanged = Math.abs(__rt.nav.targetIndex - __rt.nav.currentOffset) > LL_CONFIG.motion.offsetDirtyEpsilon;
 
-  if (offsetChanged){
+  if (__rt.nav.glide && __rt.nav.glide.mode === 'screensaver'){
+    const g = __rt.nav.glide;
+    const nowTs = (typeof tNow === 'number' ? tNow : ((typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now()));
+    const elapsed = Math.max(0, nowTs - Number(g.startTs || 0));
+    const dur = Math.max(1, Number(g.durationMs || 1));
+    const p = Math.max(0, Math.min(1, elapsed / dur));
+    const eased = __llEaseInOutCubic_(p);
+    __rt.nav.targetIndex = g.targetIndex|0;
+    __rt.nav.currentOffset = Number(g.startOffset || 0) + ((Number(g.targetIndex || 0) - Number(g.startOffset || 0)) * eased);
+    offsetChanged = true;
+    CACHED.transformsDirty = true;
+    if (p >= 1 || Math.abs(__rt.nav.targetIndex - __rt.nav.currentOffset) < LL_CONFIG.motion.snapEpsilon){
+      __rt.nav.currentOffset = __rt.nav.targetIndex;
+      __rt.nav.glide = null;
+      __llRowTransitionActive = false;
+    }
+  } else if (offsetChanged){
     __rt.nav.currentOffset += (__rt.nav.targetIndex - __rt.nav.currentOffset) * LL_CONFIG.motion.easing;
     if (Math.abs(__rt.nav.targetIndex - __rt.nav.currentOffset) < LL_CONFIG.motion.snapEpsilon) __rt.nav.currentOffset = __rt.nav.targetIndex;
     CACHED.transformsDirty = true;
@@ -10395,6 +10441,9 @@ const __LL_SCREENSAVER = {
   windTwistMul: 0.18,
   windDurMul: 2.60,
   windMinDurSec: 14,
+  glideMinMs: 1400,
+  glideMaxMs: 4200,
+  glidePerWeekMs: 420,
 
 };;
 
@@ -10572,6 +10621,9 @@ function __llFindWrapByDateKey_(dateKey, weekIdx){
 function __llSetScreenSaverFocusWeek_(weekIdx){
   try{
     const idx = Math.max(0, weekIdx|0);
+    if (__LL_SCREENSAVER && __LL_SCREENSAVER.enabled){
+      return __llStartScreenSaverGlide_(idx);
+    }
     if (window.__LL && typeof window.__LL.navSetWeekIndex === 'function'){
       window.__LL.navSetWeekIndex(idx, { snap:false, applyNow:true, syncWeeks:true, reason:'screensaver-focus', triggerCue:false });
     } else {
@@ -10580,7 +10632,9 @@ function __llSetScreenSaverFocusWeek_(weekIdx){
       try{ if (typeof syncRenderedWeeks_ === 'function') syncRenderedWeeks_(idx, false); }catch(e){}
       try{ if (typeof applyTransforms === 'function') applyTransforms((typeof performance !== 'undefined' && performance.now) ? performance.now() : undefined); }catch(e){}
     }
+    return idx;
   }catch(e){}
+  return weekIdx|0;
 }
 
 function __llWaitForFrontRowThenSelect_(dateKey, weekIdx, tok, tries){
@@ -10621,6 +10675,7 @@ function __llStopScreenSaver_(why){
     __LL_SCREENSAVER.enabled = false;
     try{ __llApplyScreenSaverDim_(false); }catch(e){}
     __LL_SCREENSAVER.token = (__LL_SCREENSAVER.token|0) + 1; // invalidate pending callbacks
+    try{ __rt.nav.glide = null; }catch(e){}
     if (__LL_SCREENSAVER.timerA) { clearTimeout(__LL_SCREENSAVER.timerA); __LL_SCREENSAVER.timerA = null; }
     if (__LL_SCREENSAVER.timerB) { clearTimeout(__LL_SCREENSAVER.timerB); __LL_SCREENSAVER.timerB = null; }
     if (__LL_SCREENSAVER.kickTimer) { clearTimeout(__LL_SCREENSAVER.kickTimer); __LL_SCREENSAVER.kickTimer = null; }
@@ -10688,6 +10743,7 @@ function __llStartScreenSaver_(why){
     __LL_SCREENSAVER.token = (__LL_SCREENSAVER.token|0) + 1;
     const tok = __LL_SCREENSAVER.token;
     __LL_SCREENSAVER.enabled = true;
+    try{ __rt.nav.glide = null; }catch(e){}
     try{ __llApplyScreenSaverDim_(true); }catch(e){}
     try{ __llApplyScreenSaverPerformance_(true); }catch(e){}
     try{ applyTimeOfDayVisuals(); }catch(e){}
